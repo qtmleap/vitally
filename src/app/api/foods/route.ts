@@ -1,0 +1,46 @@
+import { env } from 'cloudflare:workers'
+
+import { getPrisma } from '@/lib/db'
+import { foodSchema } from '@/lib/schema'
+
+export async function GET(request: Request) {
+  const url = new URL(request.url)
+  const q = url.searchParams.get('q') ?? ''
+  const prisma = getPrisma(env)
+
+  const foods = await prisma.food.findMany({
+    where: q ? { name: { contains: q } } : undefined,
+    orderBy: q ? { name: 'asc' } : { createdAt: 'desc' },
+    take: 50
+  })
+
+  return Response.json(foods)
+}
+
+export async function POST(request: Request) {
+  const body = await request.json()
+  const parsed = foodSchema.safeParse(body)
+
+  if (!parsed.success) {
+    return Response.json({ error: parsed.error.flatten() }, { status: 400 })
+  }
+
+  const prisma = getPrisma(env)
+  const food = await prisma.food.create({ data: parsed.data })
+
+  return Response.json(food, { status: 201 })
+}
+
+export async function DELETE(request: Request) {
+  const url = new URL(request.url)
+  const id = url.searchParams.get('id')
+
+  if (!id) {
+    return Response.json({ error: 'id is required' }, { status: 400 })
+  }
+
+  const prisma = getPrisma(env)
+  await prisma.food.delete({ where: { id } })
+
+  return Response.json({ ok: true })
+}

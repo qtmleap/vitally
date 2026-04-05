@@ -1,0 +1,70 @@
+'use client'
+
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { useAtomValue } from 'jotai'
+import { Bot, Loader2 } from 'lucide-react'
+import { useState } from 'react'
+import { DateNav } from '@/components/date-nav'
+import { PageHeader } from '@/components/page-header'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { api } from '@/lib/api'
+import { selectedDateAtom } from '@/lib/atoms'
+import type { ExerciseRow, MealWithFood } from '@/lib/db'
+
+export default function AiPage() {
+  const date = useAtomValue(selectedDateAtom)
+  const [advice, setAdvice] = useState<string | null>(null)
+
+  const { data: meals = [] } = useQuery<MealWithFood[]>({
+    queryKey: ['meals', date],
+    queryFn: () => api.meals.list(date)
+  })
+  const { data: exercises = [] } = useQuery<ExerciseRow[]>({
+    queryKey: ['exercises', date],
+    queryFn: () => api.exercises.list(date)
+  })
+
+  const adviceMutation = useMutation({
+    mutationFn: () =>
+      api.ai.getAdvice({
+        meals: meals.map((m) => ({
+          food_name: m.food_name,
+          calories: m.food_calories,
+          meal_type: m.meal_type,
+          quantity: m.quantity
+        })),
+        exercises: exercises.map((e) => ({
+          name: e.name,
+          duration_min: e.duration_min,
+          calories: e.calories
+        })),
+        date
+      }),
+    onSuccess: (data) => setAdvice(data.message)
+  })
+
+  return (
+    <div className='p-4'>
+      <PageHeader title='AI アドバイス' />
+      <DateNav />
+      <div className='mt-4 space-y-4'>
+        <Button className='w-full' onClick={() => adviceMutation.mutate()} disabled={adviceMutation.isPending}>
+          {adviceMutation.isPending ? (
+            <Loader2 className='mr-2 size-4 animate-spin' />
+          ) : (
+            <Bot className='mr-2 size-4' />
+          )}
+          アドバイスをもらう
+        </Button>
+        {advice && (
+          <Card>
+            <CardContent className='prose prose-sm py-4'>
+              <p>{advice}</p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </div>
+  )
+}

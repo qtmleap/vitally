@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+  runtime  = "cloudflare"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Food {
+  id        String   @id @default(dbgenerated("(lower(hex(randomblob(16))))"))
+  name      String
+  calories  Float
+  protein   Float    @default(0)
+  fat       Float    @default(0)
+  carbs     Float    @default(0)
+  serving   String   @default("1食分")
+  createdAt DateTime @default(now()) @map("created_at")
+  meals     Meal[]
+
+  @@index([name])
+  @@map("foods")
+}
+
+model Meal {
+  id        String   @id @default(dbgenerated("(lower(hex(randomblob(16))))"))
+  date      String
+  mealType  String   @map("meal_type")
+  foodId    String   @map("food_id")
+  quantity  Float    @default(1)
+  createdAt DateTime @default(now()) @map("created_at")
+  food      Food     @relation(fields: [foodId], references: [id])
+
+  @@index([date])
+  @@map("meals")
+}
+
+model Exercise {
+  id          String   @id @default(dbgenerated("(lower(hex(randomblob(16))))"))
+  date        String
+  name        String
+  durationMin Int      @map("duration_min")
+  calories    Float?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([date])
+  @@map("exercises")
+}

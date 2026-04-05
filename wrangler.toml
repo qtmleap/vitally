@@ -6,3 +6,11 @@ compatibility_flags = ["nodejs_compat_v2"]
 port = 8787
 ip = "0.0.0.0"
 local_protocol = "http"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "health-app-db"
+database_id = "local"
+
+[ai]
+binding = "AI"

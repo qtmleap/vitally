@@ -26,15 +26,21 @@ Vinext (Vite ベース App Router) + React 19 + Cloudflare Workers の Web ア�
 
 ## アーキテクチャ
 
-- `app/` - Vinext App Router (layout.tsx, page.tsx でファイルベースルーティング)
-- `src/components/ui/` - shadcn/ui コンポーネント (自動生成、直接編集しない)
+- `src/app/` - Vinext App Router (layout.tsx, page.tsx でファイルベースルーティング)
+- `src/components/ui/` - shadcn/ui コンポーネント (`bunx --bun shadcn@latest add <name>` で追加、**直接編集禁止**、className で上書き)
 - `src/components/` - アプリ固有のコンポーネント
 - `src/lib/` - ユーティリティ関数
+- `prisma/schema.prisma` - Prisma スキーマ (SQLite/D1, runtime=cloudflare)
+- `migrations/` - D1 マイグレーション SQL
 - `vite.config.ts` - Vinext + Cloudflare Vite Plugin + Tailwind CSS
 - `wrangler.toml` - Workers 設定 (nodejs_compat_v2)
 
 ## 重要な注意事項
 
 - shadcn/ui は New York スタイル、Lucide アイコン使用
+- **shadcn/ui コンポーネントは直接編集しない** — スタイル変更は利用側で className を渡して対応
+- shadcn/ui コンポーネントの追加: `bunx --bun shadcn@latest add <component-name>`
 - tsconfig で `src/components/ui/**/*.tsx` は型チェック対象外
+- ORM: Prisma + @prisma/adapter-d1 (Cloudflare D1)
+- `bun run db:migrate` でローカル D1 にマイグレーション適用
 - Cloudflare Workers の `compatibility_date` は `2026-01-01`
