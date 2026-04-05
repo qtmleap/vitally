@@ -35,6 +35,12 @@ Vinext (Vite ベース App Router) + React 19 + Cloudflare Workers の Web ア�
 - `vite.config.ts` - Vinext + Cloudflare Vite Plugin + Tailwind CSS
 - `wrangler.toml` - Workers 設定 (nodejs_compat_v2)
 
+## フォーム
+
+- **フォームは全て react-hook-form + @hookform/resolvers (zodResolver) を使用**
+- バリデーションスキーマは `src/lib/schema.ts` に zod で定義
+- shadcn/ui の `<Form>`, `<FormField>`, `<FormItem>`, `<FormLabel>`, `<FormControl>`, `<FormMessage>` を使用
+
 ## 重要な注意事項
 
 - shadcn/ui は New York スタイル、Lucide アイコン使用

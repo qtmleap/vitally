@@ -15,6 +15,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <head>
         <meta charSet='UTF-8' />
         <meta name='viewport' content='width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1' />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches))document.documentElement.classList.add('dark')}catch(e){}})()`
+          }}
+        />
         <meta name='theme-color' content='#22c55e' />
         <link rel='icon' type='image/svg+xml' href='/favicon.ico' />
       </head>

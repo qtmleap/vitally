@@ -1,74 +1,107 @@
 'use client'
 
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAtomValue } from 'jotai'
-import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+
+import * as m from 'motion/react-m'
 
 import { PageHeader } from '@/components/page-header'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { api } from '@/lib/api'
 import { selectedDateAtom } from '@/lib/atoms'
+import { exerciseSchema, type ExerciseInput } from '@/lib/schema'
 
 export function ExerciseForm() {
   const date = useAtomValue(selectedDateAtom)
   const queryClient = useQueryClient()
-  const [name, setName] = useState('')
-  const [duration, setDuration] = useState('')
-  const [calories, setCalories] = useState('')
+
+  const form = useForm<ExerciseInput>({
+    resolver: zodResolver(exerciseSchema),
+    defaultValues: { date, name: '', duration_min: undefined as unknown as number, calories: null }
+  })
 
   const mutation = useMutation({
     mutationFn: api.exercises.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exercises'] })
-      setName('')
-      setDuration('')
-      setCalories('')
+      form.reset({ date, name: '', duration_min: undefined as unknown as number, calories: null })
     }
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    mutation.mutate({
-      date,
-      name,
-      duration_min: Number(duration),
-      calories: calories ? Number(calories) : null
-    })
+  const onSubmit = (values: ExerciseInput) => {
+    mutation.mutate({ ...values, date })
   }
 
   return (
-    <div className='p-4'>
+    <m.div
+      className='p-4'
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+    >
       <PageHeader title='運動を追加' />
-      <Card>
-        <CardContent className='pt-4'>
-          <form onSubmit={handleSubmit} className='space-y-4'>
-            <div>
-              <Label htmlFor='name'>種目</Label>
-              <Input id='name' value={name} onChange={(e) => setName(e.target.value)} required />
-            </div>
-            <div>
-              <Label htmlFor='duration'>時間 (分)</Label>
-              <Input
-                id='duration'
-                type='number'
-                value={duration}
-                onChange={(e) => setDuration(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor='calories'>消費カロリー (任意)</Label>
-              <Input id='calories' type='number' value={calories} onChange={(e) => setCalories(e.target.value)} />
-            </div>
-            <Button type='submit' className='w-full' disabled={mutation.isPending}>
-              {mutation.isPending ? '保存中...' : '保存'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className='mt-4 space-y-4'>
+          <FormField
+            control={form.control}
+            name='name'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>種目</FormLabel>
+                <FormControl>
+                  <Input placeholder='ランニング、筋トレなど' {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name='duration_min'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>時間 (分)</FormLabel>
+                <FormControl>
+                  <Input
+                    type='number'
+                    placeholder='30'
+                    {...field}
+                    value={field.value ?? ''}
+                    onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name='calories'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>消費カロリー (任意)</FormLabel>
+                <FormControl>
+                  <Input
+                    type='number'
+                    placeholder='200'
+                    {...field}
+                    value={field.value ?? ''}
+                    onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Button type='submit' className='w-full' disabled={mutation.isPending}>
+            {mutation.isPending ? '保存中...' : '保存'}
+          </Button>
+        </form>
+      </Form>
+    </m.div>
   )
 }

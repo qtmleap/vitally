@@ -1,26 +1,33 @@
 'use client'
 
-import { Bot, Dumbbell, Home, UtensilsCrossed } from 'lucide-react'
+import { Bot, Home, Settings } from 'lucide-react'
+import * as m from 'motion/react-m'
 import Link from 'vinext/shims/link'
 
 const navItems = [
   { href: '/', label: 'ホーム', icon: Home },
-  { href: '/meals', label: '食事', icon: UtensilsCrossed },
-  { href: '/exercises', label: '運動', icon: Dumbbell },
-  { href: '/ai', label: 'AI', icon: Bot }
+  { href: '/ai', label: 'AI', icon: Bot },
+  { href: '/settings', label: '設定', icon: Settings }
 ]
 
 export function BottomNav() {
   return (
-    <nav className='bg-background/80 fixed bottom-0 left-0 right-0 z-50 border-t backdrop-blur-sm'>
+    <m.nav
+      className='bg-background/80 fixed bottom-0 left-0 right-0 z-50 border-t backdrop-blur-sm'
+      initial={{ y: 80 }}
+      animate={{ y: 0 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 28, delay: 0.2 }}
+    >
       <div className='mx-auto flex max-w-lg items-center justify-around py-2'>
         {navItems.map(({ href, label, icon: Icon }) => (
-          <Link key={href} href={href} className='text-muted-foreground flex flex-col items-center gap-0.5 px-3 py-1'>
-            <Icon className='size-5' />
-            <span className='text-[10px]'>{label}</span>
-          </Link>
+          <m.div key={href} whileTap={{ scale: 0.85 }} whileHover={{ scale: 1.1 }}>
+            <Link href={href} className='text-muted-foreground flex flex-col items-center gap-0.5 px-3 py-1'>
+              <Icon className='size-5' />
+              <span className='text-[10px]'>{label}</span>
+            </Link>
+          </m.div>
         ))}
       </div>
-    </nav>
+    </m.nav>
   )
 }
