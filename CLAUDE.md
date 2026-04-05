@@ -41,6 +41,12 @@ Vinext (Vite ベース App Router) + React 19 + Cloudflare Workers の Web ア�
 - バリデーションスキーマは `src/lib/schema.ts` に zod で定義
 - shadcn/ui の `<Form>`, `<FormField>`, `<FormItem>`, `<FormLabel>`, `<FormControl>`, `<FormMessage>` を使用
 
+## アニメーション
+
+- **motion** (`motion/react-m`) を使用
+- SSR で `initial` の `opacity:0` が残る問題は `index.css` の `html:not([data-hydrated])` ルールで対処済み
+- `Providers` の `useEffect` で `data-hydrated` を付与してハイドレーション完了を通知
+
 ## 重要な注意事項
 
 - shadcn/ui は New York スタイル、Lucide アイコン使用
