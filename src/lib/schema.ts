@@ -33,6 +33,13 @@ export const exerciseSchema = z.object({
   calories: z.number().min(0).nullable().default(null)
 })
 
+export const mealUpdateSchema = z.object({
+  meal_type: z.enum(mealTypes).optional(),
+  food_id: z.string().min(1).optional(),
+  quantity: z.number().min(0.1).optional()
+})
+
 export type FoodInput = z.infer<typeof foodSchema>
 export type MealInput = z.infer<typeof mealSchema>
+export type MealUpdateInput = z.infer<typeof mealUpdateSchema>
 export type ExerciseInput = z.infer<typeof exerciseSchema>

@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAtomValue } from 'jotai'
-import { Plus, Trash2 } from 'lucide-react'
+import { Pencil, Plus, Trash2 } from 'lucide-react'
 import Link from 'vinext/shims/link'
 import { DateNav } from '@/components/date-nav'
 import { PageHeader } from '@/components/page-header'
@@ -67,9 +67,16 @@ export default function MealsPage() {
                           {Math.round(meal.food_calories * meal.quantity)}kcal (×{meal.quantity})
                         </p>
                       </div>
-                      <Button variant='ghost' size='icon' onClick={() => deleteMutation.mutate(meal.id)}>
-                        <Trash2 className='size-4 text-destructive' />
-                      </Button>
+                      <div className='flex'>
+                        <Button variant='ghost' size='icon' asChild>
+                          <Link href={`/meals/${meal.id}/edit`}>
+                            <Pencil className='size-4' />
+                          </Link>
+                        </Button>
+                        <Button variant='ghost' size='icon' onClick={() => deleteMutation.mutate(meal.id)}>
+                          <Trash2 className='size-4 text-destructive' />
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 ))}

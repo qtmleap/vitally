@@ -1,5 +1,5 @@
 import type { ExerciseRow, FoodRow, MealWithFood } from '@/lib/db'
-import type { ExerciseInput, FoodInput, MealInput } from '@/lib/schema'
+import type { ExerciseInput, FoodInput, MealInput, MealUpdateInput } from '@/lib/schema'
 
 const json = (res: Response) => {
   if (!res.ok) throw new Error(`API error: ${res.status}`)
@@ -19,9 +19,16 @@ export const api = {
   },
   meals: {
     list: (date: string): Promise<MealWithFood[]> => fetch(`/api/meals?date=${date}`).then(json),
+    get: (id: string): Promise<MealWithFood> => fetch(`/api/meals/${id}`).then(json),
     create: (data: MealInput): Promise<MealWithFood> =>
       fetch('/api/meals', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      }).then(json),
+    update: (id: string, data: MealUpdateInput): Promise<MealWithFood> =>
+      fetch(`/api/meals/${id}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       }).then(json),
