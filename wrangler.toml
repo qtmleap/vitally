@@ -1,16 +1,12 @@
 name = "vinext-app"
 compatibility_date = "2026-01-01"
-compatibility_flags = ["nodejs_compat_v2"]
+compatibility_flags = ["nodejs_compat"]
+main = "./worker/index.ts"
 
-[dev]
-port = 8787
-ip = "0.0.0.0"
-local_protocol = "http"
+[assets]
+not_found_handling = "none"
 
 [[d1_databases]]
 binding = "DB"
 database_name = "health-app-db"
 database_id = "local"
-
-[ai]
-binding = "AI"
