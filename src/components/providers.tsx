@@ -1,6 +1,7 @@
 'use client'
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { LazyMotion, domAnimation } from 'motion/react'
 import { Provider as JotaiProvider } from 'jotai'
 import type { ReactNode } from 'react'
 import { useEffect, useState } from 'react'
@@ -42,9 +43,15 @@ export function Providers({ children }: { children: ReactNode }) {
       })
   )
 
+  useEffect(() => {
+    document.documentElement.dataset.hydrated = ''
+  }, [])
+
   return (
-    <JotaiProvider>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    </JotaiProvider>
+    <LazyMotion features={domAnimation} strict>
+      <JotaiProvider>
+        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      </JotaiProvider>
+    </LazyMotion>
   )
 }

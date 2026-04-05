@@ -121,3 +121,9 @@
     font-variant-numeric: tabular-nums;
   }
 }
+
+/* motion: SSR 時に initial の opacity:0 / transform で要素が非表示になるのを防ぐ */
+html:not([data-hydrated]) [style*="opacity"] {
+  opacity: 1 !important;
+  transform: none !important;
+}
