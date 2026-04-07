@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAtomValue } from 'jotai'
 import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 
 import * as m from 'motion/react-m'
 
@@ -20,7 +21,7 @@ export function ExerciseForm() {
   const queryClient = useQueryClient()
 
   const form = useForm<ExerciseInput>({
-    resolver: zodResolver(exerciseSchema),
+    resolver: zodResolver(exerciseSchema) as never,
     defaultValues: { date, name: '', duration_min: undefined as unknown as number, calories: null }
   })
 
@@ -29,6 +30,7 @@ export function ExerciseForm() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exercises'] })
       form.reset({ date, name: '', duration_min: undefined as unknown as number, calories: null })
+      toast.success('運動を記録しました')
     }
   })
 
