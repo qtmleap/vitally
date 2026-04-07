@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Check, Minus, Plus, Search, X } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 import { z } from 'zod'
 
 import { AnimatePresence } from 'motion/react'
@@ -174,6 +175,7 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['meals'] })
+      toast.success(`${basket.length}品目を追加しました`)
       setBasket([])
       setSearch('')
       onOpenChange(false)
