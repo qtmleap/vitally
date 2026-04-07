@@ -30,7 +30,7 @@ export async function POST(request: Request) {
 
 記録がまだない場合は、記録をつけること自体を応援してください。`
 
-  const result = await env.AI.run('@cf/meta/llama-3.1-8b-instruct' as BaseAiTextGenerationModels, {
+  const result = await env.AI.run('@cf/meta/llama-3.1-8b-instruct-fp8', {
     messages: [{ role: 'user', content: prompt }],
     max_tokens: 256
   })
