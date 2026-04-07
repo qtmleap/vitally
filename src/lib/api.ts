@@ -1,9 +1,25 @@
+import { toast } from 'sonner'
+
 import type { ExerciseRow, FoodRow, MealWithFood } from '@/lib/db'
 import type { ExerciseInput, FoodInput, MealInput, MealUpdateInput } from '@/lib/schema'
 
 const json = <T>(res: Response): Promise<T> => {
-  if (!res.ok) throw new Error(`API error: ${res.status}`)
+  if (!res.ok) {
+    const msg = res.status === 404 ? 'データが見つかりません' : `通信エラー (${res.status})`
+    toast.error(msg)
+    throw new Error(msg)
+  }
   return res.json() as Promise<T>
+}
+
+interface BarcodeResult {
+  name: string
+  calories: number
+  protein: number
+  fat: number
+  carbs: number
+  serving: string
+  barcode: string
 }
 
 interface NutritionEstimate {
@@ -76,5 +92,15 @@ export const api = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       }).then((r) => json<NutritionEstimate>(r))
+  },
+  summary: {
+    month: (from: string, to: string): Promise<Record<string, { calories: number; exercise_min: number }>> =>
+      fetch(`/api/summary?from=${from}&to=${to}`).then((r) =>
+        json<Record<string, { calories: number; exercise_min: number }>>(r)
+      )
+  },
+  barcode: {
+    lookup: (code: string): Promise<BarcodeResult> =>
+      fetch(`/api/barcode?code=${encodeURIComponent(code)}`).then((r) => json<BarcodeResult>(r))
   }
 }
