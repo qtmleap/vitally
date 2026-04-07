@@ -6,6 +6,7 @@ import { useAtomValue } from 'jotai'
 import { Check } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 
 import * as m from 'motion/react-m'
 
@@ -30,7 +31,7 @@ export function MealForm() {
   })
 
   const form = useForm<MealInput>({
-    resolver: zodResolver(mealSchema),
+    resolver: zodResolver(mealSchema) as never,
     defaultValues: { date, meal_type: 'lunch', food_id: '', quantity: 1 }
   })
 
@@ -43,6 +44,7 @@ export function MealForm() {
       queryClient.invalidateQueries({ queryKey: ['meals'] })
       form.reset({ date, meal_type: form.getValues('meal_type'), food_id: '', quantity: 1 })
       setSearch('')
+      toast.success('食事を記録しました')
     }
   })
 
