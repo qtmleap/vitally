@@ -14,13 +14,16 @@ Vinext (Vite ベース App Router) + React 19 + Cloudflare Workers の Web ア�
 ## コーディング規約
 
 - **言語**: TypeScript (strict モード)
+- **型チェック**: `bunx tsc --noEmit` でエラーゼロを維持すること
 - **Linter/Formatter**: Biome (`bunx biome check --write` で修正)
+- **変更後は必ず** `bunx biome check --write` と `bunx tsc --noEmit` の両方を通すこと
   - インデント: スペース 2
   - セミコロン: 不要時省略 (`asNeeded`)
   - クォート: シングルクォート
   - JSX クォート: シングルクォート
   - トレーリングカンマ: なし
   - 行幅: JS/TS は 120、その他は 80
+- **className の条件分岐**: テンプレートリテラルでのインライン展開禁止。`cn()` (`@/lib/utils`) を使用すること
 - **パスエイリアス**: `@/*` → `./src/*`
 - **パッケージマネージャー**: Bun (npm/yarn/pnpm は使わない)
 
