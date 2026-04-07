@@ -11,6 +11,8 @@ export default defineConfig({
         name: "rsc",
         childEnvironments: ["ssr"],
       },
+      persistState: true,
+      remoteBindings: false,
     }),
     tailwindcss(),
   ],
