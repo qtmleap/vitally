@@ -2,12 +2,14 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Sparkles } from 'lucide-react'
+import { ScanBarcode, Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 
 import * as m from 'motion/react-m'
 
+import { BarcodeScanner } from '@/components/barcode-scanner'
 import { PageHeader } from '@/components/page-header'
 import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
@@ -18,9 +20,10 @@ import { foodSchema, type FoodInput } from '@/lib/schema'
 export function FoodForm() {
   const queryClient = useQueryClient()
   const [estimating, setEstimating] = useState(false)
+  const [scannerOpen, setScannerOpen] = useState(false)
 
   const form = useForm<FoodInput>({
-    resolver: zodResolver(foodSchema),
+    resolver: zodResolver(foodSchema) as never,
     defaultValues: { name: '', calories: undefined as unknown as number, protein: 0, fat: 0, carbs: 0, serving: '1食分' }
   })
 
@@ -29,6 +32,7 @@ export function FoodForm() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['foods'] })
       form.reset()
+      toast.success('食品を登録しました')
     }
   })
 
@@ -54,6 +58,15 @@ export function FoodForm() {
     }
   }
 
+  const handleBarcodeResult = (result: { name: string; calories: number; protein: number; fat: number; carbs: number; serving: string }) => {
+    form.setValue('name', result.name, { shouldValidate: true })
+    form.setValue('calories', result.calories, { shouldValidate: true })
+    form.setValue('protein', result.protein)
+    form.setValue('fat', result.fat)
+    form.setValue('carbs', result.carbs)
+    form.setValue('serving', result.serving)
+  }
+
   return (
     <m.div
       className='p-4'
@@ -74,6 +87,15 @@ export function FoodForm() {
                   <FormControl>
                     <Input placeholder='鶏むね肉、白米など' {...field} />
                   </FormControl>
+                  <Button
+                    type='button'
+                    variant='outline'
+                    size='icon'
+                    onClick={() => setScannerOpen(true)}
+                    title='バーコードスキャン'
+                  >
+                    <ScanBarcode className='size-4' />
+                  </Button>
                   <Button
                     type='button'
                     variant='outline'
@@ -179,6 +201,7 @@ export function FoodForm() {
           </Button>
         </form>
       </Form>
+      <BarcodeScanner open={scannerOpen} onOpenChange={setScannerOpen} onResult={handleBarcodeResult} />
     </m.div>
   )
 }
