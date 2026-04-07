@@ -58,7 +58,7 @@ export default function DayPage() {
   const fadeUp = {
     hidden: { opacity: 0, y: 16 },
     visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
-  }
+  } as const
 
   return (
     <m.div className='space-y-6 p-4' initial='hidden' animate='visible' variants={stagger}>
