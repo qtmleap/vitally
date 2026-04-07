@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react'
 
 import { BottomNav } from '@/components/bottom-nav'
+import { ErrorBoundary } from '@/components/error-boundary'
 import { Providers } from '@/components/providers'
+import { Toaster } from '@/components/ui/sonner'
 import '@/index.css'
 
 export const metadata = {
@@ -22,11 +24,23 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         />
         <meta name='theme-color' content='#22c55e' />
         <link rel='icon' type='image/svg+xml' href='/favicon.ico' />
+        <link rel='manifest' href='/manifest.json' />
+        <meta name='mobile-web-app-capable' content='yes' />
+        <meta name='apple-mobile-web-app-status-bar-style' content='default' />
+        <link rel='apple-touch-icon' href='/icon-192.svg' />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js')`
+          }}
+        />
       </head>
       <body className='bg-background text-foreground antialiased'>
         <Providers>
-          <div className='mx-auto min-h-dvh max-w-lg pb-20'>{children}</div>
+          <div className='mx-auto min-h-dvh max-w-lg pb-20'>
+            <ErrorBoundary>{children}</ErrorBoundary>
+          </div>
           <BottomNav />
+          <Toaster position='top-center' />
         </Providers>
       </body>
     </html>
