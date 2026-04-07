@@ -1,56 +1,114 @@
 'use client'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, ScanBarcode, Search, Trash2 } from 'lucide-react'
+import { AnimatePresence } from 'motion/react'
+import * as m from 'motion/react-m'
 import Link from 'vinext/shims/link'
+import { useState } from 'react'
 
+import { BarcodeScanner } from '@/components/barcode-scanner'
 import { PageHeader } from '@/components/page-header'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import { api } from '@/lib/api'
 import type { FoodRow } from '@/lib/db'
 
 export default function FoodsPage() {
   const queryClient = useQueryClient()
+  const [search, setSearch] = useState('')
+  const [scannerOpen, setScannerOpen] = useState(false)
+
   const { data: foods = [] } = useQuery<FoodRow[]>({
-    queryKey: ['foods'],
-    queryFn: () => api.foods.list()
+    queryKey: ['foods', search],
+    queryFn: () => api.foods.list(search || undefined)
   })
+
   const deleteMutation = useMutation({
     mutationFn: api.foods.delete,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['foods'] })
   })
 
+  const handleBarcodeResult = async (result: { name: string; calories: number; protein: number; fat: number; carbs: number; serving: string }) => {
+    await api.foods.create({
+      name: result.name,
+      calories: result.calories,
+      protein: result.protein,
+      fat: result.fat,
+      carbs: result.carbs,
+      serving: result.serving
+    })
+    queryClient.invalidateQueries({ queryKey: ['foods'] })
+  }
+
   return (
-    <div className='p-4'>
-      <PageHeader title='食品一覧'>
-        <Button asChild size='sm'>
-          <Link href='/foods/new'>
-            <Plus className='mr-1 size-4' />
-            追加
-          </Link>
-        </Button>
+    <m.div
+      className='p-4'
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+    >
+      <PageHeader title='食品管理'>
+        <div className='flex gap-1'>
+          <Button variant='outline' size='icon' className='size-8' onClick={() => setScannerOpen(true)}>
+            <ScanBarcode className='size-4' />
+          </Button>
+          <Button asChild size='sm'>
+            <Link href='/foods/new'>
+              <Plus className='mr-1 size-4' />
+              追加
+            </Link>
+          </Button>
+        </div>
       </PageHeader>
-      <div className='space-y-2'>
-        {foods.map((food) => (
-          <Card key={food.id}>
-            <CardContent className='flex items-center justify-between py-3'>
-              <div>
-                <p className='font-medium'>{food.name}</p>
+
+      <div className='relative mt-4'>
+        <Search className='text-muted-foreground pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2' />
+        <Input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder='食品を検索...'
+          className='pl-9'
+        />
+      </div>
+
+      <div className='mt-4 space-y-1'>
+        <AnimatePresence mode='popLayout'>
+          {foods.map((food) => (
+            <m.div
+              key={food.id}
+              layout
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className='flex items-center justify-between rounded-xl px-3 py-2.5 transition-colors hover:bg-muted'
+            >
+              <div className='min-w-0 flex-1'>
+                <p className='truncate text-sm font-medium'>{food.name}</p>
                 <p className='text-muted-foreground text-xs'>
-                  {food.calories}kcal / P:{food.protein}g F:{food.fat}g C:{food.carbs}g
+                  {food.calories} kcal / P:{food.protein}g F:{food.fat}g C:{food.carbs}g
+                  <span className='ml-1 opacity-60'>({food.serving})</span>
                 </p>
               </div>
-              <Button variant='ghost' size='icon' onClick={() => deleteMutation.mutate(food.id)}>
-                <Trash2 className='size-4 text-destructive' />
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
+              <m.button
+                type='button'
+                whileTap={{ scale: 0.8 }}
+                onClick={() => deleteMutation.mutate(food.id)}
+                className='text-muted-foreground hover:text-destructive shrink-0 p-1'
+              >
+                <Trash2 className='size-4' />
+              </m.button>
+            </m.div>
+          ))}
+        </AnimatePresence>
         {foods.length === 0 && (
-          <p className='text-muted-foreground py-8 text-center text-sm'>食品が登録されていません</p>
+          <p className='text-muted-foreground py-8 text-center text-sm'>
+            {search ? '見つかりません' : '食品が登録されていません'}
+          </p>
         )}
       </div>
-    </div>
+
+      <BarcodeScanner open={scannerOpen} onOpenChange={setScannerOpen} onResult={handleBarcodeResult} />
+    </m.div>
   )
 }
