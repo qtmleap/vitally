@@ -10,12 +10,10 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { api } from '@/lib/api'
 import type { FoodRow, MealWithFood } from '@/lib/db'
 import { useDebouncedValue } from '@/lib/hooks'
-import type { MealType, MealUpdateInput } from '@/lib/schema'
-import { mealTypeLabels, mealTypes } from '@/lib/schema'
+import type { MealUpdateInput } from '@/lib/schema'
 import { cn } from '@/lib/utils'
 
 const QUICK_FRACTIONS = [
@@ -40,14 +38,12 @@ export function EditMealDialog({ open, onOpenChange, mealId }: EditMealDialogPro
     enabled: open && !!mealId
   })
 
-  const [mealType, setMealType] = useState<string | null>(null)
   const [selectedFoodId, setSelectedFoodId] = useState<string | null>(null)
   const [quantity, setQuantity] = useState<number | null>(null)
   const [search, setSearch] = useState('')
 
   const debouncedSearch = useDebouncedValue(search, 300)
 
-  const activeMealType: MealType = (mealType ?? meal?.meal_type ?? 'lunch') as MealType
   const activeFoodId = selectedFoodId ?? meal?.food_id ?? ''
   const activeQuantity = quantity ?? meal?.quantity ?? 1
 
@@ -71,7 +67,6 @@ export function EditMealDialog({ open, onOpenChange, mealId }: EditMealDialogPro
 
   const handleSave = () => {
     const data: MealUpdateInput = {}
-    if (mealType !== null) data.meal_type = mealType as MealUpdateInput['meal_type']
     if (selectedFoodId !== null) data.food_id = selectedFoodId
     if (quantity !== null) data.quantity = quantity
     mutation.mutate(data)
@@ -79,7 +74,6 @@ export function EditMealDialog({ open, onOpenChange, mealId }: EditMealDialogPro
 
   const handleOpenChange = (next: boolean) => {
     if (!next) {
-      setMealType(null)
       setSelectedFoodId(null)
       setQuantity(null)
       setSearch('')
@@ -101,23 +95,6 @@ export function EditMealDialog({ open, onOpenChange, mealId }: EditMealDialogPro
         </DialogHeader>
 
         <div className='min-h-0 flex-1 overflow-y-auto px-4 py-3 space-y-4'>
-          {/* Meal type */}
-          <div className='space-y-1.5'>
-            <p className='text-sm font-medium'>食事タイプ</p>
-            <Select value={activeMealType} onValueChange={(v) => setMealType(v)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {mealTypes.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {mealTypeLabels[type]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
           {/* Food search */}
           <div className='space-y-1.5'>
             <p className='text-sm font-medium'>食品を変更</p>
