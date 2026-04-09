@@ -47,6 +47,17 @@ export interface MealTemplateRow {
   items: MealTemplateItemRow[]
 }
 
+export interface UserProfileRow {
+  age: number
+  heightCm: number
+  weightKg: number
+  bodyFatPct: number | null
+  gender: string
+  activityLevel: string
+  goal: string
+  calorieGoal: number
+}
+
 export interface ExerciseRow {
   id: string
   date: string

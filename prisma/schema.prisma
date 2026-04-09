@@ -19,8 +19,27 @@ model User {
   meals         Meal[]
   exercises     Exercise[]
   mealTemplates MealTemplate[]
+  profile       UserProfile?
 
   @@map("users")
+}
+
+model UserProfile {
+  id            String   @id @default(dbgenerated("(lower(hex(randomblob(16))))"))
+  userId        String   @unique @map("user_id")
+  age           Int
+  heightCm      Float    @map("height_cm")
+  weightKg      Float    @map("weight_kg")
+  bodyFatPct    Float?   @map("body_fat_pct")
+  gender        String
+  activityLevel String   @map("activity_level")
+  goal          String
+  calorieGoal   Int      @map("calorie_goal")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
 }
 
 model Food {

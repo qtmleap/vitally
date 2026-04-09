@@ -21,12 +21,12 @@ import { api } from '@/lib/api'
 import { useSkipAnimation } from '@/lib/use-skip-animation'
 import { useMinPending } from '@/lib/use-min-pending'
 import { selectedDateAtom } from '@/lib/atoms'
-import type { ExerciseRow, MealWithFood } from '@/lib/db'
+import type { ExerciseRow, MealWithFood, UserProfileRow } from '@/lib/db'
 import type { MealType } from '@/lib/schema'
 import { mealTypeLabels } from '@/lib/schema'
 import { toast } from 'sonner'
 
-const CALORIE_GOAL = 2000
+const DEFAULT_CALORIE_GOAL = 2000
 
 function DayPageContent() {
   const date = useAtomValue(selectedDateAtom)
@@ -34,6 +34,12 @@ function DayPageContent() {
   const [dialogType, setDialogType] = useState<MealType | null>(null)
   const [editingMealType, setEditingMealType] = useState<MealType | null>(null)
   const [advice, setAdvice] = useState<string | null>(null)
+
+  const { data: profileData } = useSuspenseQuery<{ profile: UserProfileRow | null }>({
+    queryKey: ['profile'],
+    queryFn: api.profile.get
+  })
+  const calorieGoal = profileData?.profile?.calorieGoal ?? DEFAULT_CALORIE_GOAL
 
   const { data: meals } = useSuspenseQuery<MealWithFood[]>({
     queryKey: ['meals', date],
@@ -81,7 +87,7 @@ function DayPageContent() {
   const totalIntake = meals.reduce((s, m) => s + m.food_calories * m.quantity, 0)
   const totalBurn = exercises.reduce((s, e) => s + (e.calories ?? 0), 0)
   const net = totalIntake - totalBurn
-  const pct = Math.min((totalIntake / CALORIE_GOAL) * 100, 100)
+  const pct = Math.min((totalIntake / calorieGoal) * 100, 100)
   const totalProtein = meals.reduce((s, m) => s + m.food_protein * m.quantity, 0)
   const totalFat = meals.reduce((s, m) => s + m.food_fat * m.quantity, 0)
   const totalCarbs = meals.reduce((s, m) => s + m.food_carbs * m.quantity, 0)
@@ -166,7 +172,7 @@ function DayPageContent() {
       <m.div className='space-y-2' variants={fadeUp}>
         <div className='flex items-end justify-between'>
           <span className='text-3xl font-bold'>{Math.round(totalIntake)}</span>
-          <span className='text-muted-foreground text-sm'>/ {CALORIE_GOAL} kcal</span>
+          <span className='text-muted-foreground text-sm'>/ {calorieGoal} kcal</span>
         </div>
         <div className='bg-muted h-2 overflow-hidden rounded-full'>
           <m.div

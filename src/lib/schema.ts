@@ -62,6 +62,39 @@ export const aiExerciseEstimateSchema = z.object({
 })
 export type AiExerciseEstimateInput = z.infer<typeof aiExerciseEstimateSchema>
 
+export const genders = ['male', 'female'] as const
+export type Gender = (typeof genders)[number]
+export const genderLabels: Record<Gender, string> = { male: '男性', female: '女性' }
+
+export const activityLevels = ['sedentary', 'light', 'moderate', 'active', 'very_active'] as const
+export type ActivityLevel = (typeof activityLevels)[number]
+export const activityLevelLabels: Record<ActivityLevel, string> = {
+  sedentary: 'ほぼ運動しない',
+  light: '軽い運動 (週1-3回)',
+  moderate: '適度な運動 (週3-5回)',
+  active: '激しい運動 (週6-7回)',
+  very_active: '非常に激しい運動'
+}
+
+export const goals = ['lose_weight', 'maintain', 'gain_muscle'] as const
+export type GoalType = (typeof goals)[number]
+export const goalLabels: Record<GoalType, string> = {
+  lose_weight: '減量',
+  maintain: '維持',
+  gain_muscle: '増量'
+}
+
+export const profileSchema = z.object({
+  age: z.number().int().min(10, '10歳以上で入力してください').max(120),
+  height_cm: z.number().min(100, '100cm以上で入力してください').max(250),
+  weight_kg: z.number().min(30, '30kg以上で入力してください').max(300),
+  body_fat_pct: z.number().min(1).max(60).nullable().default(null),
+  gender: z.enum(genders),
+  activity_level: z.enum(activityLevels),
+  goal: z.enum(goals)
+})
+export type ProfileInput = z.infer<typeof profileSchema>
+
 export type MealTemplateCreateInput = z.infer<typeof mealTemplateCreateSchema>
 export type MealCopyInput = z.infer<typeof mealCopySchema>
 export type FoodInput = z.infer<typeof foodSchema>

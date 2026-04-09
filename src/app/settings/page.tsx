@@ -127,6 +127,10 @@ export default function SettingsPage() {
           </m.div>
         )}
 
+        <SettingsGroup label='プロフィール'>
+          <SettingsRow icon={<User className='size-5' />} label='プロフィール・目標' href='/settings/profile' />
+        </SettingsGroup>
+
         <SettingsGroup label='一般'>
           <SettingsRow
             icon={dark ? <Moon className='size-5' /> : <Sun className='size-5' />}

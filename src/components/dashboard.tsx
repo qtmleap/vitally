@@ -15,11 +15,11 @@ import { useVersionCheck } from '@/lib/use-version-check'
 import { useSkipAnimation } from '@/lib/use-skip-animation'
 import { selectedDateAtom } from '@/lib/atoms'
 import { today } from '@/lib/date'
-import type { ExerciseRow, MealWithFood } from '@/lib/db'
+import type { ExerciseRow, MealWithFood, UserProfileRow } from '@/lib/db'
 import { cn } from '@/lib/utils'
 import { Skeleton } from '@/components/ui/skeleton'
 
-const CALORIE_GOAL = 2000
+const DEFAULT_CALORIE_GOAL = 2000
 const EXERCISE_GOAL = 30
 const RING_SIZE = 88
 const RING_STROKE = 7
@@ -187,6 +187,13 @@ export function Dashboard() {
 
   const calMonthStr = calMonth?.format('YYYY-MM') ?? ''
 
+  const { data: profileData } = useQuery<{ profile: UserProfileRow | null }>({
+    queryKey: ['profile'],
+    queryFn: api.profile.get,
+    staleTime: Number.POSITIVE_INFINITY
+  })
+  const calorieGoal = profileData?.profile?.calorieGoal ?? DEFAULT_CALORIE_GOAL
+
   const { data: meals = [] } = useQuery<MealWithFood[]>({
     queryKey: ['meals', now],
     queryFn: () => api.meals.list(now),
@@ -217,9 +224,9 @@ export function Dashboard() {
 
   const skipAnimation = useSkipAnimation()
 
-  const calPct = (totalIntake / CALORIE_GOAL) * 100
+  const calPct = (totalIntake / calorieGoal) * 100
   const exPct = (totalExMin / EXERCISE_GOAL) * 100
-  const calGoalReached = totalIntake > 0 && totalIntake <= CALORIE_GOAL && calPct >= 80
+  const calGoalReached = totalIntake > 0 && totalIntake <= calorieGoal && calPct >= 80
   const exGoalReached = totalExMin >= EXERCISE_GOAL
 
   if (!now || !calMonth) return <DashboardSkeleton />
@@ -275,7 +282,7 @@ export function Dashboard() {
     const avgCal = Math.round(totalCal / activeDays.length)
     const exerciseDays = activeDays.filter((k) => (monthSummary[k]?.exercise_min ?? 0) > 0).length
     const bestDay = activeDays
-      .filter((k) => (monthSummary[k]?.calories ?? 0) <= CALORIE_GOAL && (monthSummary[k]?.calories ?? 0) > 0)
+      .filter((k) => (monthSummary[k]?.calories ?? 0) <= calorieGoal && (monthSummary[k]?.calories ?? 0) > 0)
       .sort((a, b) => (monthSummary[b]?.calories ?? 0) - (monthSummary[a]?.calories ?? 0))[0]
     return {
       avgCal,
@@ -423,7 +430,7 @@ export function Dashboard() {
                       <>
                         <p className='text-2xl font-bold'>
                           {Math.round(totalIntake)}{' '}
-                          <span className='text-muted-foreground text-sm font-normal'>/ {CALORIE_GOAL}</span>
+                          <span className='text-muted-foreground text-sm font-normal'>/ {calorieGoal}</span>
                         </p>
                         <div className='text-muted-foreground flex gap-3 text-xs'>
                           <span>消費 {Math.round(totalBurn)}</span>
@@ -530,7 +537,7 @@ export function Dashboard() {
                 const isToday = date === now
                 const isFuture = dayjs(date).isAfter(d, 'day')
                 const daySummary = monthSummary[date]
-                const calOk = daySummary && daySummary.calories > 0 && daySummary.calories <= CALORIE_GOAL
+                const calOk = daySummary && daySummary.calories > 0 && daySummary.calories <= calorieGoal
                 const exOk = daySummary && daySummary.exercise_min >= EXERCISE_GOAL
                 return (
                   <m.button

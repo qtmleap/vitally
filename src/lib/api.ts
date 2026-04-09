@@ -1,7 +1,15 @@
 import { toast } from 'sonner'
 
-import type { ExerciseRow, FoodRow, MealTemplateRow, MealWithFood } from '@/lib/db'
-import type { ExerciseInput, FoodInput, MealCopyInput, MealInput, MealTemplateCreateInput, MealUpdateInput } from '@/lib/schema'
+import type { ExerciseRow, FoodRow, MealTemplateRow, MealWithFood, UserProfileRow } from '@/lib/db'
+import type {
+  ExerciseInput,
+  FoodInput,
+  MealCopyInput,
+  MealInput,
+  MealTemplateCreateInput,
+  MealUpdateInput,
+  ProfileInput
+} from '@/lib/schema'
 
 let getToken: (() => Promise<string | null>) | null = null
 
@@ -136,6 +144,15 @@ export const api = {
   barcode: {
     lookup: (code: string): Promise<BarcodeResult> =>
       authFetch(`/api/barcode?code=${encodeURIComponent(code)}`).then((r) => json<BarcodeResult>(r))
+  },
+  profile: {
+    get: (): Promise<{ profile: UserProfileRow | null }> => authFetch('/api/profile').then((r) => json(r)),
+    update: (data: ProfileInput): Promise<{ profile: UserProfileRow }> =>
+      authFetch('/api/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      }).then((r) => json(r))
   },
   templates: {
     list: (): Promise<MealTemplateRow[]> =>
