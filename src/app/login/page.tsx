@@ -6,6 +6,8 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'vinext/shims/navigation'
 import { toast } from 'sonner'
 
+import Link from 'vinext/shims/link'
+
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/components/auth-provider'
 import { signInWithGoogle } from '@/lib/auth'
@@ -147,7 +149,15 @@ export default function LoginPage() {
           {signing ? 'ログイン中...' : 'Google で始める'}
         </Button>
         <p className='text-muted-foreground/60 text-center text-xs'>
-          ログインすることで利用規約とプライバシーポリシーに同意したものとみなします
+          ログインすることで{' '}
+          <Link href='/terms' className='underline underline-offset-2'>
+            利用規約
+          </Link>
+          と{' '}
+          <Link href='/privacy' className='underline underline-offset-2'>
+            プライバシーポリシー
+          </Link>
+          に同意したものとみなします
         </p>
       </m.div>
     </div>
