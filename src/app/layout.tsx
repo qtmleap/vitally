@@ -47,7 +47,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               </>
             }
             unauthenticated={
-              <div className='mx-auto min-h-dvh max-w-lg'>
+              <div className='min-h-dvh'>
                 <ErrorBoundary>{children}</ErrorBoundary>
               </div>
             }
