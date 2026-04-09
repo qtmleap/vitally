@@ -1,9 +1,14 @@
 import { env } from 'cloudflare:workers'
 
+import { getAuthUser } from '@/lib/auth-middleware'
 import { getPrisma } from '@/lib/db'
 import { foodSchema } from '@/lib/schema'
 
 export async function GET(request: Request) {
+  const userOrRes = await getAuthUser(request)
+  if (userOrRes instanceof Response) return userOrRes
+  const user = userOrRes
+
   const url = new URL(request.url)
   const q = url.searchParams.get('q') ?? ''
   const rawLimit = Number.parseInt(url.searchParams.get('limit') ?? '50', 10)
@@ -11,7 +16,7 @@ export async function GET(request: Request) {
   const prisma = getPrisma(env)
 
   const foods = await prisma.food.findMany({
-    where: q ? { name: { contains: q } } : undefined,
+    where: q ? { userId: user.uid, name: { contains: q } } : { userId: user.uid },
     orderBy: q ? { name: 'asc' } : { createdAt: 'desc' },
     take: limit
   })
@@ -20,6 +25,10 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const userOrRes = await getAuthUser(request)
+  if (userOrRes instanceof Response) return userOrRes
+  const user = userOrRes
+
   const body = await request.json()
   const parsed = foodSchema.safeParse(body)
 
@@ -28,12 +37,16 @@ export async function POST(request: Request) {
   }
 
   const prisma = getPrisma(env)
-  const food = await prisma.food.create({ data: parsed.data })
+  const food = await prisma.food.create({ data: { ...parsed.data, userId: user.uid } })
 
   return Response.json(food, { status: 201 })
 }
 
 export async function DELETE(request: Request) {
+  const userOrRes = await getAuthUser(request)
+  if (userOrRes instanceof Response) return userOrRes
+  const user = userOrRes
+
   const url = new URL(request.url)
   const id = url.searchParams.get('id')
 
@@ -42,7 +55,7 @@ export async function DELETE(request: Request) {
   }
 
   const prisma = getPrisma(env)
-  await prisma.food.delete({ where: { id } })
+  await prisma.food.delete({ where: { id, userId: user.uid } })
 
   return Response.json({ ok: true })
 }

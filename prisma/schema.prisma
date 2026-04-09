@@ -16,6 +16,7 @@ model User {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
+  foods         Food[]
   meals         Meal[]
   exercises     Exercise[]
   mealTemplates MealTemplate[]
@@ -50,11 +51,13 @@ model Food {
   fat       Float    @default(0)
   carbs     Float    @default(0)
   serving   String   @default("1食分")
+  userId    String   @map("user_id")
   createdAt      DateTime           @default(now()) @map("created_at")
   meals          Meal[]
   templateItems  MealTemplateItem[]
+  user           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([name])
+  @@index([userId, name])
   @@map("foods")
 }
 

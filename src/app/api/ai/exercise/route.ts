@@ -1,8 +1,12 @@
 import { env } from 'cloudflare:workers'
 
+import { getAuthUser } from '@/lib/auth-middleware'
 import { aiExerciseEstimateSchema } from '@/lib/schema'
 
 export async function POST(request: Request) {
+  const userOrRes = await getAuthUser(request)
+  if (userOrRes instanceof Response) return userOrRes
+
   const body = await request.json()
   const parsed = aiExerciseEstimateSchema.safeParse(body)
 

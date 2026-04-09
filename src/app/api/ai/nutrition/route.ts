@@ -1,8 +1,13 @@
 import { env } from 'cloudflare:workers'
 
+import { getAuthUser } from '@/lib/auth-middleware'
 import { getPrisma } from '@/lib/db'
 
 export async function POST(request: Request) {
+  const userOrRes = await getAuthUser(request)
+  if (userOrRes instanceof Response) return userOrRes
+  const user = userOrRes
+
   const { name, serving, save } = (await request.json()) as { name: string; serving?: string; save?: boolean }
 
   if (!name) {
@@ -40,7 +45,7 @@ export async function POST(request: Request) {
     }
     if (save) {
       const prisma = getPrisma(env)
-      const food = await prisma.food.create({ data: { name, ...estimate } })
+      const food = await prisma.food.create({ data: { name, ...estimate, userId: user.uid } })
       return Response.json(food)
     }
     return Response.json(estimate)

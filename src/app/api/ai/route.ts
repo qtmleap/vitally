@@ -1,6 +1,11 @@
 import { env } from 'cloudflare:workers'
 
+import { getAuthUser } from '@/lib/auth-middleware'
+
 export async function POST(request: Request) {
+  const userOrRes = await getAuthUser(request)
+  if (userOrRes instanceof Response) return userOrRes
+
   const { meals, exercises, date } = (await request.json()) as {
     meals: Array<{ food_name: string; calories: number; meal_type: string; quantity: number }>
     exercises: Array<{ name: string; duration_min: number; calories: number | null }>
