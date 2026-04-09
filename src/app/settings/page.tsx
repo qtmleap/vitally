@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  Bookmark,
   Bot,
   ChevronRight,
   Cpu,
@@ -152,6 +153,7 @@ export default function SettingsPage() {
 
         <SettingsGroup label='データ'>
           <SettingsRow icon={<UtensilsCrossed className='size-5' />} label='食品管理' href='/foods' />
+          <SettingsRow icon={<Bookmark className='size-5' />} label='献立テンプレート' href='/templates' />
           <SettingsRow icon={<Bot className='size-5' />} label='AI アドバイス' href='/ai' />
           <SettingsRow icon={<Database className='size-5' />} label='データエクスポート' value='準備中' />
           <SettingsRow
