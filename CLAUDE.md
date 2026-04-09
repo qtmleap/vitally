@@ -58,5 +58,6 @@ Vinext (Vite ベース App Router) + React 19 + Cloudflare Workers の Web ア�
 - tsconfig で `src/components/ui/**/*.tsx` は型チェック対象外
 - ORM: Prisma + @prisma/adapter-d1 (Cloudflare D1)
 - **DB マイグレーションは必ず `bunx prisma migrate dev --name <name>` で SQL を自動生成すること。マイグレーション SQL の手書き禁止**
-- `bun run db:migrate` でローカル D1 にマイグレーション適用
+- ローカル D1 へのマイグレーション適用: `for f in prisma/migrations/*/migration.sql; do bunx wrangler d1 execute health-app-db --local --file="$f"; done`
+- 注意: Prisma と miniflare は別の SQLite ファイルを参照する場合がある。DB リセット後は dev サーバー起動後にマイグレーションを再適用すること
 - Cloudflare Workers の `compatibility_date` は `2026-01-01`
