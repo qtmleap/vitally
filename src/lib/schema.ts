@@ -56,6 +56,12 @@ export const mealCopySchema = z.object({
   meal_type: z.enum(mealTypes).optional()
 })
 
+export const aiExerciseEstimateSchema = z.object({
+  name: z.string().min(1),
+  duration_min: z.number().int().min(1)
+})
+export type AiExerciseEstimateInput = z.infer<typeof aiExerciseEstimateSchema>
+
 export type MealTemplateCreateInput = z.infer<typeof mealTemplateCreateSchema>
 export type MealCopyInput = z.infer<typeof mealCopySchema>
 export type FoodInput = z.infer<typeof foodSchema>

@@ -104,7 +104,13 @@ export const api = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
-      }).then((r) => json<NutritionEstimate & Partial<FoodRow>>(r))
+      }).then((r) => json<NutritionEstimate & Partial<FoodRow>>(r)),
+    estimateExercise: (data: { name: string; duration_min: number }): Promise<{ calories: number }> =>
+      fetch('/api/ai/exercise', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      }).then((r) => json<{ calories: number }>(r))
   },
   summary: {
     month: (from: string, to: string): Promise<Record<string, { calories: number; exercise_min: number }>> =>

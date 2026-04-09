@@ -3,6 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAtomValue } from 'jotai'
+import { Sparkles } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 
@@ -33,6 +34,21 @@ export function ExerciseForm() {
       toast.success('運動を記録しました')
     }
   })
+
+  const estimateMutation = useMutation({
+    mutationFn: () =>
+      api.ai.estimateExercise({
+        name: form.getValues('name'),
+        duration_min: form.getValues('duration_min') as number
+      }),
+    onSuccess: (data) => {
+      form.setValue('calories', data.calories, { shouldValidate: true })
+      toast.success(`消費カロリーをAIで推定しました: ${data.calories} kcal`)
+    }
+  })
+
+  const watchedName = form.watch('name')
+  const watchedDuration = form.watch('duration_min')
 
   const onSubmit = (values: ExerciseInput) => {
     mutation.mutate({ ...values, date })
@@ -87,13 +103,25 @@ export function ExerciseForm() {
               <FormItem>
                 <FormLabel>消費カロリー (任意)</FormLabel>
                 <FormControl>
-                  <Input
-                    type='number'
-                    placeholder='200'
-                    {...field}
-                    value={field.value ?? ''}
-                    onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
-                  />
+                  <div className='flex gap-2'>
+                    <Input
+                      type='number'
+                      placeholder='200'
+                      {...field}
+                      value={field.value ?? ''}
+                      onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
+                    />
+                    <Button
+                      type='button'
+                      variant='outline'
+                      size='icon'
+                      onClick={() => estimateMutation.mutate()}
+                      disabled={estimateMutation.isPending || !watchedName || !watchedDuration}
+                      title={estimateMutation.isPending ? '推定中...' : 'AIで消費カロリーを推定'}
+                    >
+                      <Sparkles className='size-4' />
+                    </Button>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
