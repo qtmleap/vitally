@@ -9,6 +9,7 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/components/auth-provider'
 import { signInWithGoogle } from '@/lib/auth'
+import { useSkipAnimation } from '@/lib/use-skip-animation'
 
 function GoogleIcon() {
   return (
@@ -60,6 +61,7 @@ export default function LoginPage() {
   const { user, loading } = useAuth()
   const router = useRouter()
   const [signing, setSigning] = useState(false)
+  const skipAnimation = useSkipAnimation()
 
   useEffect(() => {
     if (!loading && user) {
@@ -93,7 +95,7 @@ export default function LoginPage() {
       {/* Hero */}
       <m.div
         className='flex flex-1 flex-col items-center justify-center gap-6'
-        initial={{ opacity: 0, y: 24 }}
+        initial={skipAnimation ? false : { opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: 'spring', stiffness: 300, damping: 24 }}
       >

@@ -11,6 +11,7 @@ import Link from 'vinext/shims/link'
 
 import { api } from '@/lib/api'
 import { useVersionCheck } from '@/lib/use-version-check'
+import { useSkipAnimation } from '@/lib/use-skip-animation'
 import { selectedDateAtom } from '@/lib/atoms'
 import { today } from '@/lib/date'
 import type { ExerciseRow, MealWithFood } from '@/lib/db'
@@ -234,6 +235,7 @@ export function Dashboard() {
     if (calMonth.isBefore(d, 'month')) setCalMonth((m) => m!.add(1, 'month'))
   }
 
+  const skipAnimation = useSkipAnimation()
   const hasMeals = meals.length > 0
   const hasExercises = exercises.length > 0
   const hasAnyData = hasMeals || hasExercises
@@ -292,10 +294,10 @@ export function Dashboard() {
   }
 
   return (
-    <m.div className='space-y-5 p-4' initial='hidden' animate='visible'>
+    <m.div className='space-y-5 p-4' initial={skipAnimation ? false : 'hidden'} animate='visible'>
       <m.div
         className='flex items-center justify-between'
-        initial={{ opacity: 0, x: -20 }}
+        initial={skipAnimation ? false : { opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ type: 'spring', stiffness: 300, damping: 24 }}
       >

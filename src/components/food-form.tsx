@@ -15,12 +15,14 @@ import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { api } from '@/lib/api'
+import { useSkipAnimation } from '@/lib/use-skip-animation'
 import { foodSchema, type FoodInput } from '@/lib/schema'
 
 export function FoodForm() {
   const queryClient = useQueryClient()
   const [estimating, setEstimating] = useState(false)
   const [scannerOpen, setScannerOpen] = useState(false)
+  const skipAnimation = useSkipAnimation()
 
   const form = useForm<FoodInput>({
     resolver: zodResolver(foodSchema) as never,
@@ -70,7 +72,7 @@ export function FoodForm() {
   return (
     <m.div
       className='p-4'
-      initial={{ opacity: 0, y: 20 }}
+      initial={skipAnimation ? false : { opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: 'spring', stiffness: 300, damping: 24 }}
     >

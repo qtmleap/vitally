@@ -16,6 +16,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { api } from '@/lib/api'
+import { useSkipAnimation } from '@/lib/use-skip-animation'
 import { selectedDateAtom } from '@/lib/atoms'
 import type { FoodRow } from '@/lib/db'
 import { mealSchema, mealTypeLabels, mealTypes, type MealInput } from '@/lib/schema'
@@ -24,6 +25,7 @@ export function MealForm() {
   const date = useAtomValue(selectedDateAtom)
   const queryClient = useQueryClient()
   const [search, setSearch] = useState('')
+  const skipAnimation = useSkipAnimation()
 
   const { data: foods = [] } = useQuery<FoodRow[]>({
     queryKey: ['foods', search],
@@ -55,7 +57,7 @@ export function MealForm() {
   return (
     <m.div
       className='p-4'
-      initial={{ opacity: 0, y: 20 }}
+      initial={skipAnimation ? false : { opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: 'spring', stiffness: 300, damping: 24 }}
     >

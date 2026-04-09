@@ -12,12 +12,14 @@ import { PageHeader } from '@/components/page-header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { api } from '@/lib/api'
+import { useSkipAnimation } from '@/lib/use-skip-animation'
 import type { FoodRow } from '@/lib/db'
 
 export default function FoodsPage() {
   const queryClient = useQueryClient()
   const [search, setSearch] = useState('')
   const [scannerOpen, setScannerOpen] = useState(false)
+  const skipAnimation = useSkipAnimation()
 
   const { data: foods = [] } = useQuery<FoodRow[]>({
     queryKey: ['foods', search],
@@ -44,7 +46,7 @@ export default function FoodsPage() {
   return (
     <m.div
       className='p-4'
-      initial={{ opacity: 0, y: 20 }}
+      initial={skipAnimation ? false : { opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: 'spring', stiffness: 300, damping: 24 }}
     >

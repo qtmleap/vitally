@@ -14,12 +14,14 @@ import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { api } from '@/lib/api'
+import { useSkipAnimation } from '@/lib/use-skip-animation'
 import { selectedDateAtom } from '@/lib/atoms'
 import { exerciseSchema, type ExerciseInput } from '@/lib/schema'
 
 export function ExerciseForm() {
   const date = useAtomValue(selectedDateAtom)
   const queryClient = useQueryClient()
+  const skipAnimation = useSkipAnimation()
 
   const form = useForm<ExerciseInput>({
     resolver: zodResolver(exerciseSchema) as never,
@@ -57,7 +59,7 @@ export function ExerciseForm() {
   return (
     <m.div
       className='p-4'
-      initial={{ opacity: 0, y: 20 }}
+      initial={skipAnimation ? false : { opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: 'spring', stiffness: 300, damping: 24 }}
     >

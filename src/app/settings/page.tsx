@@ -24,6 +24,7 @@ import { PageHeader } from '@/components/page-header'
 import { useDarkMode } from '@/components/providers'
 import { useAuth } from '@/components/auth-provider'
 import { signOutUser } from '@/lib/auth'
+import { useSkipAnimation } from '@/lib/use-skip-animation'
 
 const APP_VERSION = '0.1.0'
 
@@ -84,6 +85,7 @@ export default function SettingsPage() {
   const { dark, toggle } = useDarkMode()
   const { user } = useAuth()
   const router = useRouter()
+  const skipAnimation = useSkipAnimation()
 
   const handleClearCache = () => {
     localStorage.clear()
@@ -98,7 +100,7 @@ export default function SettingsPage() {
   return (
     <m.div
       className='p-4'
-      initial={{ opacity: 0, y: 20 }}
+      initial={skipAnimation ? false : { opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: 'spring', stiffness: 300, damping: 24 }}
     >

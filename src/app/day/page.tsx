@@ -16,6 +16,7 @@ import { PageHeader } from '@/components/page-header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { api } from '@/lib/api'
+import { useSkipAnimation } from '@/lib/use-skip-animation'
 import { selectedDateAtom } from '@/lib/atoms'
 import type { ExerciseRow, MealWithFood } from '@/lib/db'
 import type { MealType } from '@/lib/schema'
@@ -98,6 +99,7 @@ export default function DayPage() {
     return 'dinner'
   }
 
+  const skipAnimation = useSkipAnimation()
   const stagger = {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { staggerChildren: 0.07 } }
@@ -108,7 +110,7 @@ export default function DayPage() {
   } as const
 
   return (
-    <m.div className='space-y-6 p-4' initial='hidden' animate='visible' variants={stagger}>
+    <m.div className='space-y-6 p-4' initial={skipAnimation ? false : 'hidden'} animate='visible' variants={stagger}>
       <m.div variants={fadeUp}>
         <PageHeader title='日別記録' />
       </m.div>
