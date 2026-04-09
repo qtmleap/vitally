@@ -165,16 +165,17 @@ export function EditMealDialog({ open, onOpenChange, meals, mealType, date }: Ed
                       {Math.round(item.foodCalories * item.quantity)} kcal
                     </p>
                   </div>
-                  <button
-                    type='button'
-                    onClick={() => toggleDelete(item.id)}
+                  <Button
+                    variant='ghost'
+                    size='icon'
                     className={cn(
-                      'shrink-0 transition-colors',
+                      'size-8 shrink-0',
                       item.deleted ? 'text-destructive hover:text-destructive/80' : 'text-muted-foreground hover:text-destructive'
                     )}
+                    onClick={() => toggleDelete(item.id)}
                   >
                     <Trash2 className='size-4' />
-                  </button>
+                  </Button>
                 </div>
               </m.div>
             ))}
@@ -201,13 +202,14 @@ export function EditMealDialog({ open, onOpenChange, meals, mealType, date }: Ed
                       {Math.round(item.food.calories * item.quantity)} kcal
                     </p>
                   </div>
-                  <button
-                    type='button'
+                  <Button
+                    variant='ghost'
+                    size='icon'
+                    className='text-muted-foreground hover:text-destructive size-8 shrink-0'
                     onClick={() => removeNewItem(item.food.id)}
-                    className='text-muted-foreground hover:text-destructive shrink-0 transition-colors'
                   >
                     <Trash2 className='size-4' />
-                  </button>
+                  </Button>
                 </div>
               </m.div>
             ))}
@@ -273,14 +275,14 @@ export function EditMealDialog({ open, onOpenChange, meals, mealType, date }: Ed
               )}
             </m.div>
           ) : (
-            <button
-              type='button'
+            <Button
+              variant='outline'
+              className='w-full border-dashed gap-1.5'
               onClick={() => setShowSearch(true)}
-              className='text-primary hover:text-primary/80 flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed py-2.5 text-sm transition-colors'
             >
               <Plus className='size-4' />
               品目を追加
-            </button>
+            </Button>
           )}
         </div>
 
