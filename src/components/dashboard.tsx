@@ -364,7 +364,7 @@ export function Dashboard() {
                 <m.button
                   type='button'
                   onClick={reload}
-                  className='mt-2 rounded-full bg-white px-6 py-2 text-sm font-bold text-black transition-colors active:bg-white/80'
+                  className='mt-2 rounded-full bg-blue-500 px-6 py-2 text-sm font-bold text-white transition-colors active:bg-blue-600'
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ type: 'spring', stiffness: 300, damping: 24 }}
