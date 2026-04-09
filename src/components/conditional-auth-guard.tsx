@@ -5,7 +5,7 @@ import { useEffect } from 'react'
 import { AuthGuard } from './auth-guard'
 import { useAuth } from './auth-provider'
 
-const PUBLIC_PATHS = ['/login', '/terms', '/privacy']
+const PUBLIC_PATHS = ['/', '/terms', '/privacy']
 
 interface ConditionalAuthGuardProps {
   authenticated: React.ReactNode
@@ -21,7 +21,7 @@ export function ConditionalAuthGuard({ authenticated, unauthenticated }: Conditi
 
   useEffect(() => {
     if (!loading && !user && !isPublic) {
-      router.push('/login')
+      router.push('/')
     }
   }, [loading, user, isPublic, router])
 
