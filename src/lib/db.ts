@@ -32,6 +32,21 @@ export interface MealWithFood {
   food_carbs: number
 }
 
+export interface MealTemplateItemRow {
+  id: string
+  foodId: string
+  quantity: number
+  food: FoodRow
+}
+
+export interface MealTemplateRow {
+  id: string
+  name: string
+  mealType: string | null
+  createdAt: string
+  items: MealTemplateItemRow[]
+}
+
 export interface ExerciseRow {
   id: string
   date: string

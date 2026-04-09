@@ -1,8 +1,8 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAtomValue } from 'jotai'
-import { Plus } from 'lucide-react'
+import { Copy, Plus } from 'lucide-react'
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
 import Link from 'vinext/shims/link'
@@ -18,12 +18,27 @@ import { selectedDateAtom } from '@/lib/atoms'
 import type { ExerciseRow, MealWithFood } from '@/lib/db'
 import type { MealType } from '@/lib/schema'
 import { mealTypeLabels } from '@/lib/schema'
+import { toast } from 'sonner'
 
 const CALORIE_GOAL = 2000
 
 export default function DayPage() {
   const date = useAtomValue(selectedDateAtom)
+  const queryClient = useQueryClient()
   const [dialogType, setDialogType] = useState<MealType | null>(null)
+
+  const copyMutation = useMutation({
+    mutationFn: () => {
+      const d = new Date(date)
+      d.setDate(d.getDate() - 1)
+      const yesterday = d.toISOString().slice(0, 10)
+      return api.meals.copy({ from_date: yesterday, to_date: date })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['meals', date] })
+      toast.success('前日の食事をコピーしました')
+    }
+  })
 
   const { data: meals = [] } = useQuery<MealWithFood[]>({
     queryKey: ['meals', date],
@@ -120,7 +135,19 @@ export default function DayPage() {
 
       {/* Meals */}
       <m.div variants={fadeUp}>
-        <h2 className='mb-3 text-sm font-bold'>食事</h2>
+        <div className='mb-3 flex items-center justify-between'>
+          <h2 className='text-sm font-bold'>食事</h2>
+          <Button
+            variant='ghost'
+            size='sm'
+            className='h-7 text-xs'
+            onClick={() => copyMutation.mutate()}
+            disabled={copyMutation.isPending}
+          >
+            <Copy className='mr-1 size-3' />
+            前日からコピー
+          </Button>
+        </div>
         <div className='space-y-3'>
           {(['breakfast', 'lunch', 'dinner', 'snack'] as MealType[]).map((type, idx) => {
             const items = grouped[type] ?? []

@@ -39,6 +39,25 @@ export const mealUpdateSchema = z.object({
   quantity: z.number().min(0.1).optional()
 })
 
+export const mealTemplateItemSchema = z.object({
+  food_id: z.string().min(1),
+  quantity: z.number().min(0.1).default(1)
+})
+
+export const mealTemplateCreateSchema = z.object({
+  name: z.string().min(1, '名前を入力してください'),
+  meal_type: z.enum(mealTypes).optional(),
+  items: z.array(mealTemplateItemSchema).min(1, '1品目以上追加してください')
+})
+
+export const mealCopySchema = z.object({
+  from_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  to_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  meal_type: z.enum(mealTypes).optional()
+})
+
+export type MealTemplateCreateInput = z.infer<typeof mealTemplateCreateSchema>
+export type MealCopyInput = z.infer<typeof mealCopySchema>
 export type FoodInput = z.infer<typeof foodSchema>
 export type MealInput = z.infer<typeof mealSchema>
 export type MealUpdateInput = z.infer<typeof mealUpdateSchema>

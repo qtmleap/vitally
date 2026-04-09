@@ -16,8 +16,9 @@ model Food {
   fat       Float    @default(0)
   carbs     Float    @default(0)
   serving   String   @default("1食分")
-  createdAt DateTime @default(now()) @map("created_at")
-  meals     Meal[]
+  createdAt      DateTime           @default(now()) @map("created_at")
+  meals          Meal[]
+  templateItems  MealTemplateItem[]
 
   @@index([name])
   @@map("foods")
@@ -34,6 +35,27 @@ model Meal {
 
   @@index([date])
   @@map("meals")
+}
+
+model MealTemplate {
+  id        String             @id @default(dbgenerated("(lower(hex(randomblob(16))))"))
+  name      String
+  mealType  String?            @map("meal_type")
+  createdAt DateTime           @default(now()) @map("created_at")
+  items     MealTemplateItem[]
+
+  @@map("meal_templates")
+}
+
+model MealTemplateItem {
+  id         String       @id @default(dbgenerated("(lower(hex(randomblob(16))))"))
+  templateId String       @map("template_id")
+  foodId     String       @map("food_id")
+  quantity   Float        @default(1)
+  template   MealTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  food       Food         @relation(fields: [foodId], references: [id])
+
+  @@map("meal_template_items")
 }
 
 model Exercise {

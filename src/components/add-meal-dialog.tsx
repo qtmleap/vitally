@@ -2,7 +2,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Check, Minus, Plus, Search, Sparkles, X } from 'lucide-react'
+import { Bookmark, Check, History, Minus, Plus, Search, Sparkles, X } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -17,7 +17,7 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from '@/component
 import { Input } from '@/components/ui/input'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { api } from '@/lib/api'
-import type { FoodRow } from '@/lib/db'
+import type { FoodRow, MealTemplateRow } from '@/lib/db'
 import { cn } from '@/lib/utils'
 import type { MealType } from '@/lib/schema'
 import { mealTypeLabels } from '@/lib/schema'
@@ -33,6 +33,10 @@ interface BasketItem {
 
 const basketItemSchema = z.object({
   amount: z.number().min(0.1, '0.1以上を入力')
+})
+
+const templateNameSchema = z.object({
+  name: z.string().min(1, 'テンプレート名を入力してください')
 })
 
 interface AddMealDialogProps {
@@ -146,6 +150,12 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
   const [search, setSearch] = useState('')
   const [basket, setBasket] = useState<BasketItem[]>([])
   const [mealSource, setMealSource] = useState<MealSource>('eating_out')
+  const [showTemplateForm, setShowTemplateForm] = useState(false)
+
+  const templateForm = useForm<z.infer<typeof templateNameSchema>>({
+    resolver: zodResolver(templateNameSchema),
+    defaultValues: { name: '' }
+  })
 
   const debouncedSearch = useDebouncedValue(search, 300)
 
@@ -154,6 +164,22 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
     queryFn: () => api.foods.list(debouncedSearch || undefined),
     enabled: open
   })
+
+  const { data: templates = [] } = useQuery<MealTemplateRow[]>({
+    queryKey: ['templates'],
+    queryFn: () => api.templates.list(),
+    enabled: open
+  })
+
+  const { data: frequentFoods = [] } = useQuery<FoodRow[]>({
+    queryKey: ['foods', 'frequent'],
+    queryFn: () => api.foods.frequent(5),
+    enabled: open
+  })
+
+  const filteredTemplates = templates.filter(
+    (t) => t.mealType === null || t.mealType === mealType
+  )
 
   const aiMutation = useMutation({
     mutationFn: (name: string) => api.ai.estimateNutrition({ name, save: true }),
@@ -179,6 +205,21 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
     }
   })
 
+  const saveTemplateMutation = useMutation({
+    mutationFn: (name: string) =>
+      api.templates.create({
+        name,
+        meal_type: mealType,
+        items: basket.map((i) => ({ food_id: i.food.id, quantity: i.amount }))
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['templates'] })
+      toast.success('テンプレートを保存しました')
+      setShowTemplateForm(false)
+      templateForm.reset()
+    }
+  })
+
   const addToBasket = useCallback((food: FoodRow) => {
     setBasket((prev) => {
       if (prev.some((item) => item.food.id === food.id)) return prev
@@ -194,6 +235,16 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
     setBasket((prev) =>
       prev.map((item) => (item.food.id === foodId ? { ...item, amount, unit } : item))
     )
+  }, [])
+
+  const applyTemplate = useCallback((template: MealTemplateRow) => {
+    setBasket((prev) => {
+      const existingIds = new Set(prev.map((i) => i.food.id))
+      const newItems = template.items
+        .filter((item) => !existingIds.has(item.food.id))
+        .map((item) => ({ food: item.food, amount: item.quantity, unit: 'serving' as Unit }))
+      return [...prev, ...newItems]
+    })
   }, [])
 
   const totalCalories = basket.reduce((s, item) => {
@@ -216,6 +267,8 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
       setBasket([])
       setSearch('')
       setMealSource('eating_out')
+      setShowTemplateForm(false)
+      templateForm.reset()
       onOpenChange(false)
     }
   })
@@ -225,6 +278,8 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
       setBasket([])
       setSearch('')
       setMealSource('eating_out')
+      setShowTemplateForm(false)
+      templateForm.reset()
     }
     onOpenChange(next)
   }
@@ -233,6 +288,8 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
   const showNoResults = debouncedSearch.length > 0 && foods.length === 0
   const searchPlaceholder =
     mealSource === 'eating_out' ? '料理名を入力（例: 麻婆豆腐）' : '食品名を検索（例: 鶏むね肉）'
+
+  const isSearching = debouncedSearch.length > 0
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -280,81 +337,158 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
         </div>
 
         <div className='min-h-0 flex-1 overflow-y-auto px-4 py-2'>
-          {foods.length > 0 ? (
-            <div className='space-y-0.5'>
-              {foods.map((food, i) => {
-                const selected = inBasket.has(food.id)
-                return (
-                  <m.button
-                    key={food.id}
-                    type='button'
-                    onClick={() => (selected ? removeFromBasket(food.id) : addToBasket(food))}
-                    className={cn(
-                      'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors',
-                      selected ? 'bg-primary/10' : 'hover:bg-muted'
-                    )}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.03, type: 'spring', stiffness: 400, damping: 25 }}
-                    whileTap={{ scale: 0.97 }}
-                    layout
-                  >
-                    <m.div
+          {isSearching ? (
+            foods.length > 0 ? (
+              <div className='space-y-0.5'>
+                {foods.map((food, i) => {
+                  const selected = inBasket.has(food.id)
+                  return (
+                    <m.button
+                      key={food.id}
+                      type='button'
+                      onClick={() => (selected ? removeFromBasket(food.id) : addToBasket(food))}
                       className={cn(
-                        'flex size-5 shrink-0 items-center justify-center rounded-full border transition-colors',
-                        selected ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground/30'
+                        'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors',
+                        selected ? 'bg-primary/10' : 'hover:bg-muted'
                       )}
-                      animate={selected ? { scale: [1, 1.3, 1] } : { scale: 1 }}
-                      transition={{ duration: 0.3 }}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.03, type: 'spring', stiffness: 400, damping: 25 }}
+                      whileTap={{ scale: 0.97 }}
+                      layout
                     >
-                      {selected && <Check className='size-3' />}
-                    </m.div>
-                    <div className='flex-1'>
-                      <p className='text-sm'>{food.name}</p>
-                      <p className='text-muted-foreground text-xs'>
-                        {food.calories} kcal / {food.serving}
-                      </p>
-                    </div>
-                  </m.button>
-                )
-              })}
-            </div>
-          ) : showNoResults ? (
-            <m.div
-              className='flex flex-col items-center gap-3 py-8'
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.15 }}
-            >
-              <p className='text-muted-foreground text-sm'>見つかりません</p>
-              {mealSource === 'eating_out' ? (
-                <Button
-                  type='button'
-                  onClick={() => aiMutation.mutate(search)}
-                  disabled={aiMutation.isPending}
-                  className='gap-2'
-                >
-                  <Sparkles className='size-4' />
-                  {aiMutation.isPending ? '推定中...' : 'AI で栄養素を推定'}
-                </Button>
-              ) : (
-                <a
-                  href='/foods/new'
-                  className='text-primary text-sm underline underline-offset-4 hover:opacity-80'
-                >
-                  新しい食品を登録する
-                </a>
-              )}
-            </m.div>
+                      <m.div
+                        className={cn(
+                          'flex size-5 shrink-0 items-center justify-center rounded-full border transition-colors',
+                          selected ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground/30'
+                        )}
+                        animate={selected ? { scale: [1, 1.3, 1] } : { scale: 1 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        {selected && <Check className='size-3' />}
+                      </m.div>
+                      <div className='flex-1'>
+                        <p className='text-sm'>{food.name}</p>
+                        <p className='text-muted-foreground text-xs'>
+                          {food.calories} kcal / {food.serving}
+                        </p>
+                      </div>
+                    </m.button>
+                  )
+                })}
+              </div>
+            ) : showNoResults ? (
+              <m.div
+                className='flex flex-col items-center gap-3 py-8'
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.15 }}
+              >
+                <p className='text-muted-foreground text-sm'>見つかりません</p>
+                {mealSource === 'eating_out' ? (
+                  <Button
+                    type='button'
+                    onClick={() => aiMutation.mutate(search)}
+                    disabled={aiMutation.isPending}
+                    className='gap-2'
+                  >
+                    <Sparkles className='size-4' />
+                    {aiMutation.isPending ? '推定中...' : 'AI で栄養素を推定'}
+                  </Button>
+                ) : (
+                  <a
+                    href='/foods/new'
+                    className='text-primary text-sm underline underline-offset-4 hover:opacity-80'
+                  >
+                    新しい食品を登録する
+                  </a>
+                )}
+              </m.div>
+            ) : null
           ) : (
-            <m.p
-              className='text-muted-foreground py-8 text-center text-sm'
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.15 }}
-            >
-              {mealSource === 'eating_out' ? '料理名を入力してください' : '食品名を検索してください'}
-            </m.p>
+            <div className='space-y-4'>
+              {filteredTemplates.length > 0 && (
+                <div>
+                  <p className='text-muted-foreground mb-2 text-xs font-medium'>テンプレート</p>
+                  <div className='flex gap-2 overflow-x-auto pb-1'>
+                    {filteredTemplates.map((template, i) => (
+                      <m.button
+                        key={template.id}
+                        type='button'
+                        onClick={() => applyTemplate(template)}
+                        className='bg-muted hover:bg-muted/80 flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-sm transition-colors'
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: i * 0.04, type: 'spring', stiffness: 400, damping: 25 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <Bookmark className='size-3 text-muted-foreground' />
+                        <span>{template.name}</span>
+                        <span className='text-muted-foreground text-xs'>({template.items.length}品)</span>
+                      </m.button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {frequentFoods.length > 0 && (
+                <div>
+                  <div className='mb-2 flex items-center gap-1.5'>
+                    <History className='text-muted-foreground size-3.5' />
+                    <p className='text-muted-foreground text-xs font-medium'>よく使う食品</p>
+                  </div>
+                  <div className='space-y-0.5'>
+                    {frequentFoods.map((food, i) => {
+                      const selected = inBasket.has(food.id)
+                      return (
+                        <m.button
+                          key={food.id}
+                          type='button'
+                          onClick={() => (selected ? removeFromBasket(food.id) : addToBasket(food))}
+                          className={cn(
+                            'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors',
+                            selected ? 'bg-primary/10' : 'hover:bg-muted'
+                          )}
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.03, type: 'spring', stiffness: 400, damping: 25 }}
+                          whileTap={{ scale: 0.97 }}
+                          layout
+                        >
+                          <m.div
+                            className={cn(
+                              'flex size-5 shrink-0 items-center justify-center rounded-full border transition-colors',
+                              selected ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground/30'
+                            )}
+                            animate={selected ? { scale: [1, 1.3, 1] } : { scale: 1 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            {selected && <Check className='size-3' />}
+                          </m.div>
+                          <div className='flex-1'>
+                            <p className='text-sm'>{food.name}</p>
+                            <p className='text-muted-foreground text-xs'>
+                              {food.calories} kcal / {food.serving}
+                            </p>
+                          </div>
+                        </m.button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {filteredTemplates.length === 0 && frequentFoods.length === 0 && (
+                <m.p
+                  className='text-muted-foreground py-8 text-center text-sm'
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.15 }}
+                >
+                  {mealSource === 'eating_out' ? '料理名を入力してください' : '食品名を検索してください'}
+                </m.p>
+              )}
+            </div>
           )}
         </div>
 
@@ -391,6 +525,7 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
+                className='space-y-1'
               >
                 <Button
                   onClick={() => saveMutation.mutate()}
@@ -399,6 +534,76 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
                 >
                   {saveMutation.isPending ? '保存中...' : `${basket.length}品目を追加（${Math.round(totalCalories)} kcal）`}
                 </Button>
+
+                <Button
+                  type='button'
+                  variant='ghost'
+                  size='sm'
+                  className='w-full gap-1.5'
+                  onClick={() => setShowTemplateForm((v) => !v)}
+                >
+                  <Bookmark className='size-3.5' />
+                  テンプレートとして保存
+                </Button>
+
+                <AnimatePresence>
+                  {showTemplateForm && (
+                    <m.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+                      className='overflow-hidden'
+                    >
+                      <Form {...templateForm}>
+                        <form
+                          onSubmit={templateForm.handleSubmit((data) =>
+                            saveTemplateMutation.mutate(data.name)
+                          )}
+                          className='flex gap-2 pt-1'
+                        >
+                          <FormField
+                            control={templateForm.control}
+                            name='name'
+                            render={({ field }) => (
+                              <FormItem className='flex-1 space-y-0'>
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    autoFocus
+                                    placeholder='テンプレート名（例: いつもの朝食）'
+                                    className='h-8 text-sm'
+                                  />
+                                </FormControl>
+                                <FormMessage className='text-[10px]' />
+                              </FormItem>
+                            )}
+                          />
+                          <Button
+                            type='submit'
+                            size='sm'
+                            className='h-8 shrink-0'
+                            disabled={saveTemplateMutation.isPending}
+                          >
+                            {saveTemplateMutation.isPending ? '保存中...' : '保存'}
+                          </Button>
+                          <Button
+                            type='button'
+                            variant='ghost'
+                            size='sm'
+                            className='h-8 shrink-0'
+                            onClick={() => {
+                              setShowTemplateForm(false)
+                              templateForm.reset()
+                            }}
+                          >
+                            キャンセル
+                          </Button>
+                        </form>
+                      </Form>
+                    </m.div>
+                  )}
+                </AnimatePresence>
               </m.div>
             </m.div>
           )}

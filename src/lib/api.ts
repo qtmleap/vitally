@@ -1,7 +1,7 @@
 import { toast } from 'sonner'
 
-import type { ExerciseRow, FoodRow, MealWithFood } from '@/lib/db'
-import type { ExerciseInput, FoodInput, MealInput, MealUpdateInput } from '@/lib/schema'
+import type { ExerciseRow, FoodRow, MealTemplateRow, MealWithFood } from '@/lib/db'
+import type { ExerciseInput, FoodInput, MealCopyInput, MealInput, MealTemplateCreateInput, MealUpdateInput } from '@/lib/schema'
 
 const json = <T>(res: Response): Promise<T> => {
   if (!res.ok) {
@@ -46,7 +46,9 @@ export const api = {
         body: JSON.stringify(data)
       }).then((r) => json<FoodRow>(r)),
     delete: (id: string): Promise<void> =>
-      fetch(`/api/foods?id=${id}`, { method: 'DELETE' }).then((r) => json<void>(r))
+      fetch(`/api/foods?id=${id}`, { method: 'DELETE' }).then((r) => json<void>(r)),
+    frequent: (limit?: number): Promise<FoodRow[]> =>
+      fetch(`/api/foods/frequent${limit ? `?limit=${limit}` : ''}`).then((r) => json<FoodRow[]>(r))
   },
   meals: {
     list: (date: string): Promise<MealWithFood[]> =>
@@ -66,7 +68,13 @@ export const api = {
         body: JSON.stringify(data)
       }).then((r) => json<MealWithFood>(r)),
     delete: (id: string): Promise<void> =>
-      fetch(`/api/meals?id=${id}`, { method: 'DELETE' }).then((r) => json<void>(r))
+      fetch(`/api/meals?id=${id}`, { method: 'DELETE' }).then((r) => json<void>(r)),
+    copy: (data: MealCopyInput): Promise<{ count: number }> =>
+      fetch('/api/meals/copy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      }).then((r) => json<{ count: number }>(r))
   },
   exercises: {
     list: (date: string): Promise<ExerciseRow[]> =>
@@ -107,5 +115,17 @@ export const api = {
   barcode: {
     lookup: (code: string): Promise<BarcodeResult> =>
       fetch(`/api/barcode?code=${encodeURIComponent(code)}`).then((r) => json<BarcodeResult>(r))
+  },
+  templates: {
+    list: (): Promise<MealTemplateRow[]> =>
+      fetch('/api/templates').then((r) => json<MealTemplateRow[]>(r)),
+    create: (data: MealTemplateCreateInput): Promise<MealTemplateRow> =>
+      fetch('/api/templates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      }).then((r) => json<MealTemplateRow>(r)),
+    delete: (id: string): Promise<void> =>
+      fetch(`/api/templates?id=${id}`, { method: 'DELETE' }).then((r) => json<void>(r))
   }
 }
