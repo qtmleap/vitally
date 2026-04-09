@@ -295,7 +295,7 @@ export default function LoginPage() {
           transition={{ delay: 0.8 }}
         >
           <h2 className='text-xl font-bold lg:text-2xl'>今すぐ始めましょう</h2>
-          <p className='text-muted-foreground mx-auto mt-2 max-w-sm text-sm lg:text-base'>
+          <p className='text-muted-foreground mt-2 text-sm lg:text-base'>
             無料で使えます。Google アカウントがあればすぐにスタート。
           </p>
           <Button
