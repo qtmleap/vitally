@@ -3,7 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Bookmark, Check, History, Minus, Plus, Search, Sparkles, X } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -17,6 +17,7 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from '@/component
 import { Input } from '@/components/ui/input'
 import { api } from '@/lib/api'
 import type { FoodRow, MealTemplateRow } from '@/lib/db'
+import { useDebouncedValue } from '@/lib/hooks'
 import { cn } from '@/lib/utils'
 import type { MealType } from '@/lib/schema'
 import { mealTypeLabels } from '@/lib/schema'
@@ -43,15 +44,6 @@ interface AddMealDialogProps {
   onOpenChange: (open: boolean) => void
   mealType: MealType
   date: string
-}
-
-function useDebouncedValue<T>(value: T, delay: number): T {
-  const [debounced, setDebounced] = useState(value)
-  useEffect(() => {
-    const timer = setTimeout(() => setDebounced(value), delay)
-    return () => clearTimeout(timer)
-  }, [value, delay])
-  return debounced
 }
 
 const QUICK_FRACTIONS = [

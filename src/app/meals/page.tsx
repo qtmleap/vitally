@@ -3,8 +3,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAtomValue } from 'jotai'
 import { Pencil, Plus, Trash2 } from 'lucide-react'
+import { useState } from 'react'
 import Link from 'vinext/shims/link'
 import { DateNav } from '@/components/date-nav'
+import { EditMealDialog } from '@/components/edit-meal-dialog'
 import { PageHeader } from '@/components/page-header'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -18,6 +20,7 @@ import { mealTypeLabels } from '@/lib/schema'
 export default function MealsPage() {
   const date = useAtomValue(selectedDateAtom)
   const queryClient = useQueryClient()
+  const [editingMealId, setEditingMealId] = useState<string | null>(null)
   const { data: meals = [] } = useQuery<MealWithFood[]>({
     queryKey: ['meals', date],
     queryFn: () => api.meals.list(date)
@@ -68,10 +71,8 @@ export default function MealsPage() {
                         </p>
                       </div>
                       <div className='flex'>
-                        <Button variant='ghost' size='icon' asChild>
-                          <Link href={`/meals/${meal.id}/edit`}>
-                            <Pencil className='size-4' />
-                          </Link>
+                        <Button variant='ghost' size='icon' onClick={() => setEditingMealId(meal.id)}>
+                          <Pencil className='size-4' />
                         </Button>
                         <Button variant='ghost' size='icon' onClick={() => deleteMutation.mutate(meal.id)}>
                           <Trash2 className='size-4 text-destructive' />
@@ -88,6 +89,11 @@ export default function MealsPage() {
           <p className='text-muted-foreground py-8 text-center text-sm'>この日の食事記録はありません</p>
         )}
       </div>
+      <EditMealDialog
+        open={!!editingMealId}
+        onOpenChange={(open) => { if (!open) setEditingMealId(null) }}
+        mealId={editingMealId ?? ''}
+      />
     </div>
   )
 }

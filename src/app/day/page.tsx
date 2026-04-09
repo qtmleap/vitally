@@ -9,6 +9,7 @@ import Link from 'vinext/shims/link'
 import { useState } from 'react'
 
 import { AddMealDialog } from '@/components/add-meal-dialog'
+import { EditMealDialog } from '@/components/edit-meal-dialog'
 import { DateNav } from '@/components/date-nav'
 import { DayFab } from '@/components/day-fab'
 import { PageHeader } from '@/components/page-header'
@@ -26,6 +27,7 @@ export default function DayPage() {
   const date = useAtomValue(selectedDateAtom)
   const queryClient = useQueryClient()
   const [dialogType, setDialogType] = useState<MealType | null>(null)
+  const [editingMealId, setEditingMealId] = useState<string | null>(null)
 
   const copyMutation = useMutation({
     mutationFn: () => {
@@ -188,12 +190,16 @@ export default function DayPage() {
                           animate={{ opacity: 1, height: 'auto' }}
                           exit={{ opacity: 0, height: 0 }}
                         >
-                          <Link href={`/meals/${meal.id}/edit`} className='flex items-center justify-between rounded-lg px-2 py-1.5 transition-colors hover:bg-muted'>
+                          <button
+                            type='button'
+                            onClick={() => setEditingMealId(meal.id)}
+                            className='flex w-full items-center justify-between rounded-lg px-2 py-1.5 transition-colors hover:bg-muted'
+                          >
                             <span className='text-sm'>{meal.food_name}</span>
                             <span className='text-muted-foreground text-xs'>
                               {Math.round(meal.food_calories * meal.quantity)} kcal
                             </span>
-                          </Link>
+                          </button>
                         </m.div>
                       ))}
                     </div>
@@ -275,6 +281,11 @@ export default function DayPage() {
           date={date}
         />
       )}
+      <EditMealDialog
+        open={!!editingMealId}
+        onOpenChange={(open) => { if (!open) setEditingMealId(null) }}
+        mealId={editingMealId ?? ''}
+      />
     </m.div>
   )
 }
