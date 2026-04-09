@@ -291,7 +291,7 @@ export default function ProfileSettingsPage() {
                         type='button'
                         onClick={() => field.onChange(g)}
                         className={cn(
-                          'flex items-center gap-2.5 rounded-xl border px-3 py-3 text-left transition-colors',
+                          'flex items-center gap-3 rounded-xl border px-3 py-3 text-left transition-colors',
                           field.value === g ? 'border-primary bg-primary/5' : 'hover:bg-muted'
                         )}
                       >
