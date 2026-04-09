@@ -1,10 +1,15 @@
 {
-  "name": "vinext",
+  "name": "vitally",
   "dockerComposeFile": ["compose.yaml"],
   "service": "app",
   "workspaceFolder": "/home/vscode/app",
   "shutdownAction": "stopCompose",
   "remoteUser": "vscode",
+  "forwardPorts": [
+    5173,
+    9099,
+    4000
+  ],
   "containerEnv": {
       "CLAUDE_CONFIG_DIR": "/home/vscode/.claude"
   },
