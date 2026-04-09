@@ -1,6 +1,6 @@
 'use client'
 
-import { Activity, ChartLine, Sparkles, UtensilsCrossed } from 'lucide-react'
+import { Activity, ChartLine, Flame, Footprints, Sparkles, Star, UtensilsCrossed } from 'lucide-react'
 import * as m from 'motion/react-m'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'vinext/shims/navigation'
@@ -36,26 +36,47 @@ function GoogleIcon() {
   )
 }
 
+function FloatingCard({
+  children,
+  className,
+  delay
+}: {
+  children: React.ReactNode
+  className: string
+  delay: number
+}) {
+  return (
+    <m.div
+      className={className}
+      initial={{ opacity: 0, y: 20, scale: 0.9 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ delay, type: 'spring', stiffness: 300, damping: 24 }}
+    >
+      {children}
+    </m.div>
+  )
+}
+
 const features = [
   {
     icon: UtensilsCrossed,
     title: '食事記録',
-    description: '毎日の食事をかんたんに記録。AI が栄養素を自動推定'
+    description: '毎日の食事をかんたんに記録。AI が栄養素を自動推定します。'
   },
   {
     icon: Activity,
     title: '運動記録',
-    description: '運動時間と消費カロリーを記録。AI が推定もサポート'
+    description: '運動時間と消費カロリーを記録。AI が推定もサポートします。'
   },
   {
     icon: ChartLine,
     title: 'カロリー管理',
-    description: '摂取・消費カロリーをひと目で把握。PFC バランスも表示'
+    description: '摂取・消費カロリーをひと目で把握。PFC バランスも表示。'
   },
   {
     icon: Sparkles,
     title: 'AI アドバイス',
-    description: 'AI があなたの記録を分析して、健康的な食生活をアドバイス'
+    description: 'AI があなたの記録を分析して、健康的な食生活をアドバイス。'
   }
 ]
 
@@ -92,74 +113,212 @@ export default function LoginPage() {
     )
   }
 
+  const init = (v: Record<string, number>) => (skipAnimation ? false : v)
+
   return (
-    <div className='flex min-h-dvh flex-col px-6 py-12'>
-      {/* Hero */}
-      <m.div
-        className='flex flex-1 flex-col items-center justify-center gap-6'
-        initial={skipAnimation ? false : { opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 24 }}
-      >
-        <m.div
-          className='bg-primary/10 flex size-20 items-center justify-center rounded-3xl'
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 20, delay: 0.1 }}
-        >
-          <span className='text-4xl'>🥗</span>
-        </m.div>
-        <m.div className='text-center' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-          <h1 className='text-3xl font-bold tracking-tight'>HealthLog</h1>
-          <p className='text-muted-foreground mt-2 text-base'>毎日の食事と運動を記録して、健康的な生活をサポート</p>
-        </m.div>
-      </m.div>
+    <div className='flex min-h-dvh flex-col'>
+      {/* Hero Section */}
+      <section className='relative flex flex-1 flex-col items-center justify-center overflow-hidden px-6 pb-12 pt-16 lg:pb-20 lg:pt-24'>
+        {/* Background decoration */}
+        <div className='pointer-events-none absolute inset-0 overflow-hidden'>
+          <div className='bg-primary/5 absolute -right-20 -top-20 size-80 rounded-full blur-3xl lg:size-[500px]' />
+          <div className='bg-primary/5 absolute -bottom-20 -left-20 size-60 rounded-full blur-3xl lg:size-96' />
+        </div>
 
-      {/* Features */}
-      <m.div
-        className='grid grid-cols-2 gap-3 py-8'
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.3 }}
-      >
-        {features.map((feature, i) => (
+        <div className='relative z-10 mx-auto max-w-5xl'>
+          {/* Header text */}
           <m.div
-            key={feature.title}
-            className='bg-muted/50 rounded-xl p-3'
-            initial={{ opacity: 0, y: 12 }}
+            className='text-center'
+            initial={init({ opacity: 0, y: 24 })}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.35 + i * 0.08, type: 'spring', stiffness: 300, damping: 24 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 24 }}
           >
-            <feature.icon className='text-primary mb-2 size-5' />
-            <p className='text-sm font-medium'>{feature.title}</p>
-            <p className='text-muted-foreground mt-0.5 text-xs leading-relaxed'>{feature.description}</p>
+            <m.div
+              className='bg-primary/10 text-primary mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium'
+              initial={init({ opacity: 0, scale: 0.9 })}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Sparkles className='size-4' />
+              AI でスマートに健康管理
+            </m.div>
+            <h1 className='text-4xl font-bold tracking-tight lg:text-6xl'>
+              あなたの健康を
+              <br />
+              <span className='text-primary'>もっとシンプルに</span>
+            </h1>
+            <p className='text-muted-foreground mx-auto mt-4 max-w-md text-base lg:mt-6 lg:max-w-lg lg:text-lg'>
+              食事と運動を記録して、AI がアドバイス。毎日の健康管理をサポートするパートナーです。
+            </p>
+            <m.div
+              className='mt-8'
+              initial={init({ opacity: 0, y: 12 })}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <Button
+                size='lg'
+                className='h-12 gap-3 rounded-full px-8 text-base shadow-lg'
+                onClick={handleGoogleSignIn}
+                disabled={signing}
+              >
+                <GoogleIcon />
+                {signing ? 'ログイン中...' : 'Google で始める'}
+              </Button>
+            </m.div>
           </m.div>
-        ))}
-      </m.div>
 
-      {/* CTA */}
-      <m.div
-        className='space-y-3 pb-4'
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
-      >
-        <Button size='lg' className='w-full gap-3' onClick={handleGoogleSignIn} disabled={signing}>
-          <GoogleIcon />
-          {signing ? 'ログイン中...' : 'Google で始める'}
-        </Button>
-        <p className='text-muted-foreground/60 text-center text-xs'>
-          ログインすることで{' '}
-          <Link href='/terms' className='underline underline-offset-2'>
-            利用規約
-          </Link>
-          と{' '}
-          <Link href='/privacy' className='underline underline-offset-2'>
-            プライバシーポリシー
-          </Link>
-          に同意したものとみなします
-        </p>
-      </m.div>
+          {/* Floating stat cards */}
+          <div className='relative mx-auto mt-12 flex h-48 max-w-md items-center justify-center lg:mt-16 lg:h-56 lg:max-w-2xl'>
+            {/* Center phone mockup outline */}
+            <m.div
+              className='border-border/50 bg-card absolute z-10 h-44 w-24 rounded-3xl border-2 shadow-2xl lg:h-52 lg:w-28'
+              initial={init({ opacity: 0, y: 30 })}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, type: 'spring', stiffness: 300, damping: 24 }}
+            >
+              <div className='bg-muted mx-auto mt-2 h-1 w-10 rounded-full' />
+              <div className='flex flex-col items-center justify-center gap-2 pt-6'>
+                <div className='text-primary text-2xl font-bold lg:text-3xl'>1,520</div>
+                <div className='text-muted-foreground text-[10px]'>kcal 摂取</div>
+                <div className='bg-primary/20 mt-1 h-1.5 w-14 overflow-hidden rounded-full'>
+                  <div className='bg-primary h-full w-3/4 rounded-full' />
+                </div>
+              </div>
+            </m.div>
+
+            {/* Floating cards around the phone */}
+            <FloatingCard
+              className='bg-card absolute -left-2 top-2 z-20 rounded-2xl p-3 shadow-lg lg:left-8 lg:p-4'
+              delay={0.5}
+            >
+              <div className='flex items-center gap-2'>
+                <div className='bg-primary/10 flex size-8 items-center justify-center rounded-xl'>
+                  <Flame className='text-primary size-4' />
+                </div>
+                <div>
+                  <p className='text-xs font-bold'>520</p>
+                  <p className='text-muted-foreground text-[10px]'>消費 kcal</p>
+                </div>
+              </div>
+            </FloatingCard>
+
+            <FloatingCard
+              className='bg-card absolute -right-2 top-0 z-20 rounded-2xl p-3 shadow-lg lg:right-8 lg:p-4'
+              delay={0.6}
+            >
+              <div className='flex items-center gap-2'>
+                <div className='flex size-8 items-center justify-center rounded-xl bg-blue-500/10'>
+                  <Footprints className='size-4 text-blue-500' />
+                </div>
+                <div>
+                  <p className='text-xs font-bold'>45 分</p>
+                  <p className='text-muted-foreground text-[10px]'>運動時間</p>
+                </div>
+              </div>
+            </FloatingCard>
+
+            <FloatingCard
+              className='bg-card absolute -left-4 bottom-2 z-20 rounded-2xl p-3 shadow-lg lg:left-4 lg:p-4'
+              delay={0.7}
+            >
+              <div className='flex items-center gap-2'>
+                <div className='flex size-8 items-center justify-center rounded-xl bg-amber-500/10'>
+                  <Star className='size-4 text-amber-500' />
+                </div>
+                <div>
+                  <p className='text-xs font-bold'>7日連続</p>
+                  <p className='text-muted-foreground text-[10px]'>記録継続中</p>
+                </div>
+              </div>
+            </FloatingCard>
+
+            <FloatingCard
+              className='bg-card absolute -right-4 bottom-4 z-20 rounded-2xl p-3 shadow-lg lg:right-4 lg:p-4'
+              delay={0.8}
+            >
+              <div className='text-center'>
+                <div className='flex items-center gap-1'>
+                  <Sparkles className='text-primary size-3' />
+                  <p className='text-[10px] font-medium'>AI 評価</p>
+                </div>
+                <p className='text-muted-foreground mt-0.5 max-w-20 text-[9px] leading-tight'>
+                  バランスの良い食事です
+                </p>
+              </div>
+            </FloatingCard>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className='border-t px-6 py-12 lg:py-20'>
+        <div className='mx-auto max-w-5xl'>
+          <m.div
+            className='mb-10 text-center'
+            initial={init({ opacity: 0, y: 16 })}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            <h2 className='text-2xl font-bold lg:text-3xl'>主な機能</h2>
+            <p className='text-muted-foreground mt-2 text-sm lg:text-base'>
+              シンプルな操作で、毎日の健康管理を習慣に
+            </p>
+          </m.div>
+          <div className='grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-6'>
+            {features.map((feature, i) => (
+              <m.div
+                key={feature.title}
+                className='bg-card rounded-2xl border p-4 transition-shadow hover:shadow-md lg:p-6'
+                initial={init({ opacity: 0, y: 16 })}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 + i * 0.1, type: 'spring', stiffness: 300, damping: 24 }}
+              >
+                <div className='bg-primary/10 mb-3 flex size-10 items-center justify-center rounded-xl lg:size-12'>
+                  <feature.icon className='text-primary size-5 lg:size-6' />
+                </div>
+                <p className='text-sm font-semibold lg:text-base'>{feature.title}</p>
+                <p className='text-muted-foreground mt-1 text-xs leading-relaxed lg:text-sm'>{feature.description}</p>
+              </m.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className='px-6 pb-12 lg:pb-20'>
+        <m.div
+          className='bg-primary/5 mx-auto max-w-5xl rounded-3xl px-6 py-10 text-center lg:py-16'
+          initial={init({ opacity: 0, scale: 0.97 })}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.8 }}
+        >
+          <h2 className='text-xl font-bold lg:text-2xl'>今すぐ始めましょう</h2>
+          <p className='text-muted-foreground mx-auto mt-2 max-w-sm text-sm lg:text-base'>
+            無料で使えます。Google アカウントがあればすぐにスタート。
+          </p>
+          <Button
+            size='lg'
+            className='mt-6 h-12 gap-3 rounded-full px-8 text-base shadow-lg'
+            onClick={handleGoogleSignIn}
+            disabled={signing}
+          >
+            <GoogleIcon />
+            {signing ? 'ログイン中...' : 'Google で始める'}
+          </Button>
+          <p className='text-muted-foreground/60 mt-4 text-xs'>
+            ログインすることで{' '}
+            <Link href='/terms' className='underline underline-offset-2'>
+              利用規約
+            </Link>
+            と{' '}
+            <Link href='/privacy' className='underline underline-offset-2'>
+              プライバシーポリシー
+            </Link>
+            に同意したものとみなします
+          </p>
+        </m.div>
+      </section>
     </div>
   )
 }
