@@ -1,11 +1,11 @@
 'use client'
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useSuspenseQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus, ScanBarcode, Search, Trash2 } from 'lucide-react'
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
 import Link from 'vinext/shims/link'
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 
 import { BarcodeScanner } from '@/components/barcode-scanner'
 import { PageHeader } from '@/components/page-header'
@@ -15,13 +15,13 @@ import { api } from '@/lib/api'
 import { useSkipAnimation } from '@/lib/use-skip-animation'
 import type { FoodRow } from '@/lib/db'
 
-export default function FoodsPage() {
+function FoodsPageContent() {
   const queryClient = useQueryClient()
   const [search, setSearch] = useState('')
   const [scannerOpen, setScannerOpen] = useState(false)
   const skipAnimation = useSkipAnimation()
 
-  const { data: foods = [] } = useQuery<FoodRow[]>({
+  const { data: foods } = useSuspenseQuery<FoodRow[]>({
     queryKey: ['foods', search],
     queryFn: () => api.foods.list(search || undefined)
   })
@@ -112,5 +112,13 @@ export default function FoodsPage() {
 
       <BarcodeScanner open={scannerOpen} onOpenChange={setScannerOpen} onResult={handleBarcodeResult} />
     </m.div>
+  )
+}
+
+export default function FoodsPage() {
+  return (
+    <Suspense fallback={<div className='p-4'><p className='text-muted-foreground py-8 text-center text-sm'>読み込み中...</p></div>}>
+      <FoodsPageContent />
+    </Suspense>
   )
 }

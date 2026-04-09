@@ -1,9 +1,9 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { useAtomValue } from 'jotai'
 import { Pencil, Plus } from 'lucide-react'
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import Link from 'vinext/shims/link'
 import { DateNav } from '@/components/date-nav'
 import { EditMealDialog } from '@/components/edit-meal-dialog'
@@ -17,10 +17,10 @@ import type { MealWithFood } from '@/lib/db'
 import type { MealType } from '@/lib/schema'
 import { mealTypeLabels } from '@/lib/schema'
 
-export default function MealsPage() {
+function MealsPageContent() {
   const date = useAtomValue(selectedDateAtom)
   const [editingMealType, setEditingMealType] = useState<MealType | null>(null)
-  const { data: meals = [] } = useQuery<MealWithFood[]>({
+  const { data: meals } = useSuspenseQuery<MealWithFood[]>({
     queryKey: ['meals', date],
     queryFn: () => api.meals.list(date)
   })
@@ -92,5 +92,13 @@ export default function MealsPage() {
         />
       )}
     </div>
+  )
+}
+
+export default function MealsPage() {
+  return (
+    <Suspense fallback={<div className='p-4'><p className='text-muted-foreground py-8 text-center text-sm'>読み込み中...</p></div>}>
+      <MealsPageContent />
+    </Suspense>
   )
 }

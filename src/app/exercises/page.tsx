@@ -1,8 +1,9 @@
 'use client'
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useSuspenseQuery, useQueryClient } from '@tanstack/react-query'
 import { useAtomValue } from 'jotai'
 import { Plus, Trash2 } from 'lucide-react'
+import { Suspense } from 'react'
 import Link from 'vinext/shims/link'
 import { DateNav } from '@/components/date-nav'
 import { PageHeader } from '@/components/page-header'
@@ -12,10 +13,10 @@ import { api } from '@/lib/api'
 import { selectedDateAtom } from '@/lib/atoms'
 import type { ExerciseRow } from '@/lib/db'
 
-export default function ExercisesPage() {
+function ExercisesPageContent() {
   const date = useAtomValue(selectedDateAtom)
   const queryClient = useQueryClient()
-  const { data: exercises = [] } = useQuery<ExerciseRow[]>({
+  const { data: exercises } = useSuspenseQuery<ExerciseRow[]>({
     queryKey: ['exercises', date],
     queryFn: () => api.exercises.list(date)
   })
@@ -56,5 +57,13 @@ export default function ExercisesPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function ExercisesPage() {
+  return (
+    <Suspense fallback={<div className='p-4'><p className='text-muted-foreground py-8 text-center text-sm'>読み込み中...</p></div>}>
+      <ExercisesPageContent />
+    </Suspense>
   )
 }

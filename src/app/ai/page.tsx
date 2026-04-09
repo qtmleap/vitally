@@ -1,9 +1,9 @@
 'use client'
 
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
 import { useAtomValue } from 'jotai'
 import { Bot, Loader2 } from 'lucide-react'
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { DateNav } from '@/components/date-nav'
 import { PageHeader } from '@/components/page-header'
 import { Button } from '@/components/ui/button'
@@ -12,15 +12,15 @@ import { api } from '@/lib/api'
 import { selectedDateAtom } from '@/lib/atoms'
 import type { ExerciseRow, MealWithFood } from '@/lib/db'
 
-export default function AiPage() {
+function AiPageContent() {
   const date = useAtomValue(selectedDateAtom)
   const [advice, setAdvice] = useState<string | null>(null)
 
-  const { data: meals = [] } = useQuery<MealWithFood[]>({
+  const { data: meals } = useSuspenseQuery<MealWithFood[]>({
     queryKey: ['meals', date],
     queryFn: () => api.meals.list(date)
   })
-  const { data: exercises = [] } = useQuery<ExerciseRow[]>({
+  const { data: exercises } = useSuspenseQuery<ExerciseRow[]>({
     queryKey: ['exercises', date],
     queryFn: () => api.exercises.list(date)
   })
@@ -66,5 +66,13 @@ export default function AiPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function AiPage() {
+  return (
+    <Suspense fallback={<div className='p-4'><p className='text-muted-foreground py-8 text-center text-sm'>読み込み中...</p></div>}>
+      <AiPageContent />
+    </Suspense>
   )
 }

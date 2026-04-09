@@ -1,12 +1,12 @@
 'use client'
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useSuspenseQuery, useQueryClient } from '@tanstack/react-query'
 import { useAtomValue } from 'jotai'
 import { Bot, Copy, Loader2, Pencil, Plus, Sparkles } from 'lucide-react'
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
 import Link from 'vinext/shims/link'
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 
 import { AddMealDialog } from '@/components/add-meal-dialog'
 import { AiThinkingOverlay } from '@/components/ai-thinking-overlay'
@@ -26,12 +26,21 @@ import { toast } from 'sonner'
 
 const CALORIE_GOAL = 2000
 
-export default function DayPage() {
+function DayPageContent() {
   const date = useAtomValue(selectedDateAtom)
   const queryClient = useQueryClient()
   const [dialogType, setDialogType] = useState<MealType | null>(null)
   const [editingMealType, setEditingMealType] = useState<MealType | null>(null)
   const [advice, setAdvice] = useState<string | null>(null)
+
+  const { data: meals } = useSuspenseQuery<MealWithFood[]>({
+    queryKey: ['meals', date],
+    queryFn: () => api.meals.list(date)
+  })
+  const { data: exercises } = useSuspenseQuery<ExerciseRow[]>({
+    queryKey: ['exercises', date],
+    queryFn: () => api.exercises.list(date)
+  })
 
   const adviceMutation = useMutation({
     mutationFn: () =>
@@ -63,15 +72,6 @@ export default function DayPage() {
       queryClient.invalidateQueries({ queryKey: ['meals', date] })
       toast.success('前日の食事をコピーしました')
     }
-  })
-
-  const { data: meals = [] } = useQuery<MealWithFood[]>({
-    queryKey: ['meals', date],
-    queryFn: () => api.meals.list(date)
-  })
-  const { data: exercises = [] } = useQuery<ExerciseRow[]>({
-    queryKey: ['exercises', date],
-    queryFn: () => api.exercises.list(date)
   })
 
   const totalIntake = meals.reduce((s, m) => s + m.food_calories * m.quantity, 0)
@@ -363,5 +363,13 @@ export default function DayPage() {
       )}
       <AiThinkingOverlay show={adviceMutation.isPending} />
     </m.div>
+  )
+}
+
+export default function DayPage() {
+  return (
+    <Suspense fallback={<div className='p-4'><p className='text-muted-foreground py-8 text-center text-sm'>読み込み中...</p></div>}>
+      <DayPageContent />
+    </Suspense>
   )
 }
