@@ -5,7 +5,7 @@ import { ForceLightMode } from '@/components/force-light-mode'
 
 export default function PrivacyPage() {
   return (
-    <div className='px-4 py-6'>
+    <div className='mx-auto max-w-3xl px-6 py-8 lg:py-12'>
       <ForceLightMode />
       <PageHeader title='プライバシーポリシー' back />
       <div className='space-y-6 text-sm leading-relaxed'>
