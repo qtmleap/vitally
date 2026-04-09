@@ -366,7 +366,7 @@ function DayPageContent() {
         />
       )}
       <AiThinkingOverlay show={adviceMutation.isPending} />
-      <UpdatingOverlay show={showCopyOverlay} message='前日の食事をコピー中...' />
+      <UpdatingOverlay show={showCopyOverlay} message='前日の食事をコピー中...' forceShow />
     </m.div>
   )
 }
