@@ -1,6 +1,6 @@
 'use client'
 
-import { AlertTriangle, RotateCcw } from 'lucide-react'
+import { AlertTriangle, Home, RotateCcw } from 'lucide-react'
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -34,20 +34,31 @@ export class ErrorBoundary extends Component<Props, State> {
       if (this.props.fallback) return this.props.fallback
 
       return (
-        <div className='flex min-h-[200px] flex-col items-center justify-center gap-4 p-8'>
-          <AlertTriangle className='text-destructive size-10' />
-          <div className='text-center'>
-            <p className='font-medium'>エラーが発生しました</p>
-            <p className='text-muted-foreground mt-1 text-sm'>{this.state.error?.message}</p>
+        <div className='flex min-h-[60dvh] flex-col items-center justify-center gap-6 px-6'>
+          <div className='bg-destructive/10 flex size-20 items-center justify-center rounded-3xl'>
+            <AlertTriangle className='text-destructive size-9' />
           </div>
-          <Button
-            variant='outline'
-            size='sm'
-            onClick={() => this.setState({ hasError: false, error: null })}
-          >
-            <RotateCcw className='mr-1 size-4' />
-            再試行
-          </Button>
+          <div className='text-center'>
+            <p className='text-lg font-bold'>エラーが発生しました</p>
+            <p className='text-muted-foreground mt-2 text-sm'>
+              予期しないエラーが発生しました。再試行するか、ホームに戻ってください。
+            </p>
+            {this.state.error?.message && (
+              <p className='bg-muted mt-3 rounded-lg px-3 py-2 font-mono text-xs break-all'>
+                {this.state.error.message}
+              </p>
+            )}
+          </div>
+          <div className='flex gap-3'>
+            <Button variant='outline' onClick={() => this.setState({ hasError: false, error: null })}>
+              <RotateCcw className='mr-2 size-4' />
+              再試行
+            </Button>
+            <Button onClick={() => (window.location.href = '/')}>
+              <Home className='mr-2 size-4' />
+              ホームに戻る
+            </Button>
+          </div>
         </div>
       )
     }
