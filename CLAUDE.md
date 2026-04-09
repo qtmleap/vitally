@@ -57,5 +57,6 @@ Vinext (Vite ベース App Router) + React 19 + Cloudflare Workers の Web ア�
 - shadcn/ui コンポーネントの追加: `bunx --bun shadcn@latest add <component-name>`
 - tsconfig で `src/components/ui/**/*.tsx` は型チェック対象外
 - ORM: Prisma + @prisma/adapter-d1 (Cloudflare D1)
+- **DB マイグレーションは必ず `bunx prisma migrate dev --name <name>` で SQL を自動生成すること。マイグレーション SQL の手書き禁止**
 - `bun run db:migrate` でローカル D1 にマイグレーション適用
 - Cloudflare Workers の `compatibility_date` は `2026-01-01`
