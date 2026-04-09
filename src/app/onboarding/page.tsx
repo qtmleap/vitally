@@ -8,6 +8,7 @@ import {
   Bot,
   Dumbbell,
   Flame,
+  Percent,
   Scale,
   TrendingDown,
   TrendingUp,
@@ -43,6 +44,7 @@ import { cn } from '@/lib/utils'
 
 const goalIcons: Record<GoalType, typeof Scale> = {
   lose_weight: TrendingDown,
+  lose_fat: Percent,
   maintain: Scale,
   gain_muscle: TrendingUp
 }
@@ -414,7 +416,7 @@ export default function OnboardingPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>目標</FormLabel>
-                        <div className='grid grid-cols-3 gap-2'>
+                        <div className='grid grid-cols-2 gap-2'>
                           {goals.map((g) => {
                             const Icon = goalIcons[g]
                             return (
@@ -423,13 +425,13 @@ export default function OnboardingPage() {
                                 type='button'
                                 onClick={() => field.onChange(g)}
                                 className={cn(
-                                  'flex flex-col items-center gap-2 rounded-xl border px-3 py-4 transition-colors',
+                                  'flex items-center gap-2.5 rounded-xl border px-3 py-3 text-left transition-colors',
                                   field.value === g ? 'border-primary bg-primary/5' : 'hover:bg-muted'
                                 )}
                               >
                                 <Icon
                                   className={cn(
-                                    'size-5',
+                                    'size-4.5 shrink-0',
                                     field.value === g ? 'text-primary' : 'text-muted-foreground'
                                   )}
                                 />

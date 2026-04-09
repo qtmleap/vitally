@@ -76,12 +76,13 @@ export const activityLevelLabels: Record<ActivityLevel, string> = {
   very_active: '非常に激しい運動'
 }
 
-export const goals = ['lose_weight', 'maintain', 'gain_muscle'] as const
+export const goals = ['lose_weight', 'lose_fat', 'maintain', 'gain_muscle'] as const
 export type GoalType = (typeof goals)[number]
 export const goalLabels: Record<GoalType, string> = {
-  lose_weight: '減量',
+  lose_weight: '体重を落とす',
+  lose_fat: '体脂肪を減らす',
   maintain: '維持',
-  gain_muscle: '増量'
+  gain_muscle: '筋肉を増やす'
 }
 
 export const profileSchema = z.object({

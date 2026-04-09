@@ -1,6 +1,6 @@
 export type Gender = 'male' | 'female'
 export type ActivityLevel = 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active'
-export type Goal = 'lose_weight' | 'maintain' | 'gain_muscle'
+export type Goal = 'lose_weight' | 'lose_fat' | 'maintain' | 'gain_muscle'
 
 const activityMultipliers: Record<ActivityLevel, number> = {
   sedentary: 1.2,
@@ -12,6 +12,7 @@ const activityMultipliers: Record<ActivityLevel, number> = {
 
 const goalMultipliers: Record<Goal, number> = {
   lose_weight: 0.8,
+  lose_fat: 0.9,
   maintain: 1.0,
   gain_muscle: 1.1
 }
