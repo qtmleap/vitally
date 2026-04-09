@@ -294,22 +294,24 @@ export function Dashboard() {
   }
 
   return (
-    <m.div className='space-y-5 p-4' initial={skipAnimation ? false : 'hidden'} animate='visible'>
+    <m.div className='p-4 lg:p-6' initial={skipAnimation ? false : 'hidden'} animate='visible'>
+      {/* Header - full width */}
       <m.div
         className='flex items-center justify-between'
         initial={skipAnimation ? false : { opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ type: 'spring', stiffness: 300, damping: 24 }}
       >
-        <h1 className='text-xl font-bold'>HealthLog</h1>
+        <h1 className='text-xl font-bold lg:text-2xl'>HealthLog</h1>
         <span className='text-muted-foreground text-xs'>{d.format('M月D日 (dd)')}</span>
       </m.div>
 
+      {/* Update banner - full width */}
       {hasUpdate && (
         <m.button
           type='button'
           onClick={update}
-          className='flex w-full items-center gap-3 rounded-2xl bg-blue-500/10 px-4 py-3 text-left transition-colors active:bg-blue-500/20'
+          className='mt-5 flex w-full items-center gap-3 rounded-2xl bg-blue-500/10 px-4 py-3 text-left transition-colors active:bg-blue-500/20'
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: 'spring', stiffness: 300, damping: 24 }}
@@ -324,209 +326,219 @@ export function Dashboard() {
         </m.button>
       )}
 
-      <StreakBanner streak={streak} />
+      {/* Main grid */}
+      <div className='mt-5 lg:grid lg:grid-cols-5 lg:gap-6'>
+        {/* Left column */}
+        <div className='space-y-5 lg:col-span-3'>
+          <StreakBanner streak={streak} />
 
-      {!hasAnyData ? (
-        <EmptyOnboarding onGoToDay={() => goToDay(now)} />
-      ) : (
-        <>
-          {(calGoalReached || exGoalReached) && (
-            <m.div className='flex flex-wrap gap-2' variants={cardVariants} custom={0.5}>
-              {calGoalReached && (
-                <div className='bg-primary/10 text-primary flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium'>
-                  <Trophy className='size-3' />
-                  カロリー目標達成
-                </div>
-              )}
-              {exGoalReached && (
-                <div className='flex items-center gap-1.5 rounded-full bg-blue-500/10 px-3 py-1 text-xs font-medium text-blue-500'>
-                  <Trophy className='size-3' />
-                  運動目標達成
-                </div>
-              )}
-            </m.div>
-          )}
-
-          <m.button
-            type='button'
-            onClick={() => goToDay(now)}
-            className='w-full text-left'
-            variants={cardVariants}
-            custom={1}
-            whileTap={{ scale: 0.97 }}
-            aria-label='今日のカロリー詳細を見る'
-          >
-            <div className='bg-muted/50 flex items-center gap-5 rounded-2xl p-5'>
-              <Ring pct={calPct} className='stroke-primary' label={`カロリー達成率 ${Math.round(calPct)}%`}>
-                <Flame className='text-primary size-5' />
-              </Ring>
-              <div className='flex-1 space-y-1'>
-                <p className='text-muted-foreground text-xs font-medium uppercase tracking-wider'>今日のカロリー</p>
-                {hasMeals ? (
-                  <>
-                    <p className='text-2xl font-bold'>
-                      {Math.round(totalIntake)}{' '}
-                      <span className='text-muted-foreground text-sm font-normal'>/ {CALORIE_GOAL}</span>
-                    </p>
-                    <div className='text-muted-foreground flex gap-3 text-xs'>
-                      <span>消費 {Math.round(totalBurn)}</span>
-                      <span>P {Math.round(totalProtein)}g</span>
-                      <span>F {Math.round(totalFat)}g</span>
-                      <span>C {Math.round(totalCarbs)}g</span>
+          {!hasAnyData ? (
+            <EmptyOnboarding onGoToDay={() => goToDay(now)} />
+          ) : (
+            <>
+              {(calGoalReached || exGoalReached) && (
+                <m.div className='flex flex-wrap gap-2' variants={cardVariants} custom={0.5}>
+                  {calGoalReached && (
+                    <div className='bg-primary/10 text-primary flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium'>
+                      <Trophy className='size-3' />
+                      カロリー目標達成
                     </div>
-                  </>
-                ) : (
-                  <p className='text-muted-foreground flex items-center gap-1 text-sm'>
-                    <Plus className='size-4' />
-                    食事を記録しましょう
-                  </p>
-                )}
-              </div>
-            </div>
-          </m.button>
+                  )}
+                  {exGoalReached && (
+                    <div className='flex items-center gap-1.5 rounded-full bg-blue-500/10 px-3 py-1 text-xs font-medium text-blue-500'>
+                      <Trophy className='size-3' />
+                      運動目標達成
+                    </div>
+                  )}
+                </m.div>
+              )}
 
-          <m.button
-            type='button'
-            onClick={() => goToDay(now)}
-            className='w-full text-left'
-            variants={cardVariants}
-            custom={2}
-            whileTap={{ scale: 0.97 }}
-            aria-label='今日の運動詳細を見る'
-          >
-            <div className='bg-muted/50 flex items-center gap-5 rounded-2xl p-5'>
-              <Ring pct={exPct} className='stroke-blue-500' label={`運動達成率 ${Math.round(exPct)}%`}>
-                <Footprints className='size-5 text-blue-500' />
-              </Ring>
-              <div className='flex-1 space-y-1'>
-                <p className='text-muted-foreground text-xs font-medium uppercase tracking-wider'>今日の運動</p>
-                {hasExercises ? (
-                  <p className='text-2xl font-bold'>
-                    {totalExMin}{' '}
-                    <span className='text-muted-foreground text-sm font-normal'>/ {EXERCISE_GOAL} 分</span>
-                  </p>
-                ) : (
-                  <p className='text-muted-foreground flex items-center gap-1 text-sm'>
-                    <Plus className='size-4' />
-                    運動を記録しましょう
-                  </p>
-                )}
-              </div>
-            </div>
-          </m.button>
-        </>
-      )}
-
-      {/* AI Advice teaser */}
-      <m.div variants={cardVariants} custom={2.5}>
-        <Link
-          href='/ai'
-          className='from-violet-500/10 to-blue-500/10 flex items-center gap-4 rounded-2xl bg-gradient-to-r p-4 transition-colors active:opacity-80'
-        >
-          <div className='flex size-10 items-center justify-center rounded-xl bg-violet-500/15'>
-            <Bot className='size-5 text-violet-500' />
-          </div>
-          <div className='flex-1'>
-            <p className='text-sm font-semibold'>AI アドバイス</p>
-            <p className='text-muted-foreground text-xs'>今日の食事・運動をAIが分析</p>
-          </div>
-          <ChevronRight className='text-muted-foreground size-4' />
-        </Link>
-      </m.div>
-
-      {/* Calendar */}
-      <m.div variants={cardVariants} custom={3}>
-        <div className='mb-3 flex items-center justify-between'>
-          <button
-            type='button'
-            onClick={prevMonth}
-            className='text-muted-foreground hover:text-foreground rounded-lg p-1.5 transition-colors'
-            aria-label='前月'
-          >
-            <ChevronLeft className='size-4' />
-          </button>
-          <p className='text-sm font-bold'>{calMonth.format('YYYY年M月')}</p>
-          <button
-            type='button'
-            onClick={nextMonth}
-            disabled={!calMonth.isBefore(d, 'month')}
-            className='text-muted-foreground hover:text-foreground rounded-lg p-1.5 transition-colors disabled:opacity-30'
-            aria-label='次月'
-          >
-            <ChevronRight className='size-4' />
-          </button>
-        </div>
-        <div className='grid grid-cols-7 gap-0.5 text-center text-sm'>
-          {['日', '月', '火', '水', '木', '金', '土'].map((day) => (
-            <span key={day} className='text-muted-foreground pb-2 text-sm font-medium'>
-              {day}
-            </span>
-          ))}
-          {Array.from({ length: startDow }, (_, i) => (
-            <span key={`e-${i}`} />
-          ))}
-          {Array.from({ length: daysInMonth }, (_, i) => {
-            const date = calMonth.add(i, 'day').format('YYYY-MM-DD')
-            const isToday = date === now
-            const isFuture = dayjs(date).isAfter(d, 'day')
-            const daySummary = monthSummary[date]
-            const calOk = daySummary && daySummary.calories > 0 && daySummary.calories <= CALORIE_GOAL
-            const exOk = daySummary && daySummary.exercise_min >= EXERCISE_GOAL
-            return (
               <m.button
                 type='button'
-                key={date}
-                onClick={() => goToDay(date)}
-                whileHover={{ scale: 1.2 }}
-                whileTap={{ scale: 0.9 }}
-                suppressHydrationWarning
-                className={cn(
-                  'relative flex flex-col items-center justify-center aspect-square rounded-xl text-sm transition-colors',
-                  isToday && 'bg-primary text-primary-foreground font-bold shadow-sm',
-                  !isToday && isFuture && 'text-muted-foreground/40',
-                  !isToday && !isFuture && 'hover:bg-muted'
-                )}
+                onClick={() => goToDay(now)}
+                className='w-full text-left'
+                variants={cardVariants}
+                custom={1}
+                whileTap={{ scale: 0.97 }}
+                aria-label='今日のカロリー詳細を見る'
               >
-                {i + 1}
-                {(calOk || exOk) && (
-                  <span className='absolute bottom-0.5 flex gap-0.5'>
-                    {calOk && (
-                      <span
-                        className={cn('size-1 rounded-full', isToday ? 'bg-primary-foreground' : 'bg-primary')}
-                      />
+                <div className='bg-muted/50 flex items-center gap-5 rounded-2xl p-5 lg:p-6'>
+                  <Ring pct={calPct} className='stroke-primary' label={`カロリー達成率 ${Math.round(calPct)}%`}>
+                    <Flame className='text-primary size-5' />
+                  </Ring>
+                  <div className='flex-1 space-y-1'>
+                    <p className='text-muted-foreground text-xs font-medium uppercase tracking-wider'>今日のカロリー</p>
+                    {hasMeals ? (
+                      <>
+                        <p className='text-2xl font-bold'>
+                          {Math.round(totalIntake)}{' '}
+                          <span className='text-muted-foreground text-sm font-normal'>/ {CALORIE_GOAL}</span>
+                        </p>
+                        <div className='text-muted-foreground flex gap-3 text-xs'>
+                          <span>消費 {Math.round(totalBurn)}</span>
+                          <span>P {Math.round(totalProtein)}g</span>
+                          <span>F {Math.round(totalFat)}g</span>
+                          <span>C {Math.round(totalCarbs)}g</span>
+                        </div>
+                      </>
+                    ) : (
+                      <p className='text-muted-foreground flex items-center gap-1 text-sm'>
+                        <Plus className='size-4' />
+                        食事を記録しましょう
+                      </p>
                     )}
-                    {exOk && (
-                      <span
-                        className={cn('size-1 rounded-full', isToday ? 'bg-primary-foreground' : 'bg-blue-500')}
-                      />
-                    )}
-                  </span>
-                )}
+                  </div>
+                </div>
               </m.button>
-            )
-          })}
-        </div>
-      </m.div>
 
-      {weekStats && (
-        <m.div className='bg-muted/50 rounded-2xl p-4' variants={cardVariants} custom={4}>
-          <p className='text-muted-foreground mb-3 text-xs font-medium uppercase tracking-wider'>今週のまとめ</p>
-          <div className='grid grid-cols-3 gap-3 text-center'>
-            <div>
-              <p className='text-lg font-bold'>{weekStats.avgCal}</p>
-              <p className='text-muted-foreground text-[10px]'>平均 kcal</p>
+              <m.button
+                type='button'
+                onClick={() => goToDay(now)}
+                className='w-full text-left'
+                variants={cardVariants}
+                custom={2}
+                whileTap={{ scale: 0.97 }}
+                aria-label='今日の運動詳細を見る'
+              >
+                <div className='bg-muted/50 flex items-center gap-5 rounded-2xl p-5 lg:p-6'>
+                  <Ring pct={exPct} className='stroke-blue-500' label={`運動達成率 ${Math.round(exPct)}%`}>
+                    <Footprints className='size-5 text-blue-500' />
+                  </Ring>
+                  <div className='flex-1 space-y-1'>
+                    <p className='text-muted-foreground text-xs font-medium uppercase tracking-wider'>今日の運動</p>
+                    {hasExercises ? (
+                      <p className='text-2xl font-bold'>
+                        {totalExMin}{' '}
+                        <span className='text-muted-foreground text-sm font-normal'>/ {EXERCISE_GOAL} 分</span>
+                      </p>
+                    ) : (
+                      <p className='text-muted-foreground flex items-center gap-1 text-sm'>
+                        <Plus className='size-4' />
+                        運動を記録しましょう
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </m.button>
+            </>
+          )}
+
+          {/* AI Advice teaser */}
+          <m.div variants={cardVariants} custom={2.5}>
+            <Link
+              href='/ai'
+              className='from-violet-500/10 to-blue-500/10 flex items-center gap-4 rounded-2xl bg-gradient-to-r p-4 transition-colors active:opacity-80'
+            >
+              <div className='flex size-10 items-center justify-center rounded-xl bg-violet-500/15'>
+                <Bot className='size-5 text-violet-500' />
+              </div>
+              <div className='flex-1'>
+                <p className='text-sm font-semibold'>AI アドバイス</p>
+                <p className='text-muted-foreground text-xs'>今日の食事・運動をAIが分析</p>
+              </div>
+              <ChevronRight className='text-muted-foreground size-4' />
+            </Link>
+          </m.div>
+        </div>
+
+        {/* Right column */}
+        <div className='mt-5 space-y-5 lg:col-span-2 lg:mt-0'>
+          {/* Calendar */}
+          <m.div variants={cardVariants} custom={3}>
+            <div className='mb-3 flex items-center justify-between'>
+              <button
+                type='button'
+                onClick={prevMonth}
+                className='text-muted-foreground hover:text-foreground rounded-lg p-1.5 transition-colors'
+                aria-label='前月'
+              >
+                <ChevronLeft className='size-4' />
+              </button>
+              <p className='text-sm font-bold'>{calMonth.format('YYYY年M月')}</p>
+              <button
+                type='button'
+                onClick={nextMonth}
+                disabled={!calMonth.isBefore(d, 'month')}
+                className='text-muted-foreground hover:text-foreground rounded-lg p-1.5 transition-colors disabled:opacity-30'
+                aria-label='次月'
+              >
+                <ChevronRight className='size-4' />
+              </button>
             </div>
-            <div>
-              <p className='text-lg font-bold'>{weekStats.exerciseDays}日</p>
-              <p className='text-muted-foreground text-[10px]'>運動した日</p>
+            <div className='grid grid-cols-7 gap-0.5 text-center text-sm'>
+              {['日', '月', '火', '水', '木', '金', '土'].map((day) => (
+                <span key={day} className='text-muted-foreground pb-2 text-sm font-medium lg:text-base'>
+                  {day}
+                </span>
+              ))}
+              {Array.from({ length: startDow }, (_, i) => (
+                <span key={`e-${i}`} />
+              ))}
+              {Array.from({ length: daysInMonth }, (_, i) => {
+                const date = calMonth.add(i, 'day').format('YYYY-MM-DD')
+                const isToday = date === now
+                const isFuture = dayjs(date).isAfter(d, 'day')
+                const daySummary = monthSummary[date]
+                const calOk = daySummary && daySummary.calories > 0 && daySummary.calories <= CALORIE_GOAL
+                const exOk = daySummary && daySummary.exercise_min >= EXERCISE_GOAL
+                return (
+                  <m.button
+                    type='button'
+                    key={date}
+                    onClick={() => goToDay(date)}
+                    whileHover={{ scale: 1.2 }}
+                    whileTap={{ scale: 0.9 }}
+                    suppressHydrationWarning
+                    className={cn(
+                      'relative flex flex-col items-center justify-center aspect-square rounded-xl text-sm transition-colors lg:text-base',
+                      isToday && 'bg-primary text-primary-foreground font-bold shadow-sm',
+                      !isToday && isFuture && 'text-muted-foreground/40',
+                      !isToday && !isFuture && 'hover:bg-muted'
+                    )}
+                  >
+                    {i + 1}
+                    {(calOk || exOk) && (
+                      <span className='absolute bottom-0.5 flex gap-0.5'>
+                        {calOk && (
+                          <span
+                            className={cn('size-1 rounded-full', isToday ? 'bg-primary-foreground' : 'bg-primary')}
+                          />
+                        )}
+                        {exOk && (
+                          <span
+                            className={cn('size-1 rounded-full', isToday ? 'bg-primary-foreground' : 'bg-blue-500')}
+                          />
+                        )}
+                      </span>
+                    )}
+                  </m.button>
+                )
+              })}
             </div>
-            <div>
-              <p className='text-lg font-bold'>{weekStats.bestDay || '-'}</p>
-              <p className='text-muted-foreground text-[10px]'>ベストの日</p>
-            </div>
-          </div>
-        </m.div>
-      )}
+          </m.div>
+
+          {/* Weekly summary */}
+          {weekStats && (
+            <m.div className='bg-muted/50 rounded-2xl p-4' variants={cardVariants} custom={4}>
+              <p className='text-muted-foreground mb-3 text-xs font-medium uppercase tracking-wider'>今週のまとめ</p>
+              <div className='grid grid-cols-3 gap-3 text-center'>
+                <div>
+                  <p className='text-lg font-bold'>{weekStats.avgCal}</p>
+                  <p className='text-muted-foreground text-[10px]'>平均 kcal</p>
+                </div>
+                <div>
+                  <p className='text-lg font-bold'>{weekStats.exerciseDays}日</p>
+                  <p className='text-muted-foreground text-[10px]'>運動した日</p>
+                </div>
+                <div>
+                  <p className='text-lg font-bold'>{weekStats.bestDay || '-'}</p>
+                  <p className='text-muted-foreground text-[10px]'>ベストの日</p>
+                </div>
+              </div>
+            </m.div>
+          )}
+        </div>
+      </div>
     </m.div>
   )
 }

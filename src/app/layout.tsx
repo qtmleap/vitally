@@ -40,7 +40,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <ConditionalAuthGuard
             authenticated={
               <>
-                <div className='mx-auto min-h-dvh max-w-lg pb-20'>
+                <div className='mx-auto min-h-dvh max-w-5xl pb-20'>
                   <ErrorBoundary>{children}</ErrorBoundary>
                 </div>
                 <BottomNav />
