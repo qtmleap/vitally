@@ -125,7 +125,7 @@ export default function LoginPage() {
           <div className='bg-primary/5 absolute -bottom-20 -left-20 size-60 rounded-full blur-3xl lg:size-96' />
         </div>
 
-        <div className='relative z-10 mx-auto max-w-5xl'>
+        <div className='relative z-10 mx-auto w-full max-w-7xl'>
           {/* Header text */}
           <m.div
             className='text-center'
@@ -253,7 +253,7 @@ export default function LoginPage() {
 
       {/* Features Section */}
       <section className='border-t px-6 py-12 lg:py-20'>
-        <div className='mx-auto max-w-5xl'>
+        <div className='mx-auto max-w-7xl'>
           <m.div
             className='mb-10 text-center'
             initial={init({ opacity: 0, y: 16 })}
@@ -288,7 +288,7 @@ export default function LoginPage() {
       {/* CTA Section */}
       <section className='px-6 pb-12 lg:pb-20'>
         <m.div
-          className='bg-primary/5 mx-auto max-w-5xl rounded-3xl px-6 py-10 text-center lg:py-16'
+          className='bg-primary/5 mx-auto max-w-7xl rounded-3xl px-6 py-10 text-center lg:py-16'
           initial={init({ opacity: 0, scale: 0.97 })}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.8 }}
