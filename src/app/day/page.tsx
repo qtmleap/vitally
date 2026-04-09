@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAtomValue } from 'jotai'
-import { Copy, Pencil, Plus } from 'lucide-react'
+import { Bot, Copy, Loader2, Pencil, Plus, Sparkles } from 'lucide-react'
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
 import Link from 'vinext/shims/link'
@@ -14,6 +14,7 @@ import { DateNav } from '@/components/date-nav'
 import { DayFab } from '@/components/day-fab'
 import { PageHeader } from '@/components/page-header'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import { api } from '@/lib/api'
 import { selectedDateAtom } from '@/lib/atoms'
 import type { ExerciseRow, MealWithFood } from '@/lib/db'
@@ -28,6 +29,26 @@ export default function DayPage() {
   const queryClient = useQueryClient()
   const [dialogType, setDialogType] = useState<MealType | null>(null)
   const [editingMealType, setEditingMealType] = useState<MealType | null>(null)
+  const [advice, setAdvice] = useState<string | null>(null)
+
+  const adviceMutation = useMutation({
+    mutationFn: () =>
+      api.ai.getAdvice({
+        meals: meals.map((m) => ({
+          food_name: m.food_name,
+          calories: m.food_calories,
+          meal_type: m.meal_type,
+          quantity: m.quantity
+        })),
+        exercises: exercises.map((e) => ({
+          name: e.name,
+          duration_min: e.duration_min,
+          calories: e.calories
+        })),
+        date
+      }),
+    onSuccess: (data) => setAdvice(data.message)
+  })
 
   const copyMutation = useMutation({
     mutationFn: () => {
@@ -93,6 +114,45 @@ export default function DayPage() {
       </m.div>
       <m.div variants={fadeUp}>
         <DateNav />
+      </m.div>
+
+      {/* AI Advice */}
+      <m.div variants={fadeUp}>
+        {advice ? (
+          <Card>
+            <CardContent className='py-3'>
+              <div className='mb-2 flex items-center gap-1.5'>
+                <Sparkles className='text-primary size-3.5' />
+                <span className='text-xs font-medium'>AI 評価</span>
+              </div>
+              <p className='text-sm leading-relaxed'>{advice}</p>
+              <Button
+                variant='ghost'
+                size='sm'
+                className='mt-2 h-7 text-xs'
+                onClick={() => adviceMutation.mutate()}
+                disabled={adviceMutation.isPending}
+              >
+                {adviceMutation.isPending ? <Loader2 className='mr-1 size-3 animate-spin' /> : <Bot className='mr-1 size-3' />}
+                再評価
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <Button
+            variant='outline'
+            className='w-full gap-2'
+            onClick={() => adviceMutation.mutate()}
+            disabled={adviceMutation.isPending}
+          >
+            {adviceMutation.isPending ? (
+              <Loader2 className='size-4 animate-spin' />
+            ) : (
+              <Sparkles className='size-4' />
+            )}
+            {adviceMutation.isPending ? '評価中...' : 'AI に今日の記録を評価してもらう'}
+          </Button>
+        )}
       </m.div>
 
       {/* Calorie bar */}
