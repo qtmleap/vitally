@@ -4,9 +4,11 @@ declare const __APP_VERSION__: string
 
 const VERSION_KEY = 'app_version'
 
+type UpdateState = 'idle' | 'preparing' | 'ready'
+
 export function useVersionCheck() {
   const [hasUpdate, setHasUpdate] = useState(import.meta.env.DEV)
-  const [updating, setUpdating] = useState(false)
+  const [state, setState] = useState<UpdateState>('idle')
 
   useEffect(() => {
     if (import.meta.env.DEV) return
@@ -30,8 +32,8 @@ export function useVersionCheck() {
     check()
   }, [])
 
-  const update = async () => {
-    setUpdating(true)
+  const prepare = async () => {
+    setState('preparing')
 
     // SW を更新してキャッシュを全削除
     if ('serviceWorker' in navigator) {
@@ -43,9 +45,12 @@ export function useVersionCheck() {
 
     localStorage.removeItem(VERSION_KEY)
 
-    // プログレスバーのアニメーション分だけ待ってからリロード
-    setTimeout(() => window.location.reload(), 2000)
+    // プログレスバーのアニメーション分だけ待つ
+    await new Promise((r) => setTimeout(r, 2000))
+    setState('ready')
   }
 
-  return { hasUpdate, updating, update }
+  const reload = () => window.location.reload()
+
+  return { hasUpdate, state, prepare, reload }
 }

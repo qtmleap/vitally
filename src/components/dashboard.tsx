@@ -176,7 +176,7 @@ function StreakBanner({ streak }: { streak: number }) {
 export function Dashboard() {
   const [now, setNow] = useState('')
   const [calMonth, setCalMonth] = useState<dayjs.Dayjs | null>(null)
-  const { hasUpdate, updating, update } = useVersionCheck()
+  const { hasUpdate, state: updateState, prepare, reload } = useVersionCheck()
   useEffect(() => {
     const t = today()
     setNow(t)
@@ -308,31 +308,30 @@ export function Dashboard() {
       </m.div>
 
       {/* Update banner - full width */}
-      {hasUpdate && (
+      {hasUpdate && updateState === 'idle' && (
         <m.button
           type='button'
-          onClick={update}
-          disabled={updating}
+          onClick={prepare}
           className='mt-5 flex w-full items-center gap-3 rounded-2xl bg-blue-500/10 px-4 py-3 text-left transition-colors active:bg-blue-500/20'
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: 'spring', stiffness: 300, damping: 24 }}
         >
           <div className='flex size-10 items-center justify-center rounded-xl bg-blue-500/15'>
-            <RefreshCw className={cn('size-5 text-blue-500', updating && 'animate-spin')} />
+            <RefreshCw className='size-5 text-blue-500' />
           </div>
           <div className='flex-1'>
-            <p className='text-sm font-bold'>{updating ? 'アップデート中...' : 'アップデートがあります'}</p>
-            <p className='text-muted-foreground text-xs'>{updating ? '最新版を適用しています' : 'タップして最新版に更新'}</p>
+            <p className='text-sm font-bold'>アップデートがあります</p>
+            <p className='text-muted-foreground text-xs'>タップして最新版に更新</p>
           </div>
         </m.button>
       )}
 
       {/* Updating overlay */}
       <AnimatePresence>
-        {updating && (
+        {updateState !== 'idle' && (
           <m.div
-            className='fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 bg-black/40 backdrop-blur-sm'
+            className='fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm'
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -344,10 +343,15 @@ export function Dashboard() {
               transition={{ type: 'spring', stiffness: 400, damping: 25 }}
               className='flex flex-col items-center gap-4'
             >
-              <m.div animate={{ rotate: 360 }} transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY, ease: 'linear' }}>
+              <m.div
+                animate={updateState === 'preparing' ? { rotate: 360 } : { rotate: 0 }}
+                transition={updateState === 'preparing' ? { duration: 1.5, repeat: Number.POSITIVE_INFINITY, ease: 'linear' } : {}}
+              >
                 <RefreshCw className='size-8 text-white' />
               </m.div>
-              <p className='text-sm font-medium text-white'>アップデートしています...</p>
+              <p className='text-sm font-medium text-white'>
+                {updateState === 'preparing' ? 'アップデートしています...' : 'アップデート完了'}
+              </p>
               <div className='h-1 w-48 overflow-hidden rounded-full bg-white/20'>
                 <m.div
                   className='h-full rounded-full bg-white'
@@ -356,6 +360,18 @@ export function Dashboard() {
                   transition={{ duration: 2, ease: [0.4, 0, 0.2, 1] }}
                 />
               </div>
+              {updateState === 'ready' && (
+                <m.button
+                  type='button'
+                  onClick={reload}
+                  className='mt-2 rounded-full bg-white px-6 py-2 text-sm font-bold text-black transition-colors active:bg-white/80'
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+                >
+                  再読み込み
+                </m.button>
+              )}
             </m.div>
           </m.div>
         )}
