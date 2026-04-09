@@ -100,7 +100,7 @@ export default function LoginPage() {
       router.push('/')
     } catch (err) {
       if (err instanceof Error && err.message.includes('popup-closed-by-user')) {
-        // ユーザーがポップアップを閉じた — エラー表示不要
+        toast('ログインがキャンセルされました')
       } else {
         const message = err instanceof Error ? err.message : 'ログインに失敗しました'
         toast.error(message)
