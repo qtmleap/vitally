@@ -3,15 +3,17 @@
 import dayjs from 'dayjs'
 import { useQuery } from '@tanstack/react-query'
 import { useSetAtom } from 'jotai'
-import { ChevronLeft, ChevronRight, Flame, Footprints, Plus } from 'lucide-react'
+import { Bot, ChevronLeft, ChevronRight, Flame, Footprints, Plus, Trophy, Utensils } from 'lucide-react'
 import * as m from 'motion/react-m'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'vinext/shims/navigation'
+import Link from 'vinext/shims/link'
 
 import { api } from '@/lib/api'
 import { selectedDateAtom } from '@/lib/atoms'
 import { today } from '@/lib/date'
 import type { ExerciseRow, MealWithFood } from '@/lib/db'
+import { cn } from '@/lib/utils'
 import { Skeleton } from '@/components/ui/skeleton'
 
 const CALORIE_GOAL = 2000
@@ -36,14 +38,15 @@ function Ring({
 
   return (
     <div className='relative inline-flex items-center justify-center' style={{ width: RING_SIZE, height: RING_SIZE }}>
-      <svg
-        className='-rotate-90'
-        width={RING_SIZE}
-        height={RING_SIZE}
-        role='img'
-        aria-label={label}
-      >
-        <circle cx={RING_SIZE / 2} cy={RING_SIZE / 2} r={r} fill='none' className='stroke-muted' strokeWidth={RING_STROKE} />
+      <svg className='-rotate-90' width={RING_SIZE} height={RING_SIZE} role='img' aria-label={label}>
+        <circle
+          cx={RING_SIZE / 2}
+          cy={RING_SIZE / 2}
+          r={r}
+          fill='none'
+          className='stroke-muted'
+          strokeWidth={RING_STROKE}
+        />
         <circle
           cx={RING_SIZE / 2}
           cy={RING_SIZE / 2}
@@ -53,7 +56,7 @@ function Ring({
           strokeLinecap='round'
           strokeDasharray={c}
           strokeDashoffset={offset}
-          className={`transition-all duration-500 ${className}`}
+          className={cn('transition-all duration-500', className)}
         />
       </svg>
       <div className='absolute inset-0 flex items-center justify-center'>{children}</div>
@@ -76,6 +79,94 @@ function DashboardSkeleton() {
         </div>
       </div>
     </div>
+  )
+}
+
+function EmptyOnboarding({ onGoToDay }: { onGoToDay: () => void }) {
+  const steps = [
+    {
+      icon: Utensils,
+      title: '食事を記録する',
+      desc: '朝食・昼食・夕食を手軽に記録',
+      color: 'bg-primary/10 text-primary'
+    },
+    {
+      icon: Footprints,
+      title: '運動を記録する',
+      desc: '時間やカロリーをトラッキング',
+      color: 'bg-blue-500/10 text-blue-500'
+    },
+    {
+      icon: Trophy,
+      title: '目標を達成する',
+      desc: '毎日の記録で健康的な習慣に',
+      color: 'bg-orange-500/10 text-orange-500'
+    }
+  ]
+
+  return (
+    <m.div
+      className='space-y-4'
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+    >
+      <div className='rounded-2xl border border-dashed p-5 text-center'>
+        <p className='text-muted-foreground mb-1 text-sm'>今日はまだ記録がありません</p>
+        <p className='text-muted-foreground text-xs'>下の「+」ボタンから始めましょう</p>
+      </div>
+      <div className='space-y-2'>
+        {steps.map((step, i) => (
+          <m.button
+            key={step.title}
+            type='button'
+            onClick={onGoToDay}
+            className='flex w-full items-center gap-4 rounded-2xl p-4 text-left transition-colors active:bg-muted/60'
+            initial={{ opacity: 0, x: -16 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 + i * 0.08, type: 'spring', stiffness: 300, damping: 24 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            <div className={cn('flex size-10 items-center justify-center rounded-xl', step.color)}>
+              <step.icon className='size-5' />
+            </div>
+            <div>
+              <p className='text-sm font-semibold'>{step.title}</p>
+              <p className='text-muted-foreground text-xs'>{step.desc}</p>
+            </div>
+          </m.button>
+        ))}
+      </div>
+    </m.div>
+  )
+}
+
+function StreakBanner({ streak }: { streak: number }) {
+  if (streak < 2) return null
+
+  const messages = [
+    { min: 2, text: 'いい調子！' },
+    { min: 5, text: '素晴らしい継続力！' },
+    { min: 10, text: '10日突破！' },
+    { min: 30, text: '1ヶ月達成！' }
+  ]
+  const msg = [...messages].reverse().find((m) => streak >= m.min)?.text ?? 'いい調子！'
+
+  return (
+    <m.div
+      className='from-orange-500/10 to-amber-500/10 flex items-center gap-3 rounded-2xl bg-gradient-to-r px-4 py-3'
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+    >
+      <div className='flex size-10 items-center justify-center rounded-xl bg-orange-500/15'>
+        <Flame className='size-5 text-orange-500' />
+      </div>
+      <div className='flex-1'>
+        <p className='text-sm font-bold'>{streak}日連続記録中</p>
+        <p className='text-muted-foreground text-xs'>{msg}</p>
+      </div>
+    </m.div>
   )
 }
 
@@ -122,6 +213,8 @@ export function Dashboard() {
 
   const calPct = (totalIntake / CALORIE_GOAL) * 100
   const exPct = (totalExMin / EXERCISE_GOAL) * 100
+  const calGoalReached = totalIntake > 0 && totalIntake <= CALORIE_GOAL && calPct >= 80
+  const exGoalReached = totalExMin >= EXERCISE_GOAL
 
   if (!now || !calMonth) return <DashboardSkeleton />
 
@@ -141,6 +234,7 @@ export function Dashboard() {
 
   const hasMeals = meals.length > 0
   const hasExercises = exercises.length > 0
+  const hasAnyData = hasMeals || hasExercises
 
   const streak = (() => {
     const yesterday = d.subtract(1, 'day').format('YYYY-MM-DD')
@@ -196,92 +290,126 @@ export function Dashboard() {
   }
 
   return (
-    <m.div className='space-y-6 p-4' initial='hidden' animate='visible'>
-      <m.h1
-        className='text-xl font-bold'
+    <m.div className='space-y-5 p-4' initial='hidden' animate='visible'>
+      <m.div
+        className='flex items-center justify-between'
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ type: 'spring', stiffness: 300, damping: 24 }}
       >
-        HealthLog
-      </m.h1>
+        <h1 className='text-xl font-bold'>HealthLog</h1>
+        <span className='text-muted-foreground text-xs'>{d.format('M月D日 (dd)')}</span>
+      </m.div>
 
-      {streak >= 2 && (
-        <m.div className='bg-muted/50 flex items-center gap-2 rounded-xl px-3 py-2' variants={cardVariants} custom={0}>
-          <Flame className='size-4 text-orange-500' />
-          <span className='text-sm font-medium'>{streak}日連続</span>
-        </m.div>
+      <StreakBanner streak={streak} />
+
+      {!hasAnyData ? (
+        <EmptyOnboarding onGoToDay={() => goToDay(now)} />
+      ) : (
+        <>
+          {(calGoalReached || exGoalReached) && (
+            <m.div className='flex flex-wrap gap-2' variants={cardVariants} custom={0.5}>
+              {calGoalReached && (
+                <div className='bg-primary/10 text-primary flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium'>
+                  <Trophy className='size-3' />
+                  カロリー目標達成
+                </div>
+              )}
+              {exGoalReached && (
+                <div className='flex items-center gap-1.5 rounded-full bg-blue-500/10 px-3 py-1 text-xs font-medium text-blue-500'>
+                  <Trophy className='size-3' />
+                  運動目標達成
+                </div>
+              )}
+            </m.div>
+          )}
+
+          <m.button
+            type='button'
+            onClick={() => goToDay(now)}
+            className='w-full text-left'
+            variants={cardVariants}
+            custom={1}
+            whileTap={{ scale: 0.97 }}
+            aria-label='今日のカロリー詳細を見る'
+          >
+            <div className='bg-muted/50 flex items-center gap-5 rounded-2xl p-5'>
+              <Ring pct={calPct} className='stroke-primary' label={`カロリー達成率 ${Math.round(calPct)}%`}>
+                <Flame className='text-primary size-5' />
+              </Ring>
+              <div className='flex-1 space-y-1'>
+                <p className='text-muted-foreground text-xs font-medium uppercase tracking-wider'>今日のカロリー</p>
+                {hasMeals ? (
+                  <>
+                    <p className='text-2xl font-bold'>
+                      {Math.round(totalIntake)}{' '}
+                      <span className='text-muted-foreground text-sm font-normal'>/ {CALORIE_GOAL}</span>
+                    </p>
+                    <div className='text-muted-foreground flex gap-3 text-xs'>
+                      <span>消費 {Math.round(totalBurn)}</span>
+                      <span>P {Math.round(totalProtein)}g</span>
+                      <span>F {Math.round(totalFat)}g</span>
+                      <span>C {Math.round(totalCarbs)}g</span>
+                    </div>
+                  </>
+                ) : (
+                  <p className='text-muted-foreground flex items-center gap-1 text-sm'>
+                    <Plus className='size-4' />
+                    食事を記録しましょう
+                  </p>
+                )}
+              </div>
+            </div>
+          </m.button>
+
+          <m.button
+            type='button'
+            onClick={() => goToDay(now)}
+            className='w-full text-left'
+            variants={cardVariants}
+            custom={2}
+            whileTap={{ scale: 0.97 }}
+            aria-label='今日の運動詳細を見る'
+          >
+            <div className='bg-muted/50 flex items-center gap-5 rounded-2xl p-5'>
+              <Ring pct={exPct} className='stroke-blue-500' label={`運動達成率 ${Math.round(exPct)}%`}>
+                <Footprints className='size-5 text-blue-500' />
+              </Ring>
+              <div className='flex-1 space-y-1'>
+                <p className='text-muted-foreground text-xs font-medium uppercase tracking-wider'>今日の運動</p>
+                {hasExercises ? (
+                  <p className='text-2xl font-bold'>
+                    {totalExMin}{' '}
+                    <span className='text-muted-foreground text-sm font-normal'>/ {EXERCISE_GOAL} 分</span>
+                  </p>
+                ) : (
+                  <p className='text-muted-foreground flex items-center gap-1 text-sm'>
+                    <Plus className='size-4' />
+                    運動を記録しましょう
+                  </p>
+                )}
+              </div>
+            </div>
+          </m.button>
+        </>
       )}
 
-      {/* Today summary — Calories */}
-      <m.button
-        type='button'
-        onClick={() => goToDay(now)}
-        className='w-full text-left'
-        variants={cardVariants}
-        custom={1}
-        whileTap={{ scale: 0.97 }}
-        aria-label='今日のカロリー詳細を見る'
-      >
-        <div className='bg-muted/50 flex items-center gap-5 rounded-2xl p-5'>
-          <Ring pct={calPct} className='stroke-primary' label={`カロリー達成率 ${Math.round(calPct)}%`}>
-            <Flame className='text-primary size-5' />
-          </Ring>
-          <div className='flex-1 space-y-1'>
-            <p className='text-muted-foreground text-xs font-medium uppercase tracking-wider'>今日のカロリー</p>
-            {hasMeals ? (
-              <>
-                <p className='text-2xl font-bold'>
-                  {Math.round(totalIntake)}{' '}
-                  <span className='text-muted-foreground text-sm font-normal'>/ {CALORIE_GOAL}</span>
-                </p>
-                <div className='text-muted-foreground flex gap-3 text-xs'>
-                  <span>消費 {Math.round(totalBurn)}</span>
-                  <span>P {Math.round(totalProtein)}g</span>
-                  <span>F {Math.round(totalFat)}g</span>
-                  <span>C {Math.round(totalCarbs)}g</span>
-                </div>
-              </>
-            ) : (
-              <p className='text-muted-foreground flex items-center gap-1 text-sm'>
-                <Plus className='size-4' />
-                食事を記録しましょう
-              </p>
-            )}
+      {/* AI Advice teaser */}
+      <m.div variants={cardVariants} custom={2.5}>
+        <Link
+          href='/ai'
+          className='from-violet-500/10 to-blue-500/10 flex items-center gap-4 rounded-2xl bg-gradient-to-r p-4 transition-colors active:opacity-80'
+        >
+          <div className='flex size-10 items-center justify-center rounded-xl bg-violet-500/15'>
+            <Bot className='size-5 text-violet-500' />
           </div>
-        </div>
-      </m.button>
-
-      {/* Today summary — Exercise */}
-      <m.button
-        type='button'
-        onClick={() => goToDay(now)}
-        className='w-full text-left'
-        variants={cardVariants}
-        custom={2}
-        whileTap={{ scale: 0.97 }}
-        aria-label='今日の運動詳細を見る'
-      >
-        <div className='bg-muted/50 flex items-center gap-5 rounded-2xl p-5'>
-          <Ring pct={exPct} className='stroke-blue-500' label={`運動達成率 ${Math.round(exPct)}%`}>
-            <Footprints className='size-5 text-blue-500' />
-          </Ring>
-          <div className='flex-1 space-y-1'>
-            <p className='text-muted-foreground text-xs font-medium uppercase tracking-wider'>今日の運動</p>
-            {hasExercises ? (
-              <p className='text-2xl font-bold'>
-                {totalExMin}{' '}
-                <span className='text-muted-foreground text-sm font-normal'>/ {EXERCISE_GOAL} 分</span>
-              </p>
-            ) : (
-              <p className='text-muted-foreground flex items-center gap-1 text-sm'>
-                <Plus className='size-4' />
-                運動を記録しましょう
-              </p>
-            )}
+          <div className='flex-1'>
+            <p className='text-sm font-semibold'>AI アドバイス</p>
+            <p className='text-muted-foreground text-xs'>今日の食事・運動をAIが分析</p>
           </div>
-        </div>
-      </m.button>
+          <ChevronRight className='text-muted-foreground size-4' />
+        </Link>
+      </m.div>
 
       {/* Calendar */}
       <m.div variants={cardVariants} custom={3}>
@@ -329,25 +457,24 @@ export function Dashboard() {
                 whileHover={{ scale: 1.2 }}
                 whileTap={{ scale: 0.9 }}
                 suppressHydrationWarning
-                className={`relative flex flex-col items-center justify-center aspect-square rounded-xl text-sm transition-colors ${
-                  isToday
-                    ? 'bg-primary text-primary-foreground font-bold shadow-sm'
-                    : isFuture
-                      ? 'text-muted-foreground/40'
-                      : 'hover:bg-muted'
-                }`}
+                className={cn(
+                  'relative flex flex-col items-center justify-center aspect-square rounded-xl text-sm transition-colors',
+                  isToday && 'bg-primary text-primary-foreground font-bold shadow-sm',
+                  !isToday && isFuture && 'text-muted-foreground/40',
+                  !isToday && !isFuture && 'hover:bg-muted'
+                )}
               >
                 {i + 1}
                 {(calOk || exOk) && (
-                  <span className='flex gap-0.5 absolute bottom-0.5'>
+                  <span className='absolute bottom-0.5 flex gap-0.5'>
                     {calOk && (
                       <span
-                        className={`size-1 rounded-full ${isToday ? 'bg-primary-foreground' : 'bg-primary'}`}
+                        className={cn('size-1 rounded-full', isToday ? 'bg-primary-foreground' : 'bg-primary')}
                       />
                     )}
                     {exOk && (
                       <span
-                        className={`size-1 rounded-full ${isToday ? 'bg-primary-foreground' : 'bg-blue-500'}`}
+                        className={cn('size-1 rounded-full', isToday ? 'bg-primary-foreground' : 'bg-blue-500')}
                       />
                     )}
                   </span>
