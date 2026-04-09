@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAtomValue } from 'jotai'
-import { Copy, Plus } from 'lucide-react'
+import { Copy, Pencil, Plus } from 'lucide-react'
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
 import Link from 'vinext/shims/link'
@@ -168,15 +168,27 @@ export default function DayPage() {
                     {items.length > 0 && (
                       <span className='text-muted-foreground text-xs'>{Math.round(subtotal)} kcal</span>
                     )}
-                    <m.button
-                      type='button'
-                      onClick={() => setDialogType(type)}
-                      className='text-primary hover:text-primary/80'
-                      whileTap={{ scale: 0.8, rotate: 90 }}
-                      transition={{ type: 'spring', stiffness: 500, damping: 15 }}
-                    >
-                      <Plus className='size-4' />
-                    </m.button>
+                    {items.length > 0 ? (
+                      <m.button
+                        type='button'
+                        onClick={() => setEditingMealId(items[0].id)}
+                        className='text-muted-foreground hover:text-foreground'
+                        whileTap={{ scale: 0.85 }}
+                        transition={{ type: 'spring', stiffness: 500, damping: 15 }}
+                      >
+                        <Pencil className='size-3.5' />
+                      </m.button>
+                    ) : (
+                      <m.button
+                        type='button'
+                        onClick={() => setDialogType(type)}
+                        className='text-primary hover:text-primary/80'
+                        whileTap={{ scale: 0.8, rotate: 90 }}
+                        transition={{ type: 'spring', stiffness: 500, damping: 15 }}
+                      >
+                        <Plus className='size-4' />
+                      </m.button>
+                    )}
                   </div>
                 </div>
                 <AnimatePresence mode='popLayout'>
@@ -190,16 +202,12 @@ export default function DayPage() {
                           animate={{ opacity: 1, height: 'auto' }}
                           exit={{ opacity: 0, height: 0 }}
                         >
-                          <button
-                            type='button'
-                            onClick={() => setEditingMealId(meal.id)}
-                            className='flex w-full items-center justify-between rounded-lg px-2 py-1.5 transition-colors hover:bg-muted'
-                          >
+                          <div className='flex w-full items-center justify-between px-2 py-1.5'>
                             <span className='text-sm'>{meal.food_name}</span>
                             <span className='text-muted-foreground text-xs'>
                               {Math.round(meal.food_calories * meal.quantity)} kcal
                             </span>
-                          </button>
+                          </div>
                         </m.div>
                       ))}
                     </div>
