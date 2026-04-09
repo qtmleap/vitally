@@ -6,6 +6,7 @@ import * as m from 'motion/react-m'
 import { useState } from 'react'
 import Link from 'vinext/shims/link'
 import { usePathname } from 'vinext/shims/navigation'
+import { useAuth } from '@/components/auth-provider'
 
 import { AddMealDialog } from '@/components/add-meal-dialog'
 import { QuickAddSheet } from '@/components/quick-add-sheet'
@@ -29,8 +30,8 @@ export function BottomNav() {
   const date = useAtomValue(selectedDateAtom)
   const pathname = usePathname()
 
-  const hiddenPaths = ['/', '/onboarding', '/terms', '/privacy']
-  if (hiddenPaths.includes(pathname)) return null
+  const { user } = useAuth()
+  if (!user || pathname === '/onboarding') return null
 
   return (
     <>
