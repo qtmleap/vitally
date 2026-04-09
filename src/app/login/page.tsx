@@ -239,14 +239,14 @@ export default function LoginPage() {
               className='bg-card absolute -right-4 bottom-4 z-20 rounded-2xl p-3 shadow-lg lg:right-4 lg:p-4'
               delay={0.8}
             >
-              <div className='text-center'>
-                <div className='flex items-center gap-1'>
-                  <Sparkles className='text-primary size-3' />
-                  <p className='text-[10px] font-medium'>AI 評価</p>
+              <div className='flex items-center gap-2'>
+                <div className='bg-primary/10 flex size-8 items-center justify-center rounded-xl'>
+                  <Sparkles className='text-primary size-4' />
                 </div>
-                <p className='text-muted-foreground mt-0.5 max-w-20 text-[9px] leading-tight'>
-                  バランスの良い食事です
-                </p>
+                <div>
+                  <p className='text-xs font-bold'>AI 評価</p>
+                  <p className='text-muted-foreground text-[10px]'>良いバランス</p>
+                </div>
               </div>
             </FloatingCard>
           </div>
