@@ -1,10 +1,7 @@
-const CACHE_NAME = 'healthlog-v1'
-const PRECACHE_URLS = ['/', '/manifest.json']
+const CACHE_NAME = 'healthlog-v2'
+const STATIC_EXTENSIONS = /\.(js|css|png|jpg|jpeg|svg|ico|woff2?)$/
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_URLS))
-  )
   self.skipWaiting()
 })
 
@@ -21,25 +18,33 @@ self.addEventListener('fetch', (event) => {
   const { request } = event
   const url = new URL(request.url)
 
-  // API リクエストはネットワーク優先
+  // API リクエストはネットワークのみ (キャッシュしない)
   if (url.pathname.startsWith('/api/')) {
+    return
+  }
+
+  // ナビゲーション (HTML) はネットワーク優先
+  if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request).catch(() => caches.match(request))
+      fetch(request).catch(() => caches.match('/'))
     )
     return
   }
 
-  // それ以外はキャッシュ優先、なければネットワーク
-  event.respondWith(
-    caches.match(request).then((cached) => {
-      if (cached) return cached
-      return fetch(request).then((response) => {
-        if (response.ok) {
-          const clone = response.clone()
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone))
-        }
-        return response
+  // 静的アセット (js/css/images) はキャッシュ優先
+  if (STATIC_EXTENSIONS.test(url.pathname)) {
+    event.respondWith(
+      caches.match(request).then((cached) => {
+        if (cached) return cached
+        return fetch(request).then((response) => {
+          if (response.ok) {
+            const clone = response.clone()
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone))
+          }
+          return response
+        })
       })
-    })
-  )
+    )
+    return
+  }
 })
