@@ -26,9 +26,11 @@ async function authFetch(url: string, init?: RequestInit): Promise<Response> {
   return fetch(url, { ...init, headers })
 }
 
-const json = <T>(res: Response): Promise<T> => {
+const json = async <T>(res: Response): Promise<T> => {
   if (!res.ok) {
     if (res.status === 401) {
+      const { signOutUser } = await import('@/lib/auth')
+      await signOutUser()
       window.location.href = '/'
       throw new Error('認証エラー')
     }
