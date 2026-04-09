@@ -6,12 +6,14 @@ import { foodSchema } from '@/lib/schema'
 export async function GET(request: Request) {
   const url = new URL(request.url)
   const q = url.searchParams.get('q') ?? ''
+  const rawLimit = Number.parseInt(url.searchParams.get('limit') ?? '50', 10)
+  const limit = Number.isNaN(rawLimit) ? 50 : Math.min(50, Math.max(1, rawLimit))
   const prisma = getPrisma(env)
 
   const foods = await prisma.food.findMany({
     where: q ? { name: { contains: q } } : undefined,
     orderBy: q ? { name: 'asc' } : { createdAt: 'desc' },
-    take: 50
+    take: limit
   })
 
   return Response.json(foods)

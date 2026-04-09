@@ -1,7 +1,9 @@
 import { env } from 'cloudflare:workers'
 
+import { getPrisma } from '@/lib/db'
+
 export async function POST(request: Request) {
-  const { name, serving } = (await request.json()) as { name: string; serving?: string }
+  const { name, serving, save } = (await request.json()) as { name: string; serving?: string; save?: boolean }
 
   if (!name) {
     return Response.json({ error: 'name is required' }, { status: 400 })
@@ -29,13 +31,19 @@ export async function POST(request: Request) {
     const match = text.match(/\{[\s\S]*?\}/)
     if (!match) throw new Error('No JSON found')
     const parsed = JSON.parse(match[0])
-    return Response.json({
+    const estimate = {
       calories: Math.round(Number(parsed.calories) || 0),
       protein: Math.round(Number(parsed.protein) || 0),
       fat: Math.round(Number(parsed.fat) || 0),
       carbs: Math.round(Number(parsed.carbs) || 0),
       serving: String(parsed.serving || '1食分')
-    })
+    }
+    if (save) {
+      const prisma = getPrisma(env)
+      const food = await prisma.food.create({ data: { name, ...estimate } })
+      return Response.json(food)
+    }
+    return Response.json(estimate)
   } catch {
     return Response.json({ error: 'AI の応答を解析できませんでした', raw: text }, { status: 502 })
   }

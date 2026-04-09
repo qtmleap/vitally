@@ -32,8 +32,13 @@ interface NutritionEstimate {
 
 export const api = {
   foods: {
-    list: (q?: string): Promise<FoodRow[]> =>
-      fetch(`/api/foods${q ? `?q=${encodeURIComponent(q)}` : ''}`).then((r) => json<FoodRow[]>(r)),
+    list: (q?: string, limit?: number): Promise<FoodRow[]> => {
+      const params = new URLSearchParams()
+      if (q) params.set('q', q)
+      if (limit) params.set('limit', String(limit))
+      const qs = params.toString()
+      return fetch(`/api/foods${qs ? `?${qs}` : ''}`).then((r) => json<FoodRow[]>(r))
+    },
     create: (data: FoodInput): Promise<FoodRow> =>
       fetch('/api/foods', {
         method: 'POST',
@@ -86,12 +91,12 @@ export const api = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       }).then((r) => json<{ message: string }>(r)),
-    estimateNutrition: (data: { name: string; serving?: string }): Promise<NutritionEstimate> =>
+    estimateNutrition: (data: { name: string; serving?: string; save?: boolean }): Promise<NutritionEstimate & Partial<FoodRow>> =>
       fetch('/api/ai/nutrition', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
-      }).then((r) => json<NutritionEstimate>(r))
+      }).then((r) => json<NutritionEstimate & Partial<FoodRow>>(r))
   },
   summary: {
     month: (from: string, to: string): Promise<Record<string, { calories: number; exercise_min: number }>> =>

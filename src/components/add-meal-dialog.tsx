@@ -2,8 +2,8 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Check, Minus, Plus, Search, X } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import { Check, Minus, Plus, Search, Sparkles, X } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -13,14 +13,17 @@ import * as m from 'motion/react-m'
 
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { api } from '@/lib/api'
 import type { FoodRow } from '@/lib/db'
+import { cn } from '@/lib/utils'
 import type { MealType } from '@/lib/schema'
 import { mealTypeLabels } from '@/lib/schema'
 
 type Unit = 'serving' | 'g'
+type MealSource = 'eating_out' | 'home_cooking'
 
 interface BasketItem {
   food: FoodRow
@@ -37,6 +40,15 @@ interface AddMealDialogProps {
   onOpenChange: (open: boolean) => void
   mealType: MealType
   date: string
+}
+
+function useDebouncedValue<T>(value: T, delay: number): T {
+  const [debounced, setDebounced] = useState(value)
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delay)
+    return () => clearTimeout(timer)
+  }, [value, delay])
+  return debounced
 }
 
 function BasketRow({
@@ -108,6 +120,7 @@ function BasketRow({
                       className='h-7 w-14 px-1 text-center text-xs'
                     />
                   </FormControl>
+                  <FormMessage className='text-[10px]' />
                 </FormItem>
               )}
             />
@@ -124,9 +137,6 @@ function BasketRow({
           </button>
         </div>
       </div>
-      {form.formState.errors.amount && (
-        <p className='text-destructive pl-6 text-[10px]'>{form.formState.errors.amount.message}</p>
-      )}
     </div>
   )
 }
@@ -135,11 +145,38 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
   const queryClient = useQueryClient()
   const [search, setSearch] = useState('')
   const [basket, setBasket] = useState<BasketItem[]>([])
+  const [mealSource, setMealSource] = useState<MealSource>('eating_out')
+
+  const debouncedSearch = useDebouncedValue(search, 300)
 
   const { data: foods = [] } = useQuery<FoodRow[]>({
-    queryKey: ['foods', search],
-    queryFn: () => api.foods.list(search || undefined),
+    queryKey: ['foods', debouncedSearch],
+    queryFn: () => api.foods.list(debouncedSearch || undefined),
     enabled: open
+  })
+
+  const aiMutation = useMutation({
+    mutationFn: (name: string) => api.ai.estimateNutrition({ name, save: true }),
+    onSuccess: (result, name) => {
+      if (result.id && result.name) {
+        const food: FoodRow = {
+          id: result.id,
+          name: result.name,
+          calories: result.calories,
+          protein: result.protein,
+          fat: result.fat,
+          carbs: result.carbs,
+          serving: result.serving,
+          createdAt: result.createdAt ?? new Date().toISOString()
+        }
+        setBasket((prev) => {
+          if (prev.some((item) => item.food.id === food.id)) return prev
+          return [...prev, { food, amount: 1, unit: 'serving' }]
+        })
+        setSearch('')
+        toast.success(`"${name}" の栄養素をAIで推定しました`)
+      }
+    }
   })
 
   const addToBasket = useCallback((food: FoodRow) => {
@@ -166,7 +203,7 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
 
   const hasInvalid = basket.some((item) => item.amount < 0.1)
 
-  const mutation = useMutation({
+  const saveMutation = useMutation({
     mutationFn: async () => {
       for (const item of basket) {
         const quantity = item.unit === 'g' ? item.amount / 100 : item.amount
@@ -178,23 +215,67 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
       toast.success(`${basket.length}品目を追加しました`)
       setBasket([])
       setSearch('')
+      setMealSource('eating_out')
       onOpenChange(false)
     }
   })
 
+  const handleOpenChange = (next: boolean) => {
+    if (!next) {
+      setBasket([])
+      setSearch('')
+      setMealSource('eating_out')
+    }
+    onOpenChange(next)
+  }
+
   const inBasket = new Set(basket.map((item) => item.food.id))
+  const showNoResults = debouncedSearch.length > 0 && foods.length === 0
+  const searchPlaceholder =
+    mealSource === 'eating_out' ? '料理名を入力（例: 麻婆豆腐）' : '食品名を検索（例: 鶏むね肉）'
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className='flex max-h-[85dvh] flex-col gap-0 p-0'>
         <DialogHeader className='border-b px-4 py-3'>
           <DialogTitle>{mealTypeLabels[mealType]}を追加</DialogTitle>
         </DialogHeader>
 
-        <div className='border-b px-4 py-3'>
+        <div className='border-b px-4 pb-3 pt-2 space-y-2'>
+          <ToggleGroup
+            type='single'
+            value={mealSource}
+            onValueChange={(v) => { if (v) setMealSource(v as MealSource) }}
+            className='w-full rounded-md border p-0.5 bg-muted'
+          >
+            <ToggleGroupItem
+              value='eating_out'
+              className={cn(
+                'flex-1 text-sm h-8 rounded-sm data-[state=on]:bg-background data-[state=on]:shadow-sm',
+                mealSource === 'eating_out' && 'font-medium'
+              )}
+            >
+              外食
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              value='home_cooking'
+              className={cn(
+                'flex-1 text-sm h-8 rounded-sm data-[state=on]:bg-background data-[state=on]:shadow-sm',
+                mealSource === 'home_cooking' && 'font-medium'
+              )}
+            >
+              自炊
+            </ToggleGroupItem>
+          </ToggleGroup>
+
           <div className='relative'>
             <Search className='text-muted-foreground pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2' />
-            <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder='食品名を検索...' className='pl-9' />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={searchPlaceholder}
+              className='pl-9'
+            />
           </div>
         </div>
 
@@ -208,7 +289,10 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
                     key={food.id}
                     type='button'
                     onClick={() => (selected ? removeFromBasket(food.id) : addToBasket(food))}
-                    className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${selected ? 'bg-primary/10' : 'hover:bg-muted'}`}
+                    className={cn(
+                      'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors',
+                      selected ? 'bg-primary/10' : 'hover:bg-muted'
+                    )}
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.03, type: 'spring', stiffness: 400, damping: 25 }}
@@ -216,7 +300,10 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
                     layout
                   >
                     <m.div
-                      className={`flex size-5 shrink-0 items-center justify-center rounded-full border transition-colors ${selected ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground/30'}`}
+                      className={cn(
+                        'flex size-5 shrink-0 items-center justify-center rounded-full border transition-colors',
+                        selected ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground/30'
+                      )}
                       animate={selected ? { scale: [1, 1.3, 1] } : { scale: 1 }}
                       transition={{ duration: 0.3 }}
                     >
@@ -232,6 +319,33 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
                 )
               })}
             </div>
+          ) : showNoResults ? (
+            <m.div
+              className='flex flex-col items-center gap-3 py-8'
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.15 }}
+            >
+              <p className='text-muted-foreground text-sm'>見つかりません</p>
+              {mealSource === 'eating_out' ? (
+                <Button
+                  type='button'
+                  onClick={() => aiMutation.mutate(search)}
+                  disabled={aiMutation.isPending}
+                  className='gap-2'
+                >
+                  <Sparkles className='size-4' />
+                  {aiMutation.isPending ? '推定中...' : 'AI で栄養素を推定'}
+                </Button>
+              ) : (
+                <a
+                  href='/foods/new'
+                  className='text-primary text-sm underline underline-offset-4 hover:opacity-80'
+                >
+                  新しい食品を登録する
+                </a>
+              )}
+            </m.div>
           ) : (
             <m.p
               className='text-muted-foreground py-8 text-center text-sm'
@@ -239,7 +353,7 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
               animate={{ opacity: 1 }}
               transition={{ delay: 0.15 }}
             >
-              {search ? '見つかりません' : '食品を検索してください'}
+              {mealSource === 'eating_out' ? '料理名を入力してください' : '食品名を検索してください'}
             </m.p>
           )}
         </div>
@@ -278,8 +392,12 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
               >
-                <Button onClick={() => mutation.mutate()} className='w-full' disabled={mutation.isPending || hasInvalid}>
-                  {mutation.isPending ? '保存中...' : `${basket.length}品目を追加（${Math.round(totalCalories)} kcal）`}
+                <Button
+                  onClick={() => saveMutation.mutate()}
+                  className='w-full'
+                  disabled={saveMutation.isPending || hasInvalid}
+                >
+                  {saveMutation.isPending ? '保存中...' : `${basket.length}品目を追加（${Math.round(totalCalories)} kcal）`}
                 </Button>
               </m.div>
             </m.div>
