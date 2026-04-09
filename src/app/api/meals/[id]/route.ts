@@ -5,7 +5,7 @@ import { getPrisma } from '@/lib/db'
 import { mealUpdateSchema } from '@/lib/schema'
 
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const user = getAuthUser(request)
+  const user = await getAuthUser(request)
   const { id } = await params
   const prisma = getPrisma(env)
 
@@ -34,7 +34,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 }
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const user = getAuthUser(request)
+  const user = await getAuthUser(request)
   const { id } = await params
   const body = await request.json()
   const parsed = mealUpdateSchema.safeParse(body)
@@ -73,7 +73,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 }
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const user = getAuthUser(request)
+  const user = await getAuthUser(request)
   const { id } = await params
   const prisma = getPrisma(env)
 

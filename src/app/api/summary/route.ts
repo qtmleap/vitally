@@ -4,7 +4,7 @@ import { getAuthUser } from '@/lib/auth-middleware'
 import { getPrisma } from '@/lib/db'
 
 export async function GET(request: Request) {
-  const user = getAuthUser(request)
+  const user = await getAuthUser(request)
   const url = new URL(request.url)
   const from = url.searchParams.get('from')
   const to = url.searchParams.get('to')

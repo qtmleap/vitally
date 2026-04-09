@@ -5,7 +5,7 @@ import { getPrisma } from '@/lib/db'
 import { mealTemplateCreateSchema } from '@/lib/schema'
 
 export async function GET(request: Request) {
-  const user = getAuthUser(request)
+  const user = await getAuthUser(request)
   const prisma = getPrisma(env)
   const templates = await prisma.mealTemplate.findMany({
     where: { userId: user.uid },
@@ -16,7 +16,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const user = getAuthUser(request)
+  const user = await getAuthUser(request)
   const body = await request.json()
   const parsed = mealTemplateCreateSchema.safeParse(body)
 
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const user = getAuthUser(request)
+  const user = await getAuthUser(request)
   const url = new URL(request.url)
   const id = url.searchParams.get('id')
 

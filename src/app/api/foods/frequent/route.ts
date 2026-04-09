@@ -4,7 +4,7 @@ import { getAuthUser } from '@/lib/auth-middleware'
 import { getPrisma } from '@/lib/db'
 
 export async function GET(request: Request) {
-  const user = getAuthUser(request)
+  const user = await getAuthUser(request)
   const url = new URL(request.url)
   const rawLimit = Number.parseInt(url.searchParams.get('limit') ?? '10', 10)
   const limit = Number.isNaN(rawLimit) ? 10 : Math.min(20, Math.max(1, rawLimit))

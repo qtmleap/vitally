@@ -5,7 +5,7 @@ import { getPrisma } from '@/lib/db'
 import { mealCopySchema } from '@/lib/schema'
 
 export async function POST(request: Request) {
-  const user = getAuthUser(request)
+  const user = await getAuthUser(request)
   const body = await request.json()
   const parsed = mealCopySchema.safeParse(body)
 
