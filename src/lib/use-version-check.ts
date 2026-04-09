@@ -5,9 +5,10 @@ declare const __APP_VERSION__: string
 const VERSION_KEY = 'app_version'
 
 export function useVersionCheck() {
-  const [hasUpdate, setHasUpdate] = useState(false)
+  const [hasUpdate, setHasUpdate] = useState(import.meta.env.DEV)
 
   useEffect(() => {
+    if (import.meta.env.DEV) return
     const check = async () => {
       try {
         const res = await fetch('/api/version')

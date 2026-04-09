@@ -7,15 +7,12 @@ import { Loader2 } from 'lucide-react'
 interface UpdatingOverlayProps {
   show: boolean
   message?: string
-  /** dev 環境で強制表示（テスト用） */
-  forceShow?: boolean
 }
 
-export function UpdatingOverlay({ show, message = '更新中...', forceShow }: UpdatingOverlayProps) {
-  const visible = show || (import.meta.env.DEV && forceShow)
+export function UpdatingOverlay({ show, message = '更新中...' }: UpdatingOverlayProps) {
   return (
     <AnimatePresence>
-      {visible && (
+      {show && (
         <m.div
           className='fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm'
           initial={{ opacity: 0 }}
