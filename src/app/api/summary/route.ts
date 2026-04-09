@@ -1,10 +1,10 @@
 import { env } from 'cloudflare:workers'
 
-import { requireAuth } from '@/lib/auth-middleware'
+import { getAuthUser } from '@/lib/auth-middleware'
 import { getPrisma } from '@/lib/db'
 
 export async function GET(request: Request) {
-  const user = await requireAuth(request)
+  const user = getAuthUser(request)
   const url = new URL(request.url)
   const from = url.searchParams.get('from')
   const to = url.searchParams.get('to')

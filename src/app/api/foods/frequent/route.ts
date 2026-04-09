@@ -1,10 +1,10 @@
 import { env } from 'cloudflare:workers'
 
-import { requireAuth } from '@/lib/auth-middleware'
+import { getAuthUser } from '@/lib/auth-middleware'
 import { getPrisma } from '@/lib/db'
 
 export async function GET(request: Request) {
-  const user = await requireAuth(request)
+  const user = getAuthUser(request)
   const url = new URL(request.url)
   const rawLimit = Number.parseInt(url.searchParams.get('limit') ?? '10', 10)
   const limit = Number.isNaN(rawLimit) ? 10 : Math.min(20, Math.max(1, rawLimit))

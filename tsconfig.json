@@ -11,7 +11,8 @@
     "skipLibCheck": true,
     "types": ["@cloudflare/workers-types"],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "next/server": ["./node_modules/vinext/dist/shims/server.d.ts"]
     }
   }
 }

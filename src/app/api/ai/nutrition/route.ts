@@ -1,10 +1,8 @@
 import { env } from 'cloudflare:workers'
 
-import { requireAuth } from '@/lib/auth-middleware'
 import { getPrisma } from '@/lib/db'
 
 export async function POST(request: Request) {
-  await requireAuth(request)
   const { name, serving, save } = (await request.json()) as { name: string; serving?: string; save?: boolean }
 
   if (!name) {

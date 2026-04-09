@@ -1,9 +1,6 @@
 import { env } from 'cloudflare:workers'
 
-import { requireAuth } from '@/lib/auth-middleware'
-
 export async function POST(request: Request) {
-  await requireAuth(request)
   const { meals, exercises, date } = (await request.json()) as {
     meals: Array<{ food_name: string; calories: number; meal_type: string; quantity: number }>
     exercises: Array<{ name: string; duration_min: number; calories: number | null }>

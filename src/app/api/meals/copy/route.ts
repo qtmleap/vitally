@@ -1,11 +1,11 @@
 import { env } from 'cloudflare:workers'
 
-import { requireAuth } from '@/lib/auth-middleware'
+import { getAuthUser } from '@/lib/auth-middleware'
 import { getPrisma } from '@/lib/db'
 import { mealCopySchema } from '@/lib/schema'
 
 export async function POST(request: Request) {
-  const user = await requireAuth(request)
+  const user = getAuthUser(request)
   const body = await request.json()
   const parsed = mealCopySchema.safeParse(body)
 

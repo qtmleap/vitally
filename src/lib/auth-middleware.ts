@@ -1,18 +1,21 @@
-import { type FirebaseUser, verifyFirebaseToken } from '@/lib/firebase-auth'
-
-export async function getAuthUser(request: Request): Promise<FirebaseUser> {
-  const authHeader = request.headers.get('Authorization')
-  if (!authHeader?.startsWith('Bearer ')) {
-    throw new Error('Missing or invalid Authorization header')
-  }
-  const token = authHeader.slice(7)
-  return verifyFirebaseToken(token)
+export interface AuthUser {
+  uid: string
+  email: string
+  name?: string
 }
 
-export async function requireAuth(request: Request): Promise<FirebaseUser> {
-  try {
-    return await getAuthUser(request)
-  } catch {
+/**
+ * Get authenticated user from middleware-injected headers.
+ * Middleware has already verified the token and set X-User-Id / X-User-Email.
+ */
+export function getAuthUser(request: Request): AuthUser {
+  const uid = request.headers.get('X-User-Id')
+  const email = request.headers.get('X-User-Email') ?? ''
+  const name = request.headers.get('X-User-Name') ?? undefined
+
+  if (!uid) {
     throw Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
+
+  return { uid, email, name }
 }

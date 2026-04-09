@@ -1,7 +1,4 @@
-import { requireAuth } from '@/lib/auth-middleware'
-
 export async function GET(request: Request) {
-  await requireAuth(request)
   const url = new URL(request.url)
   const code = url.searchParams.get('code')
 

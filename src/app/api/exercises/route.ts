@@ -1,11 +1,11 @@
 import { env } from 'cloudflare:workers'
 
-import { requireAuth } from '@/lib/auth-middleware'
+import { getAuthUser } from '@/lib/auth-middleware'
 import { getPrisma } from '@/lib/db'
 import { exerciseSchema } from '@/lib/schema'
 
 export async function GET(request: Request) {
-  const user = await requireAuth(request)
+  const user = getAuthUser(request)
   const url = new URL(request.url)
   const date = url.searchParams.get('date')
 
@@ -32,7 +32,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const user = await requireAuth(request)
+  const user = getAuthUser(request)
   const body = await request.json()
   const parsed = exerciseSchema.safeParse(body)
 
@@ -51,7 +51,7 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const user = await requireAuth(request)
+  const user = getAuthUser(request)
   const url = new URL(request.url)
   const id = url.searchParams.get('id')
 

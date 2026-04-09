@@ -1,11 +1,9 @@
 import { env } from 'cloudflare:workers'
 
-import { requireAuth } from '@/lib/auth-middleware'
 import { getPrisma } from '@/lib/db'
 import { foodSchema } from '@/lib/schema'
 
 export async function GET(request: Request) {
-  await requireAuth(request)
   const url = new URL(request.url)
   const q = url.searchParams.get('q') ?? ''
   const rawLimit = Number.parseInt(url.searchParams.get('limit') ?? '50', 10)
@@ -22,7 +20,6 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  await requireAuth(request)
   const body = await request.json()
   const parsed = foodSchema.safeParse(body)
 
@@ -37,7 +34,6 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  await requireAuth(request)
   const url = new URL(request.url)
   const id = url.searchParams.get('id')
 
