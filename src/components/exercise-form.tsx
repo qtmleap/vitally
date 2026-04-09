@@ -9,6 +9,7 @@ import { toast } from 'sonner'
 
 import * as m from 'motion/react-m'
 
+import { AiThinkingOverlay } from '@/components/ai-thinking-overlay'
 import { PageHeader } from '@/components/page-header'
 import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
@@ -134,6 +135,7 @@ export function ExerciseForm() {
           </Button>
         </form>
       </Form>
+      <AiThinkingOverlay show={estimateMutation.isPending} message='消費カロリーを推定中...' />
     </m.div>
   )
 }

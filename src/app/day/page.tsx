@@ -9,6 +9,7 @@ import Link from 'vinext/shims/link'
 import { useState } from 'react'
 
 import { AddMealDialog } from '@/components/add-meal-dialog'
+import { AiThinkingOverlay } from '@/components/ai-thinking-overlay'
 import { EditMealDialog } from '@/components/edit-meal-dialog'
 import { DateNav } from '@/components/date-nav'
 import { DayFab } from '@/components/day-fab'
@@ -360,6 +361,7 @@ export default function DayPage() {
           date={date}
         />
       )}
+      <AiThinkingOverlay show={adviceMutation.isPending} />
     </m.div>
   )
 }

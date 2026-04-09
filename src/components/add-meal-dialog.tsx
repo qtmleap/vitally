@@ -11,6 +11,7 @@ import { z } from 'zod'
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
 
+import { AiThinkingOverlay } from '@/components/ai-thinking-overlay'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
@@ -640,6 +641,7 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
           )}
         </AnimatePresence>
       </DialogContent>
+      <AiThinkingOverlay show={aiMutation.isPending} message='栄養素を推定中...' />
     </Dialog>
   )
 }
