@@ -1,6 +1,13 @@
 export type Tier = 'free' | 'pro'
 export type AiCategory = 'advice' | 'nutrition' | 'exercise'
 
+export interface AiModelRating {
+  /** 回答の質 (1-5) */
+  quality: number
+  /** 応答速度 (1-5) */
+  speed: number
+}
+
 export interface AiModel {
   id: string
   label: string
@@ -8,6 +15,7 @@ export interface AiModel {
   categories: AiCategory[]
   /** 1リクエストあたりの概算 neurons（表示用） */
   neuronsPerReq: number
+  rating: AiModelRating
 }
 
 export const AI_MODELS: AiModel[] = [
@@ -17,21 +25,24 @@ export const AI_MODELS: AiModel[] = [
     label: 'Llama 3.1 8B',
     tier: 'free',
     categories: ['advice'],
-    neuronsPerReq: 14
+    neuronsPerReq: 14,
+    rating: { quality: 3, speed: 5 }
   },
   {
     id: '@cf/qwen/qwen3-30b-a3b-fp8',
     label: 'Qwen3 30B (MoE)',
     tier: 'free',
     categories: ['advice'],
-    neuronsPerReq: 11
+    neuronsPerReq: 11,
+    rating: { quality: 4, speed: 4 }
   },
   {
     id: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
     label: 'Llama 3.3 70B',
     tier: 'pro',
     categories: ['advice'],
-    neuronsPerReq: 59
+    neuronsPerReq: 59,
+    rating: { quality: 5, speed: 3 }
   },
   // --- Nutrition / Exercise ---
   {
@@ -39,14 +50,16 @@ export const AI_MODELS: AiModel[] = [
     label: 'Hermes 2 Pro 7B',
     tier: 'free',
     categories: ['nutrition', 'exercise'],
-    neuronsPerReq: 14
+    neuronsPerReq: 14,
+    rating: { quality: 3, speed: 4 }
   },
   {
     id: '@cf/meta/llama-3.1-8b-instruct-fp8',
     label: 'Llama 3.1 8B',
     tier: 'free',
     categories: ['nutrition', 'exercise'],
-    neuronsPerReq: 14
+    neuronsPerReq: 14,
+    rating: { quality: 3, speed: 5 }
   }
 ]
 

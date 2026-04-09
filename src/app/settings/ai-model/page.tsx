@@ -1,7 +1,7 @@
 'use client'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Check, Sparkles, Zap } from 'lucide-react'
+import { Check, Sparkles, Star, Zap } from 'lucide-react'
 import * as m from 'motion/react-m'
 import { toast } from 'sonner'
 
@@ -56,9 +56,29 @@ function ModelCard({
             </Badge>
           )}
         </div>
-        <div className='text-muted-foreground flex items-center gap-2 text-xs'>
-          <Zap className='size-3' />
-          <span>~{model.neuronsPerReq} neurons/回</span>
+        <div className='text-muted-foreground mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px]'>
+          <span className='flex items-center gap-1'>
+            品質
+            {Array.from({ length: 5 }, (_, i) => (
+              <Star
+                key={i}
+                className={cn('size-2.5', i < model.rating.quality ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30')}
+              />
+            ))}
+          </span>
+          <span className='flex items-center gap-1'>
+            速度
+            {Array.from({ length: 5 }, (_, i) => (
+              <Star
+                key={i}
+                className={cn('size-2.5', i < model.rating.speed ? 'fill-blue-400 text-blue-400' : 'text-muted-foreground/30')}
+              />
+            ))}
+          </span>
+          <span className='flex items-center gap-0.5'>
+            <Zap className='size-2.5' />
+            ~{model.neuronsPerReq}/回
+          </span>
         </div>
       </div>
     </button>
