@@ -46,7 +46,7 @@ function AiPageContent() {
 
   return (
     <div className='p-4'>
-      <PageHeader title='AI アドバイス' />
+      <PageHeader title='AI アドバイス' back />
       <DateNav />
       <div className='mt-4 space-y-4'>
         <Button className='w-full' onClick={() => adviceMutation.mutate()} disabled={adviceMutation.isPending}>
