@@ -1,6 +1,6 @@
 'use client'
 
-import { useMutation, useSuspenseQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useSuspenseQuery, useQueryClient } from '@tanstack/react-query'
 import { useAtomValue } from 'jotai'
 import { Bot, Copy, Loader2, Pencil, Plus, Sparkles } from 'lucide-react'
 import { AnimatePresence } from 'motion/react'
@@ -35,9 +35,10 @@ function DayPageContent() {
   const [editingMealType, setEditingMealType] = useState<MealType | null>(null)
   const [advice, setAdvice] = useState<string | null>(null)
 
-  const { data: profileData } = useSuspenseQuery<{ profile: UserProfileRow | null }>({
+  const { data: profileData } = useQuery({
     queryKey: ['profile'],
-    queryFn: api.profile.get
+    queryFn: api.profile.get,
+    staleTime: Number.POSITIVE_INFINITY
   })
   const calorieGoal = profileData?.profile?.calorieGoal ?? DEFAULT_CALORIE_GOAL
 
