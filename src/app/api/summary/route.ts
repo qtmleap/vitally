@@ -1,8 +1,10 @@
 import { env } from 'cloudflare:workers'
 
+import { requireAuth } from '@/lib/auth-middleware'
 import { getPrisma } from '@/lib/db'
 
 export async function GET(request: Request) {
+  const user = await requireAuth(request)
   const url = new URL(request.url)
   const from = url.searchParams.get('from')
   const to = url.searchParams.get('to')
@@ -15,11 +17,11 @@ export async function GET(request: Request) {
 
   const [meals, exercises] = await Promise.all([
     prisma.meal.findMany({
-      where: { date: { gte: from, lte: to } },
+      where: { userId: user.uid, date: { gte: from, lte: to } },
       include: { food: true }
     }),
     prisma.exercise.findMany({
-      where: { date: { gte: from, lte: to } }
+      where: { userId: user.uid, date: { gte: from, lte: to } }
     })
   ])
 

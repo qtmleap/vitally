@@ -1,14 +1,16 @@
 import { env } from 'cloudflare:workers'
 
+import { requireAuth } from '@/lib/auth-middleware'
 import { getPrisma } from '@/lib/db'
 import { mealUpdateSchema } from '@/lib/schema'
 
-export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const user = await requireAuth(request)
   const { id } = await params
   const prisma = getPrisma(env)
 
   const meal = await prisma.meal.findUnique({
-    where: { id },
+    where: { id, userId: user.uid },
     include: { food: true }
   })
 
@@ -32,6 +34,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 }
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const user = await requireAuth(request)
   const { id } = await params
   const body = await request.json()
   const parsed = mealUpdateSchema.safeParse(body)
@@ -49,7 +52,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   if (quantity !== undefined) data.quantity = quantity
 
   const meal = await prisma.meal.update({
-    where: { id },
+    where: { id, userId: user.uid },
     data,
     include: { food: true }
   })
@@ -69,11 +72,12 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   })
 }
 
-export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const user = await requireAuth(request)
   const { id } = await params
   const prisma = getPrisma(env)
 
-  await prisma.meal.delete({ where: { id } })
+  await prisma.meal.delete({ where: { id, userId: user.uid } })
 
   return Response.json({ ok: true })
 }

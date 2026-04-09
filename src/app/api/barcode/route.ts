@@ -1,4 +1,7 @@
+import { requireAuth } from '@/lib/auth-middleware'
+
 export async function GET(request: Request) {
+  await requireAuth(request)
   const url = new URL(request.url)
   const code = url.searchParams.get('code')
 
@@ -42,7 +45,6 @@ export async function GET(request: Request) {
   const n = p.nutriments
   const name = p.product_name_ja || p.product_name || ''
 
-  // 1食分のデータがあればそちらを優先、なければ100gあたりの値を使用
   const hasSrv = n?.['energy-kcal_serving'] != null
   const calories = hasSrv ? (n?.['energy-kcal_serving'] ?? 0) : (n?.['energy-kcal_100g'] ?? 0)
   const protein = hasSrv ? (n?.proteins_serving ?? 0) : (n?.proteins_100g ?? 0)

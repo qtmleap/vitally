@@ -1,9 +1,11 @@
 import { env } from 'cloudflare:workers'
 
+import { requireAuth } from '@/lib/auth-middleware'
 import { getPrisma } from '@/lib/db'
 import { mealSchema } from '@/lib/schema'
 
 export async function GET(request: Request) {
+  const user = await requireAuth(request)
   const url = new URL(request.url)
   const date = url.searchParams.get('date')
 
@@ -13,7 +15,7 @@ export async function GET(request: Request) {
 
   const prisma = getPrisma(env)
   const meals = await prisma.meal.findMany({
-    where: { date },
+    where: { userId: user.uid, date },
     include: { food: true },
     orderBy: [{ createdAt: 'asc' }]
   })
@@ -36,6 +38,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const user = await requireAuth(request)
   const body = await request.json()
   const parsed = mealSchema.safeParse(body)
 
@@ -47,13 +50,14 @@ export async function POST(request: Request) {
   const prisma = getPrisma(env)
 
   const meal = await prisma.meal.create({
-    data: { date, mealType: meal_type, foodId: food_id, quantity }
+    data: { date, mealType: meal_type, foodId: food_id, quantity, userId: user.uid }
   })
 
   return Response.json(meal, { status: 201 })
 }
 
 export async function DELETE(request: Request) {
+  const user = await requireAuth(request)
   const url = new URL(request.url)
   const id = url.searchParams.get('id')
 
@@ -62,7 +66,7 @@ export async function DELETE(request: Request) {
   }
 
   const prisma = getPrisma(env)
-  await prisma.meal.delete({ where: { id } })
+  await prisma.meal.delete({ where: { id, userId: user.uid } })
 
   return Response.json({ ok: true })
 }

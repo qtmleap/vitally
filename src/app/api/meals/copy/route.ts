@@ -1,9 +1,11 @@
 import { env } from 'cloudflare:workers'
 
+import { requireAuth } from '@/lib/auth-middleware'
 import { getPrisma } from '@/lib/db'
 import { mealCopySchema } from '@/lib/schema'
 
 export async function POST(request: Request) {
+  const user = await requireAuth(request)
   const body = await request.json()
   const parsed = mealCopySchema.safeParse(body)
 
@@ -12,7 +14,7 @@ export async function POST(request: Request) {
   }
 
   const { from_date, to_date, meal_type } = parsed.data
-  const where: any = { date: from_date }
+  const where: { date: string; mealType?: string; userId: string } = { date: from_date, userId: user.uid }
   if (meal_type) where.mealType = meal_type
 
   const prisma = getPrisma(env)
@@ -24,7 +26,7 @@ export async function POST(request: Request) {
 
   for (const m of sourceMeals) {
     await prisma.meal.create({
-      data: { date: to_date, mealType: m.mealType, foodId: m.foodId, quantity: m.quantity }
+      data: { date: to_date, mealType: m.mealType, foodId: m.foodId, quantity: m.quantity, userId: user.uid }
     })
   }
 

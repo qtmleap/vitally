@@ -1,9 +1,11 @@
 import { env } from 'cloudflare:workers'
 
+import { requireAuth } from '@/lib/auth-middleware'
 import { getPrisma } from '@/lib/db'
 import { exerciseSchema } from '@/lib/schema'
 
 export async function GET(request: Request) {
+  const user = await requireAuth(request)
   const url = new URL(request.url)
   const date = url.searchParams.get('date')
 
@@ -13,7 +15,7 @@ export async function GET(request: Request) {
 
   const prisma = getPrisma(env)
   const exercises = await prisma.exercise.findMany({
-    where: { date },
+    where: { userId: user.uid, date },
     orderBy: { createdAt: 'asc' }
   })
 
@@ -30,6 +32,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const user = await requireAuth(request)
   const body = await request.json()
   const parsed = exerciseSchema.safeParse(body)
 
@@ -41,13 +44,14 @@ export async function POST(request: Request) {
   const prisma = getPrisma(env)
 
   const exercise = await prisma.exercise.create({
-    data: { date, name, durationMin: duration_min, calories }
+    data: { date, name, durationMin: duration_min, calories, userId: user.uid }
   })
 
   return Response.json(exercise, { status: 201 })
 }
 
 export async function DELETE(request: Request) {
+  const user = await requireAuth(request)
   const url = new URL(request.url)
   const id = url.searchParams.get('id')
 
@@ -56,7 +60,7 @@ export async function DELETE(request: Request) {
   }
 
   const prisma = getPrisma(env)
-  await prisma.exercise.delete({ where: { id } })
+  await prisma.exercise.delete({ where: { id, userId: user.uid } })
 
   return Response.json({ ok: true })
 }

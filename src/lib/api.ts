@@ -3,6 +3,21 @@ import { toast } from 'sonner'
 import type { ExerciseRow, FoodRow, MealTemplateRow, MealWithFood } from '@/lib/db'
 import type { ExerciseInput, FoodInput, MealCopyInput, MealInput, MealTemplateCreateInput, MealUpdateInput } from '@/lib/schema'
 
+let getToken: (() => Promise<string | null>) | null = null
+
+export function setTokenGetter(fn: () => Promise<string | null>) {
+  getToken = fn
+}
+
+async function authFetch(url: string, init?: RequestInit): Promise<Response> {
+  const headers = new Headers(init?.headers)
+  if (getToken) {
+    const token = await getToken()
+    if (token) headers.set('Authorization', `Bearer ${token}`)
+  }
+  return fetch(url, { ...init, headers })
+}
+
 const json = <T>(res: Response): Promise<T> => {
   if (!res.ok) {
     const msg = res.status === 404 ? 'データが見つかりません' : `通信エラー (${res.status})`
@@ -37,40 +52,40 @@ export const api = {
       if (q) params.set('q', q)
       if (limit) params.set('limit', String(limit))
       const qs = params.toString()
-      return fetch(`/api/foods${qs ? `?${qs}` : ''}`).then((r) => json<FoodRow[]>(r))
+      return authFetch(`/api/foods${qs ? `?${qs}` : ''}`).then((r) => json<FoodRow[]>(r))
     },
     create: (data: FoodInput): Promise<FoodRow> =>
-      fetch('/api/foods', {
+      authFetch('/api/foods', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       }).then((r) => json<FoodRow>(r)),
     delete: (id: string): Promise<void> =>
-      fetch(`/api/foods?id=${id}`, { method: 'DELETE' }).then((r) => json<void>(r)),
+      authFetch(`/api/foods?id=${id}`, { method: 'DELETE' }).then((r) => json<void>(r)),
     frequent: (limit?: number): Promise<FoodRow[]> =>
-      fetch(`/api/foods/frequent${limit ? `?limit=${limit}` : ''}`).then((r) => json<FoodRow[]>(r))
+      authFetch(`/api/foods/frequent${limit ? `?limit=${limit}` : ''}`).then((r) => json<FoodRow[]>(r))
   },
   meals: {
     list: (date: string): Promise<MealWithFood[]> =>
-      fetch(`/api/meals?date=${date}`).then((r) => json<MealWithFood[]>(r)),
+      authFetch(`/api/meals?date=${date}`).then((r) => json<MealWithFood[]>(r)),
     get: (id: string): Promise<MealWithFood> =>
-      fetch(`/api/meals/${id}`).then((r) => json<MealWithFood>(r)),
+      authFetch(`/api/meals/${id}`).then((r) => json<MealWithFood>(r)),
     create: (data: MealInput): Promise<MealWithFood> =>
-      fetch('/api/meals', {
+      authFetch('/api/meals', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       }).then((r) => json<MealWithFood>(r)),
     update: (id: string, data: MealUpdateInput): Promise<MealWithFood> =>
-      fetch(`/api/meals/${id}`, {
+      authFetch(`/api/meals/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       }).then((r) => json<MealWithFood>(r)),
     delete: (id: string): Promise<void> =>
-      fetch(`/api/meals?id=${id}`, { method: 'DELETE' }).then((r) => json<void>(r)),
+      authFetch(`/api/meals?id=${id}`, { method: 'DELETE' }).then((r) => json<void>(r)),
     copy: (data: MealCopyInput): Promise<{ count: number }> =>
-      fetch('/api/meals/copy', {
+      authFetch('/api/meals/copy', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -78,15 +93,15 @@ export const api = {
   },
   exercises: {
     list: (date: string): Promise<ExerciseRow[]> =>
-      fetch(`/api/exercises?date=${date}`).then((r) => json<ExerciseRow[]>(r)),
+      authFetch(`/api/exercises?date=${date}`).then((r) => json<ExerciseRow[]>(r)),
     create: (data: ExerciseInput): Promise<ExerciseRow> =>
-      fetch('/api/exercises', {
+      authFetch('/api/exercises', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       }).then((r) => json<ExerciseRow>(r)),
     delete: (id: string): Promise<void> =>
-      fetch(`/api/exercises?id=${id}`, { method: 'DELETE' }).then((r) => json<void>(r))
+      authFetch(`/api/exercises?id=${id}`, { method: 'DELETE' }).then((r) => json<void>(r))
   },
   ai: {
     getAdvice: (data: {
@@ -94,19 +109,19 @@ export const api = {
       exercises: Array<{ name: string; duration_min: number; calories: number | null }>
       date: string
     }): Promise<{ message: string }> =>
-      fetch('/api/ai', {
+      authFetch('/api/ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       }).then((r) => json<{ message: string }>(r)),
     estimateNutrition: (data: { name: string; serving?: string; save?: boolean }): Promise<NutritionEstimate & Partial<FoodRow>> =>
-      fetch('/api/ai/nutrition', {
+      authFetch('/api/ai/nutrition', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       }).then((r) => json<NutritionEstimate & Partial<FoodRow>>(r)),
     estimateExercise: (data: { name: string; duration_min: number }): Promise<{ calories: number }> =>
-      fetch('/api/ai/exercise', {
+      authFetch('/api/ai/exercise', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
@@ -114,24 +129,24 @@ export const api = {
   },
   summary: {
     month: (from: string, to: string): Promise<Record<string, { calories: number; exercise_min: number }>> =>
-      fetch(`/api/summary?from=${from}&to=${to}`).then((r) =>
+      authFetch(`/api/summary?from=${from}&to=${to}`).then((r) =>
         json<Record<string, { calories: number; exercise_min: number }>>(r)
       )
   },
   barcode: {
     lookup: (code: string): Promise<BarcodeResult> =>
-      fetch(`/api/barcode?code=${encodeURIComponent(code)}`).then((r) => json<BarcodeResult>(r))
+      authFetch(`/api/barcode?code=${encodeURIComponent(code)}`).then((r) => json<BarcodeResult>(r))
   },
   templates: {
     list: (): Promise<MealTemplateRow[]> =>
-      fetch('/api/templates').then((r) => json<MealTemplateRow[]>(r)),
+      authFetch('/api/templates').then((r) => json<MealTemplateRow[]>(r)),
     create: (data: MealTemplateCreateInput): Promise<MealTemplateRow> =>
-      fetch('/api/templates', {
+      authFetch('/api/templates', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       }).then((r) => json<MealTemplateRow>(r)),
     delete: (id: string): Promise<void> =>
-      fetch(`/api/templates?id=${id}`, { method: 'DELETE' }).then((r) => json<void>(r))
+      authFetch(`/api/templates?id=${id}`, { method: 'DELETE' }).then((r) => json<void>(r))
   }
 }

@@ -8,6 +8,21 @@ datasource db {
   provider = "sqlite"
 }
 
+model User {
+  id          String   @id
+  email       String
+  displayName String?  @map("display_name")
+  photoUrl    String?  @map("photo_url")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  meals         Meal[]
+  exercises     Exercise[]
+  mealTemplates MealTemplate[]
+
+  @@map("users")
+}
+
 model Food {
   id        String   @id @default(dbgenerated("(lower(hex(randomblob(16))))"))
   name      String
@@ -30,10 +45,12 @@ model Meal {
   mealType  String   @map("meal_type")
   foodId    String   @map("food_id")
   quantity  Float    @default(1)
+  userId    String   @map("user_id")
   createdAt DateTime @default(now()) @map("created_at")
   food      Food     @relation(fields: [foodId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([date])
+  @@index([userId, date])
   @@map("meals")
 }
 
@@ -41,9 +58,12 @@ model MealTemplate {
   id        String             @id @default(dbgenerated("(lower(hex(randomblob(16))))"))
   name      String
   mealType  String?            @map("meal_type")
+  userId    String             @map("user_id")
   createdAt DateTime           @default(now()) @map("created_at")
   items     MealTemplateItem[]
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
   @@map("meal_templates")
 }
 
@@ -64,8 +84,10 @@ model Exercise {
   name        String
   durationMin Int      @map("duration_min")
   calories    Float?
+  userId      String   @map("user_id")
   createdAt   DateTime @default(now()) @map("created_at")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([date])
+  @@index([userId, date])
   @@map("exercises")
 }
