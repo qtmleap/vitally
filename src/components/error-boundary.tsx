@@ -1,6 +1,6 @@
 'use client'
 
-import { AlertTriangle, Home, RotateCcw } from 'lucide-react'
+import { AlertTriangle, Home, RotateCcw, Trash2 } from 'lucide-react'
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -49,7 +49,7 @@ export class ErrorBoundary extends Component<Props, State> {
               </p>
             )}
           </div>
-          <div className='flex gap-3'>
+          <div className='flex flex-wrap justify-center gap-3'>
             <Button variant='outline' onClick={() => this.setState({ hasError: false, error: null })}>
               <RotateCcw className='mr-2 size-4' />
               再試行
@@ -57,6 +57,17 @@ export class ErrorBoundary extends Component<Props, State> {
             <Button onClick={() => (window.location.href = '/')}>
               <Home className='mr-2 size-4' />
               ホームに戻る
+            </Button>
+            <Button
+              variant='outline'
+              onClick={() => {
+                localStorage.clear()
+                sessionStorage.clear()
+                window.location.href = '/'
+              }}
+            >
+              <Trash2 className='mr-2 size-4' />
+              キャッシュを削除
             </Button>
           </div>
         </div>
