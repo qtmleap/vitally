@@ -3,13 +3,32 @@ compatibility_date = "2026-01-01"
 compatibility_flags = ["nodejs_compat"]
 main = "./worker/index.ts"
 
+routes = [
+  { pattern = "health.qleap.jp", custom_domain = true }
+]
+
 [assets]
 not_found_handling = "none"
 
 [[d1_databases]]
 binding = "DB"
 database_name = "health-app-db"
-database_id = "local"
+database_id = "27b1d06e-d478-4d50-87ec-4f8386e4f670"
 
 [ai]
+binding = "AI"
+
+# --- Staging ---
+[env.staging]
+name = "vinext-app-staging"
+routes = [
+  { pattern = "health-staging.qleap.jp", custom_domain = true }
+]
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "health-app-db-staging"
+database_id = "f78ed787-a04c-468f-af0d-9816164459d7"
+
+[env.staging.ai]
 binding = "AI"
