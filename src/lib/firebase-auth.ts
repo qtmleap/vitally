@@ -74,18 +74,24 @@ export async function verifyFirebaseToken(token: string): Promise<FirebaseUser> 
   const [headerB64, payloadB64, signatureB64] = parts
 
   const header = base64UrlDecodeJson(headerB64) as { kid?: string; alg?: string }
-  if (header.alg !== 'RS256') throw new Error(`Unsupported algorithm: ${header.alg}`)
-  if (!header.kid) throw new Error('Missing kid in JWT header')
 
-  const keys = await getPublicKeys()
-  const key = keys[header.kid]
-  if (!key) throw new Error(`Unknown kid: ${header.kid}`)
+  // エミュレータのトークンは alg:"none" で署名なし — dev のみスキップ
+  if (import.meta.env.DEV) {
+    // skip signature verification for emulator tokens
+  } else {
+    if (header.alg !== 'RS256') throw new Error(`Unsupported algorithm: ${header.alg}`)
+    if (!header.kid) throw new Error('Missing kid in JWT header')
 
-  const signedData = new TextEncoder().encode(`${headerB64}.${payloadB64}`)
-  const signature = base64UrlDecode(signatureB64)
+    const keys = await getPublicKeys()
+    const key = keys[header.kid]
+    if (!key) throw new Error(`Unknown kid: ${header.kid}`)
 
-  const valid = await crypto.subtle.verify({ name: 'RSASSA-PKCS1-v1_5' }, key, signature, signedData)
-  if (!valid) throw new Error('Invalid JWT signature')
+    const signedData = new TextEncoder().encode(`${headerB64}.${payloadB64}`)
+    const signature = base64UrlDecode(signatureB64)
+
+    const valid = await crypto.subtle.verify({ name: 'RSASSA-PKCS1-v1_5' }, key, signature, signedData)
+    if (!valid) throw new Error('Invalid JWT signature')
+  }
 
   const payload = base64UrlDecodeJson(payloadB64) as {
     iss?: string

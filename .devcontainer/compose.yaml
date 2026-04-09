@@ -13,5 +13,16 @@ services:
     ports:
       - 11000:11000
 
+  firebase:
+    image: andreysenov/firebase-tools:latest
+    command: firebase emulators:start --only auth --import=auth --export-on-exit=auth
+    volumes:
+      - ./auth:/home/node/auth
+      - ./firebase.json:/home/node/firebase.json
+      - ./.firebaserc:/home/node/.firebaserc
+    ports:
+      - 9099:9099
+      - 4000:4000
+
 volumes:
   node_modules:
