@@ -28,6 +28,10 @@ async function authFetch(url: string, init?: RequestInit): Promise<Response> {
 
 const json = <T>(res: Response): Promise<T> => {
   if (!res.ok) {
+    if (res.status === 401) {
+      window.location.href = '/'
+      throw new Error('認証エラー')
+    }
     const msg = res.status === 404 ? 'データが見つかりません' : `通信エラー (${res.status})`
     toast.error(msg)
     throw new Error(msg)
