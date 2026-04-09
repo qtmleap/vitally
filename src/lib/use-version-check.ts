@@ -30,12 +30,21 @@ export function useVersionCheck() {
     check()
   }, [])
 
-  const update = () => {
+  const update = async () => {
     setUpdating(true)
-    setTimeout(() => {
-      localStorage.removeItem(VERSION_KEY)
-      window.location.reload()
-    }, 2000)
+
+    // SW を更新してキャッシュを全削除
+    if ('serviceWorker' in navigator) {
+      const reg = await navigator.serviceWorker.getRegistration()
+      if (reg) await reg.update()
+    }
+    const keys = await caches.keys()
+    await Promise.all(keys.map((k) => caches.delete(k)))
+
+    localStorage.removeItem(VERSION_KEY)
+
+    // プログレスバーのアニメーション分だけ待ってからリロード
+    setTimeout(() => window.location.reload(), 2000)
   }
 
   return { hasUpdate, updating, update }
