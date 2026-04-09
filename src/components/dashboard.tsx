@@ -4,6 +4,7 @@ import dayjs from 'dayjs'
 import { useQuery } from '@tanstack/react-query'
 import { useSetAtom } from 'jotai'
 import { Bot, ChevronLeft, ChevronRight, Flame, Footprints, Plus, RefreshCw, Trophy, Utensils } from 'lucide-react'
+import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'vinext/shims/navigation'
@@ -175,7 +176,7 @@ function StreakBanner({ streak }: { streak: number }) {
 export function Dashboard() {
   const [now, setNow] = useState('')
   const [calMonth, setCalMonth] = useState<dayjs.Dayjs | null>(null)
-  const { hasUpdate, update } = useVersionCheck()
+  const { hasUpdate, updating, update } = useVersionCheck()
   useEffect(() => {
     const t = today()
     setNow(t)
@@ -311,20 +312,54 @@ export function Dashboard() {
         <m.button
           type='button'
           onClick={update}
+          disabled={updating}
           className='mt-5 flex w-full items-center gap-3 rounded-2xl bg-blue-500/10 px-4 py-3 text-left transition-colors active:bg-blue-500/20'
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: 'spring', stiffness: 300, damping: 24 }}
         >
           <div className='flex size-10 items-center justify-center rounded-xl bg-blue-500/15'>
-            <RefreshCw className='size-5 text-blue-500' />
+            <RefreshCw className={cn('size-5 text-blue-500', updating && 'animate-spin')} />
           </div>
           <div className='flex-1'>
-            <p className='text-sm font-bold'>アップデートがあります</p>
-            <p className='text-muted-foreground text-xs'>タップして最新版に更新</p>
+            <p className='text-sm font-bold'>{updating ? 'アップデート中...' : 'アップデートがあります'}</p>
+            <p className='text-muted-foreground text-xs'>{updating ? '最新版を適用しています' : 'タップして最新版に更新'}</p>
           </div>
         </m.button>
       )}
+
+      {/* Updating overlay */}
+      <AnimatePresence>
+        {updating && (
+          <m.div
+            className='fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 bg-black/40 backdrop-blur-sm'
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <m.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+              className='flex flex-col items-center gap-4'
+            >
+              <m.div animate={{ rotate: 360 }} transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY, ease: 'linear' }}>
+                <RefreshCw className='size-8 text-white' />
+              </m.div>
+              <p className='text-sm font-medium text-white'>アップデートしています...</p>
+              <div className='h-1 w-48 overflow-hidden rounded-full bg-white/20'>
+                <m.div
+                  className='h-full rounded-full bg-white'
+                  initial={{ width: '0%' }}
+                  animate={{ width: '100%' }}
+                  transition={{ duration: 2, ease: [0.4, 0, 0.2, 1] }}
+                />
+              </div>
+            </m.div>
+          </m.div>
+        )}
+      </AnimatePresence>
 
       {/* Main grid */}
       <div className='mt-5 lg:grid lg:grid-cols-5 lg:gap-6'>

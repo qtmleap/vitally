@@ -6,6 +6,7 @@ const VERSION_KEY = 'app_version'
 
 export function useVersionCheck() {
   const [hasUpdate, setHasUpdate] = useState(import.meta.env.DEV)
+  const [updating, setUpdating] = useState(false)
 
   useEffect(() => {
     if (import.meta.env.DEV) return
@@ -30,9 +31,12 @@ export function useVersionCheck() {
   }, [])
 
   const update = () => {
-    localStorage.removeItem(VERSION_KEY)
-    window.location.reload()
+    setUpdating(true)
+    setTimeout(() => {
+      localStorage.removeItem(VERSION_KEY)
+      window.location.reload()
+    }, 2000)
   }
 
-  return { hasUpdate, update }
+  return { hasUpdate, updating, update }
 }
