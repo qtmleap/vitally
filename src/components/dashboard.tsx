@@ -302,7 +302,7 @@ export function Dashboard() {
         animate={{ opacity: 1, x: 0 }}
         transition={{ type: 'spring', stiffness: 300, damping: 24 }}
       >
-        <h1 className='text-xl font-bold lg:text-2xl'>HealthLog</h1>
+        <h1 className='text-xl font-bold lg:text-2xl'>Vitally</h1>
         <span className='text-muted-foreground text-xs'>{d.format('M月D日 (dd)')}</span>
       </m.div>
 

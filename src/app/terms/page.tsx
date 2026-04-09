@@ -1,10 +1,12 @@
 'use client'
 
 import { PageHeader } from '@/components/page-header'
+import { ForceLightMode } from '@/components/force-light-mode'
 
 export default function TermsPage() {
   return (
     <div className='px-4 py-6'>
+      <ForceLightMode />
       <PageHeader title='利用規約' back />
       <div className='space-y-6 text-sm leading-relaxed'>
         <p className='text-muted-foreground text-xs'>最終更新日: 2026年4月9日</p>
@@ -12,7 +14,7 @@ export default function TermsPage() {
         <section className='space-y-2'>
           <h2 className='text-base font-semibold'>1. サービスの概要</h2>
           <p>
-            HealthLog（以下「本サービス」）は、食事・運動の記録および AI によるアドバイス機能を提供する Web
+            Vitally（以下「本サービス」）は、食事・運動の記録および AI によるアドバイス機能を提供する Web
             アプリケーションです。本サービスは health.qleap.jp にて提供されます。
           </p>
         </section>

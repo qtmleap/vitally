@@ -1,10 +1,12 @@
 'use client'
 
 import { PageHeader } from '@/components/page-header'
+import { ForceLightMode } from '@/components/force-light-mode'
 
 export default function PrivacyPage() {
   return (
     <div className='px-4 py-6'>
+      <ForceLightMode />
       <PageHeader title='プライバシーポリシー' back />
       <div className='space-y-6 text-sm leading-relaxed'>
         <p className='text-muted-foreground text-xs'>最終更新日: 2026年4月9日</p>

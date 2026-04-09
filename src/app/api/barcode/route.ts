@@ -7,7 +7,7 @@ export async function GET(request: Request) {
   }
 
   const res = await fetch(`https://world.openfoodfacts.org/api/v2/product/${code}.json`, {
-    headers: { 'User-Agent': 'HealthLog/1.0 (healthlog@example.com)' }
+    headers: { 'User-Agent': 'Vitally/1.0 (vitally@example.com)' }
   })
 
   if (!res.ok) {

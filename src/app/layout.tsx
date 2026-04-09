@@ -8,8 +8,8 @@ import { Toaster } from '@/components/ui/sonner'
 import '@/index.css'
 
 export const metadata = {
-  title: 'HealthLog',
-  description: '毎日の食事と運動を記録して健康管理'
+  title: 'Vitally',
+  description: '毎日の食事と運動を記録して、健康的な生活をサポート'
 }
 
 export default function RootLayout({ children }: { children: ReactNode }) {

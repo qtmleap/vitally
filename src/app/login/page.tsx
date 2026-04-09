@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '@/components/auth-provider'
 import { signInWithGoogle } from '@/lib/auth'
 import { useSkipAnimation } from '@/lib/use-skip-animation'
+import { ForceLightMode } from '@/components/force-light-mode'
 
 function GoogleIcon() {
   return (
@@ -117,6 +118,7 @@ export default function LoginPage() {
 
   return (
     <div className='flex min-h-dvh flex-col'>
+      <ForceLightMode />
       {/* Hero Section */}
       <section className='relative flex flex-1 flex-col items-center justify-center overflow-hidden px-6 pb-12 pt-16 lg:pb-20 lg:pt-24'>
         {/* Background decoration */}

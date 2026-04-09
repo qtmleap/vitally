@@ -174,7 +174,7 @@ export default function SettingsPage() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
-          <p className='text-muted-foreground/60 text-xs'>HealthLog v{APP_VERSION}</p>
+          <p className='text-muted-foreground/60 text-xs'>Vitally v{APP_VERSION}</p>
           <p className='text-muted-foreground/40 text-[10px]'>Built with Vinext + Cloudflare Workers</p>
         </m.div>
       </div>
