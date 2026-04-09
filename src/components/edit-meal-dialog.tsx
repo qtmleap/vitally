@@ -159,6 +159,12 @@ export function EditMealDialog({ open, onOpenChange, meals, mealType, date }: Ed
                     item.deleted && 'opacity-40'
                   )}
                 >
+                  <div className='min-w-0 flex-1'>
+                    <p className={cn('truncate text-sm', item.deleted && 'line-through')}>{item.foodName}</p>
+                    <p className='text-muted-foreground text-xs'>
+                      {Math.round(item.foodCalories * item.quantity)} kcal
+                    </p>
+                  </div>
                   <button
                     type='button'
                     onClick={() => toggleDelete(item.id)}
@@ -169,12 +175,6 @@ export function EditMealDialog({ open, onOpenChange, meals, mealType, date }: Ed
                   >
                     <Trash2 className='size-4' />
                   </button>
-                  <div className='min-w-0 flex-1'>
-                    <p className={cn('truncate text-sm', item.deleted && 'line-through')}>{item.foodName}</p>
-                    <p className='text-muted-foreground text-xs'>
-                      {Math.round(item.foodCalories * item.quantity)} kcal
-                    </p>
-                  </div>
                 </div>
               </m.div>
             ))}
@@ -192,13 +192,6 @@ export function EditMealDialog({ open, onOpenChange, meals, mealType, date }: Ed
                 transition={{ type: 'spring', stiffness: 400, damping: 25 }}
               >
                 <div className='flex items-center gap-2 rounded-lg px-3 py-2.5'>
-                  <button
-                    type='button'
-                    onClick={() => removeNewItem(item.food.id)}
-                    className='text-muted-foreground hover:text-destructive shrink-0 transition-colors'
-                  >
-                    <Trash2 className='size-4' />
-                  </button>
                   <div className='min-w-0 flex-1'>
                     <div className='flex items-center gap-1.5'>
                       <p className='truncate text-sm'>{item.food.name}</p>
@@ -208,6 +201,13 @@ export function EditMealDialog({ open, onOpenChange, meals, mealType, date }: Ed
                       {Math.round(item.food.calories * item.quantity)} kcal
                     </p>
                   </div>
+                  <button
+                    type='button'
+                    onClick={() => removeNewItem(item.food.id)}
+                    className='text-muted-foreground hover:text-destructive shrink-0 transition-colors'
+                  >
+                    <Trash2 className='size-4' />
+                  </button>
                 </div>
               </m.div>
             ))}
