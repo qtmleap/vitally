@@ -1,3 +1,5 @@
+import { env } from 'cloudflare:workers'
+
 const FIREBASE_PROJECT_ID = 'vitally-a056d'
 const CERTS_URL = 'https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com'
 
@@ -75,10 +77,9 @@ export async function verifyFirebaseToken(token: string): Promise<FirebaseUser> 
 
   const header = base64UrlDecodeJson(headerB64) as { kid?: string; alg?: string }
 
-  // エミュレータのトークンは alg:"none" で署名なし — dev のみスキップ
-  if (import.meta.env.DEV) {
-    // skip signature verification for emulator tokens
-  } else {
+  // エミュレータのトークンは alg:"none" で署名なし — USE_FIREBASE_EMULATOR が設定されている場合のみスキップ
+  const isEmulatorToken = header.alg === 'none' && (env as unknown as Record<string, unknown>).USE_FIREBASE_EMULATOR === 'true'
+  if (!isEmulatorToken) {
     if (header.alg !== 'RS256') throw new Error(`Unsupported algorithm: ${header.alg}`)
     if (!header.kid) throw new Error('Missing kid in JWT header')
 
