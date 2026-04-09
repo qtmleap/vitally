@@ -15,7 +15,6 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { api } from '@/lib/api'
 import type { FoodRow, MealTemplateRow } from '@/lib/db'
 import { cn } from '@/lib/utils'
@@ -299,31 +298,26 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
         </DialogHeader>
 
         <div className='border-b px-4 pb-3 pt-2 space-y-2'>
-          <ToggleGroup
-            type='single'
-            value={mealSource}
-            onValueChange={(v) => { if (v) setMealSource(v as MealSource) }}
-            className='w-full rounded-md border p-0.5 bg-muted'
-          >
-            <ToggleGroupItem
-              value='eating_out'
-              className={cn(
-                'flex-1 text-sm h-8 rounded-sm data-[state=on]:bg-background data-[state=on]:shadow-sm',
-                mealSource === 'eating_out' && 'font-medium'
-              )}
-            >
-              外食
-            </ToggleGroupItem>
-            <ToggleGroupItem
-              value='home_cooking'
-              className={cn(
-                'flex-1 text-sm h-8 rounded-sm data-[state=on]:bg-background data-[state=on]:shadow-sm',
-                mealSource === 'home_cooking' && 'font-medium'
-              )}
-            >
-              自炊
-            </ToggleGroupItem>
-          </ToggleGroup>
+          <div className='bg-muted relative flex h-9 w-full rounded-lg border p-0.5'>
+            <m.div
+              className='bg-background absolute top-0.5 bottom-0.5 w-[calc(50%-2px)] rounded-md shadow-sm'
+              animate={{ left: mealSource === 'eating_out' ? '2px' : 'calc(50% + 0px)' }}
+              transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+            />
+            {(['eating_out', 'home_cooking'] as const).map((value) => (
+              <button
+                key={value}
+                type='button'
+                onClick={() => setMealSource(value)}
+                className={cn(
+                  'relative z-10 flex-1 text-sm transition-colors duration-200',
+                  mealSource === value ? 'text-foreground font-medium' : 'text-muted-foreground'
+                )}
+              >
+                {value === 'eating_out' ? '外食' : '自炊'}
+              </button>
+            ))}
+          </div>
 
           <div className='relative'>
             <Search className='text-muted-foreground pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2' />
