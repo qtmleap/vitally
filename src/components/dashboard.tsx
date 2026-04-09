@@ -17,6 +17,7 @@ import { selectedDateAtom } from '@/lib/atoms'
 import { today } from '@/lib/date'
 import type { ExerciseRow, MealWithFood, UserProfileRow } from '@/lib/db'
 import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 
 const DEFAULT_CALORIE_GOAL = 2000
@@ -369,16 +370,11 @@ export function Dashboard() {
               </div>
               <div className='mt-2 h-9'>
                 {updateState === 'ready' && (
-                  <m.button
-                    type='button'
-                    onClick={reload}
-                    className='rounded-full bg-blue-500 px-6 py-2 text-sm font-bold text-white transition-colors active:bg-blue-600'
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 24 }}
-                  >
-                    再読み込み
-                  </m.button>
+                  <m.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 300, damping: 24 }}>
+                    <Button onClick={reload} size='sm' className='rounded-full px-6'>
+                      再読み込み
+                    </Button>
+                  </m.div>
                 )}
               </div>
             </m.div>
