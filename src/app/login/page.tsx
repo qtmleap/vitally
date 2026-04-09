@@ -120,9 +120,9 @@ export default function LoginPage() {
     <div className='flex min-h-dvh flex-col'>
       <ForceLightMode />
       {/* Hero Section */}
-      <section className='relative flex flex-1 flex-col items-center justify-center overflow-hidden px-6 pb-12 pt-16 lg:pb-20 lg:pt-24'>
+      <section className='relative flex flex-col items-center justify-center px-6 pb-16 pt-20 lg:pb-24 lg:pt-32'>
         {/* Background decoration */}
-        <div className='pointer-events-none absolute inset-0 overflow-hidden'>
+        <div className='pointer-events-none absolute inset-0 overflow-hidden' aria-hidden='true'>
           <div className='bg-primary/5 absolute -right-20 -top-20 size-80 rounded-full blur-3xl lg:size-[500px]' />
           <div className='bg-primary/5 absolute -bottom-20 -left-20 size-60 rounded-full blur-3xl lg:size-96' />
         </div>
@@ -171,10 +171,10 @@ export default function LoginPage() {
           </m.div>
 
           {/* Floating stat cards */}
-          <div className='relative mx-auto mt-12 flex h-48 max-w-md items-center justify-center lg:mt-16 lg:h-56 lg:max-w-2xl'>
+          <div className='relative mx-auto mt-12 h-64 max-w-sm lg:mt-16 lg:h-72 lg:max-w-xl'>
             {/* Center phone mockup outline */}
             <m.div
-              className='border-border/50 bg-card absolute z-10 h-44 w-24 rounded-3xl border-2 shadow-2xl lg:h-52 lg:w-28'
+              className='border-border/50 bg-card absolute left-1/2 top-1/2 z-10 h-44 w-24 -translate-x-1/2 -translate-y-1/2 rounded-3xl border-2 shadow-2xl lg:h-52 lg:w-28'
               initial={init({ opacity: 0, y: 30 })}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, type: 'spring', stiffness: 300, damping: 24 }}
@@ -191,7 +191,7 @@ export default function LoginPage() {
 
             {/* Floating cards around the phone */}
             <FloatingCard
-              className='bg-card absolute -left-2 top-2 z-20 rounded-2xl p-3 shadow-lg lg:left-8 lg:p-4'
+              className='bg-card absolute left-0 top-0 z-20 rounded-2xl p-3 shadow-lg lg:left-4 lg:p-4'
               delay={0.5}
             >
               <div className='flex items-center gap-2'>
@@ -206,7 +206,7 @@ export default function LoginPage() {
             </FloatingCard>
 
             <FloatingCard
-              className='bg-card absolute -right-2 top-0 z-20 rounded-2xl p-3 shadow-lg lg:right-8 lg:p-4'
+              className='bg-card absolute right-0 top-2 z-20 rounded-2xl p-3 shadow-lg lg:right-4 lg:p-4'
               delay={0.6}
             >
               <div className='flex items-center gap-2'>
@@ -221,7 +221,7 @@ export default function LoginPage() {
             </FloatingCard>
 
             <FloatingCard
-              className='bg-card absolute -left-4 bottom-2 z-20 rounded-2xl p-3 shadow-lg lg:left-4 lg:p-4'
+              className='bg-card absolute bottom-0 left-0 z-20 rounded-2xl p-3 shadow-lg lg:left-4 lg:p-4'
               delay={0.7}
             >
               <div className='flex items-center gap-2'>
@@ -236,7 +236,7 @@ export default function LoginPage() {
             </FloatingCard>
 
             <FloatingCard
-              className='bg-card absolute -right-4 bottom-4 z-20 rounded-2xl p-3 shadow-lg lg:right-4 lg:p-4'
+              className='bg-card absolute bottom-2 right-0 z-20 rounded-2xl p-3 shadow-lg lg:right-4 lg:p-4'
               delay={0.8}
             >
               <div className='flex items-center gap-2'>
