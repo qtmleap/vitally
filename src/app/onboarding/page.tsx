@@ -156,8 +156,8 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className='flex h-dvh flex-col items-center justify-center overflow-hidden p-4'>
-      <div className='w-full max-w-md overflow-y-auto'>
+    <div className='flex min-h-[calc(100dvh-5rem)] flex-col items-center justify-center p-4'>
+      <div className='w-full max-w-md'>
         {/* Step indicator */}
         <div className='mb-6 flex items-center justify-center gap-2'>
           {Array.from({ length: TOTAL_STEPS }, (_, i) => (
