@@ -99,11 +99,11 @@ export default function LoginPage() {
       await signInWithGoogle()
       router.push('/')
     } catch (err) {
-      if (err instanceof Error && err.message.includes('popup-closed-by-user')) {
+      const msg = err instanceof Error ? err.message : ''
+      if (msg.includes('popup-closed-by-user') || msg.includes('cancelled-popup-request')) {
         toast('ログインがキャンセルされました')
       } else {
-        const message = err instanceof Error ? err.message : 'ログインに失敗しました'
-        toast.error(message)
+        toast.error(msg || 'ログインに失敗しました')
       }
     } finally {
       setSigning(false)
@@ -171,15 +171,6 @@ export default function LoginPage() {
                 <GoogleIcon />
                 {signing ? 'ログイン中...' : 'Google で始める'}
               </Button>
-              {signing && (
-                <button
-                  type='button'
-                  onClick={() => setSigning(false)}
-                  className='text-muted-foreground hover:text-foreground mt-3 block text-sm transition-colors'
-                >
-                  キャンセル
-                </button>
-              )}
             </m.div>
           </m.div>
 
@@ -320,15 +311,6 @@ export default function LoginPage() {
             <GoogleIcon />
             {signing ? 'ログイン中...' : 'Google で始める'}
           </Button>
-          {signing && (
-            <button
-              type='button'
-              onClick={() => setSigning(false)}
-              className='text-muted-foreground hover:text-foreground mt-3 text-sm transition-colors'
-            >
-              キャンセル
-            </button>
-          )}
           <p className='text-muted-foreground/60 mt-4 text-xs'>
             ログインすることで{' '}
             <Link href='/terms' className='underline underline-offset-2'>
