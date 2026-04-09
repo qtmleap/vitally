@@ -1,11 +1,12 @@
 'use client'
 
-import { Bot, Home, Settings } from 'lucide-react'
+import { Bot, CalendarDays, Home, Settings } from 'lucide-react'
 import * as m from 'motion/react-m'
 import Link from 'vinext/shims/link'
 
 const navItems = [
   { href: '/', label: 'ホーム', icon: Home },
+  { href: '/day', label: '今日', icon: CalendarDays },
   { href: '/ai', label: 'AI', icon: Bot },
   { href: '/settings', label: '設定', icon: Settings }
 ]

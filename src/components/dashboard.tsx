@@ -142,6 +142,49 @@ export function Dashboard() {
   const hasMeals = meals.length > 0
   const hasExercises = exercises.length > 0
 
+  const streak = (() => {
+    const yesterday = d.subtract(1, 'day').format('YYYY-MM-DD')
+    const hasToday = monthSummary[now]?.calories > 0
+    const hasYesterday = monthSummary[yesterday]?.calories > 0
+    if (!hasToday && !hasYesterday) return 0
+    let count = 0
+    let cursor = hasToday ? d : d.subtract(1, 'day')
+    while (true) {
+      const key = cursor.format('YYYY-MM-DD')
+      if (monthSummary[key]?.calories > 0) {
+        count++
+        cursor = cursor.subtract(1, 'day')
+      } else {
+        break
+      }
+    }
+    return count
+  })()
+
+  const weekStats = (() => {
+    const startOfWeek = d.startOf('week').add(1, 'day')
+    const days: string[] = []
+    for (let i = 0; i < 7; i++) {
+      const day = startOfWeek.add(i, 'day')
+      if (!day.isAfter(d, 'day')) {
+        days.push(day.format('YYYY-MM-DD'))
+      }
+    }
+    const activeDays = days.filter((k) => monthSummary[k])
+    if (activeDays.length === 0) return null
+    const totalCal = activeDays.reduce((s, k) => s + (monthSummary[k]?.calories ?? 0), 0)
+    const avgCal = Math.round(totalCal / activeDays.length)
+    const exerciseDays = activeDays.filter((k) => (monthSummary[k]?.exercise_min ?? 0) > 0).length
+    const bestDay = activeDays
+      .filter((k) => (monthSummary[k]?.calories ?? 0) <= CALORIE_GOAL && (monthSummary[k]?.calories ?? 0) > 0)
+      .sort((a, b) => (monthSummary[b]?.calories ?? 0) - (monthSummary[a]?.calories ?? 0))[0]
+    return {
+      avgCal,
+      exerciseDays,
+      bestDay: bestDay ? dayjs(bestDay).format('M/D') : null
+    }
+  })()
+
   const cardVariants = {
     hidden: { opacity: 0, y: 20, scale: 0.97 },
     visible: (i: number) => ({
@@ -163,13 +206,20 @@ export function Dashboard() {
         HealthLog
       </m.h1>
 
+      {streak >= 2 && (
+        <m.div className='bg-muted/50 flex items-center gap-2 rounded-xl px-3 py-2' variants={cardVariants} custom={0}>
+          <Flame className='size-4 text-orange-500' />
+          <span className='text-sm font-medium'>{streak}日連続</span>
+        </m.div>
+      )}
+
       {/* Today summary — Calories */}
       <m.button
         type='button'
         onClick={() => goToDay(now)}
         className='w-full text-left'
         variants={cardVariants}
-        custom={0}
+        custom={1}
         whileTap={{ scale: 0.97 }}
         aria-label='今日のカロリー詳細を見る'
       >
@@ -208,7 +258,7 @@ export function Dashboard() {
         onClick={() => goToDay(now)}
         className='w-full text-left'
         variants={cardVariants}
-        custom={1}
+        custom={2}
         whileTap={{ scale: 0.97 }}
         aria-label='今日の運動詳細を見る'
       >
@@ -234,7 +284,7 @@ export function Dashboard() {
       </m.button>
 
       {/* Calendar */}
-      <m.div variants={cardVariants} custom={2}>
+      <m.div variants={cardVariants} custom={3}>
         <div className='mb-3 flex items-center justify-between'>
           <button
             type='button'
@@ -307,6 +357,26 @@ export function Dashboard() {
           })}
         </div>
       </m.div>
+
+      {weekStats && (
+        <m.div className='bg-muted/50 rounded-2xl p-4' variants={cardVariants} custom={4}>
+          <p className='text-muted-foreground mb-3 text-xs font-medium uppercase tracking-wider'>今週のまとめ</p>
+          <div className='grid grid-cols-3 gap-3 text-center'>
+            <div>
+              <p className='text-lg font-bold'>{weekStats.avgCal}</p>
+              <p className='text-muted-foreground text-[10px]'>平均 kcal</p>
+            </div>
+            <div>
+              <p className='text-lg font-bold'>{weekStats.exerciseDays}日</p>
+              <p className='text-muted-foreground text-[10px]'>運動した日</p>
+            </div>
+            <div>
+              <p className='text-lg font-bold'>{weekStats.bestDay || '-'}</p>
+              <p className='text-muted-foreground text-[10px]'>ベストの日</p>
+            </div>
+          </div>
+        </m.div>
+      )}
     </m.div>
   )
 }

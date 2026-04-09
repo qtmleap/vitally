@@ -74,7 +74,7 @@ export function FoodForm() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: 'spring', stiffness: 300, damping: 24 }}
     >
-      <PageHeader title='食品を追加' />
+      <PageHeader title='食品を追加' back />
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className='mt-4 space-y-4'>
           <FormField

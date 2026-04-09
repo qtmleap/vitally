@@ -10,6 +10,7 @@ import { useState } from 'react'
 
 import { AddMealDialog } from '@/components/add-meal-dialog'
 import { DateNav } from '@/components/date-nav'
+import { DayFab } from '@/components/day-fab'
 import { PageHeader } from '@/components/page-header'
 import { Button } from '@/components/ui/button'
 import { api } from '@/lib/api'
@@ -50,6 +51,14 @@ export default function DayPage() {
     },
     {} as Record<MealType, MealWithFood[]>
   )
+
+  const getMealTypeByTime = (): MealType => {
+    const h = new Date().getHours()
+    if (h < 10) return 'breakfast'
+    if (h < 14) return 'lunch'
+    if (h < 17) return 'snack'
+    return 'dinner'
+  }
 
   const stagger = {
     hidden: { opacity: 0 },
@@ -162,7 +171,14 @@ export default function DayPage() {
                       ))}
                     </div>
                   ) : (
-                    <p className='text-muted-foreground text-xs'>未入力</p>
+                    <button
+                      type='button'
+                      onClick={() => setDialogType(type)}
+                      className='text-muted-foreground hover:text-primary flex w-full items-center justify-center gap-1.5 rounded-lg py-2 text-xs transition-colors hover:bg-muted'
+                    >
+                      <Plus className='size-3' />
+                      タップして追加
+                    </button>
                   )}
                 </AnimatePresence>
               </m.div>
@@ -203,18 +219,26 @@ export default function DayPage() {
               </m.div>
             ))}
             {exercises.length === 0 && (
-              <m.p
-                className='text-muted-foreground py-6 text-center text-sm'
+              <m.div
+                className='py-6 text-center'
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3 }}
               >
-                運動記録なし
-              </m.p>
+                <p className='text-muted-foreground mb-2 text-sm'>まだ運動の記録がありません</p>
+                <Button asChild size='sm' variant='outline' className='text-xs'>
+                  <Link href='/exercises/new'>
+                    <Plus className='mr-1 size-3' />
+                    運動を記録する
+                  </Link>
+                </Button>
+              </m.div>
             )}
           </div>
         </AnimatePresence>
       </m.div>
+
+      <DayFab defaultMealType={getMealTypeByTime()} onAddMeal={(type) => setDialogType(type)} />
 
       {dialogType && (
         <AddMealDialog

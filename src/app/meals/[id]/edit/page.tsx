@@ -60,7 +60,7 @@ export default function EditMealPage({ params }: { params: Promise<{ id: string 
   if (isLoading) {
     return (
       <div className='p-4'>
-        <PageHeader title='食事を編集' />
+        <PageHeader title='食事を編集' back />
         <p className='text-muted-foreground py-8 text-center text-sm'>読み込み中...</p>
       </div>
     )
@@ -69,7 +69,7 @@ export default function EditMealPage({ params }: { params: Promise<{ id: string 
   if (!meal) {
     return (
       <div className='p-4'>
-        <PageHeader title='食事を編集' />
+        <PageHeader title='食事を編集' back />
         <p className='text-muted-foreground py-8 text-center text-sm'>食事記録が見つかりません</p>
       </div>
     )
@@ -77,7 +77,7 @@ export default function EditMealPage({ params }: { params: Promise<{ id: string 
 
   return (
     <div className='p-4'>
-      <PageHeader title='食事を編集' />
+      <PageHeader title='食事を編集' back />
       <Card>
         <CardContent className='pt-4'>
           <form onSubmit={handleSubmit} className='space-y-4'>
