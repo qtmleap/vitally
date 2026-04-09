@@ -3,6 +3,7 @@
 import {
   Bot,
   ChevronRight,
+  Cpu,
   Database,
   Heart,
   Info,
@@ -129,6 +130,10 @@ export default function SettingsPage() {
 
         <SettingsGroup label='プロフィール'>
           <SettingsRow icon={<User className='size-5' />} label='プロフィール・目標' href='/settings/profile' />
+        </SettingsGroup>
+
+        <SettingsGroup label='AI'>
+          <SettingsRow icon={<Cpu className='size-5' />} label='AI モデル' href='/settings/ai-model' />
         </SettingsGroup>
 
         <SettingsGroup label='一般'>

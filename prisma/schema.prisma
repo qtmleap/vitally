@@ -21,6 +21,7 @@ model User {
   exercises     Exercise[]
   mealTemplates MealTemplate[]
   profile       UserProfile?
+  aiUsage       AiUsage[]
 
   @@map("users")
 }
@@ -34,13 +35,26 @@ model UserProfile {
   bodyFatPct    Float?   @map("body_fat_pct")
   gender        String
   activityLevel String   @map("activity_level")
-  goal          String
-  calorieGoal   Int      @map("calorie_goal")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goal           String
+  calorieGoal    Int      @map("calorie_goal")
+  aiAdviceModel  String?  @map("ai_advice_model")
+  aiUtilityModel String?  @map("ai_utility_model")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_profiles")
+}
+
+model AiUsage {
+  id        String @id @default(dbgenerated("(lower(hex(randomblob(16))))"))
+  userId    String @map("user_id")
+  date      String
+  count     Int    @default(0)
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@map("ai_usage")
 }
 
 model Food {

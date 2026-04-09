@@ -1,16 +1,38 @@
 import { env } from 'cloudflare:workers'
 
 import { getAuthUser } from '@/lib/auth-middleware'
+import { DEFAULT_ADVICE_MODEL, DAILY_LIMITS, isModelAllowed } from '@/lib/ai-models'
+import { checkAndIncrementAiUsage } from '@/lib/ai-rate-limit'
+import { getPrisma } from '@/lib/db'
 
 export async function POST(request: Request) {
   const userOrRes = await getAuthUser(request)
   if (userOrRes instanceof Response) return userOrRes
+  const user = userOrRes
 
-  const { meals, exercises, date } = (await request.json()) as {
+  const prisma = getPrisma(env)
+
+  // レート制限
+  const allowed = await checkAndIncrementAiUsage(prisma, user.uid, DAILY_LIMITS.free)
+  if (!allowed) {
+    return Response.json({ error: '本日のAIリクエスト上限に達しました' }, { status: 429 })
+  }
+
+  const body = (await request.json()) as {
     meals: Array<{ food_name: string; calories: number; meal_type: string; quantity: number }>
     exercises: Array<{ name: string; duration_min: number; calories: number | null }>
     date: string
+    model?: string
   }
+
+  // モデル選択
+  const profile = await prisma.userProfile.findUnique({ where: { userId: user.uid } })
+  const modelId = body.model || profile?.aiAdviceModel || DEFAULT_ADVICE_MODEL
+  if (!isModelAllowed(modelId, 'advice', 'free')) {
+    return Response.json({ error: 'このモデルは利用できません' }, { status: 403 })
+  }
+
+  const { meals, exercises, date } = body
 
   const totalCalories = meals.reduce((sum, m) => sum + m.calories * m.quantity, 0)
   const totalExerciseCal = exercises.reduce((sum, e) => sum + (e.calories ?? 0), 0)
@@ -35,12 +57,12 @@ export async function POST(request: Request) {
 
 記録がまだない場合は、記録をつけること自体を応援してください。`
 
-  const result = await env.AI.run('@cf/meta/llama-3.1-8b-instruct-fp8', {
+  const result = await env.AI.run(modelId as Parameters<typeof env.AI.run>[0], {
     messages: [{ role: 'user', content: prompt }],
     max_tokens: 256
   })
 
-  const text = 'response' in result ? (result.response as string) : ''
+  const text = typeof result === 'object' && result !== null && 'response' in result ? (result.response as string) : ''
 
   return Response.json({ message: text })
 }

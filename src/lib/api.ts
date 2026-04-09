@@ -152,6 +152,12 @@ export const api = {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
+      }).then((r) => json(r)),
+    updateAiModels: (data: { aiAdviceModel?: string; aiUtilityModel?: string }): Promise<{ profile: UserProfileRow }> =>
+      authFetch('/api/profile/ai-model', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
       }).then((r) => json(r))
   },
   templates: {

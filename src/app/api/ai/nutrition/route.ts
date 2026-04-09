@@ -1,6 +1,8 @@
 import { env } from 'cloudflare:workers'
 
 import { getAuthUser } from '@/lib/auth-middleware'
+import { DEFAULT_UTILITY_MODEL, DAILY_LIMITS, isModelAllowed } from '@/lib/ai-models'
+import { checkAndIncrementAiUsage } from '@/lib/ai-rate-limit'
 import { getPrisma } from '@/lib/db'
 
 export async function POST(request: Request) {
@@ -8,13 +10,31 @@ export async function POST(request: Request) {
   if (userOrRes instanceof Response) return userOrRes
   const user = userOrRes
 
-  const { name, serving, save } = (await request.json()) as { name: string; serving?: string; save?: boolean }
+  const prisma = getPrisma(env)
+
+  const allowed = await checkAndIncrementAiUsage(prisma, user.uid, DAILY_LIMITS.free)
+  if (!allowed) {
+    return Response.json({ error: '本日のAIリクエスト上限に達しました' }, { status: 429 })
+  }
+
+  const { name, serving, save, model } = (await request.json()) as {
+    name: string
+    serving?: string
+    save?: boolean
+    model?: string
+  }
 
   if (!name) {
     return Response.json({ error: 'name is required' }, { status: 400 })
   }
 
-  const result = await env.AI.run('@hf/nousresearch/hermes-2-pro-mistral-7b', {
+  const profile = await prisma.userProfile.findUnique({ where: { userId: user.uid } })
+  const modelId = model || profile?.aiUtilityModel || DEFAULT_UTILITY_MODEL
+  if (!isModelAllowed(modelId, 'nutrition', 'free')) {
+    return Response.json({ error: 'このモデルは利用できません' }, { status: 403 })
+  }
+
+  const result = await env.AI.run(modelId as Parameters<typeof env.AI.run>[0], {
     messages: [
       {
         role: 'system',
@@ -30,7 +50,7 @@ export async function POST(request: Request) {
     max_tokens: 256
   })
 
-  const text = 'response' in result ? (result.response as string) : ''
+  const text = typeof result === 'object' && result !== null && 'response' in result ? (result.response as string) : ''
 
   try {
     const match = text.match(/\{[\s\S]*?\}/)
@@ -44,7 +64,6 @@ export async function POST(request: Request) {
       serving: String(parsed.serving || '1食分')
     }
     if (save) {
-      const prisma = getPrisma(env)
       const food = await prisma.food.create({ data: { name, ...estimate, userId: user.uid } })
       return Response.json(food)
     }

@@ -17,6 +17,7 @@ database_id = "27b1d06e-d478-4d50-87ec-4f8386e4f670"
 
 [vars]
 FIREBASE_PROJECT_ID = "vitally-a056d"
+USE_FIREBASE_EMULATOR = "true"
 
 [ai]
 binding = "AI"

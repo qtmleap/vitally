@@ -1,11 +1,22 @@
 import { env } from 'cloudflare:workers'
 
 import { getAuthUser } from '@/lib/auth-middleware'
+import { DEFAULT_UTILITY_MODEL, DAILY_LIMITS, isModelAllowed } from '@/lib/ai-models'
+import { checkAndIncrementAiUsage } from '@/lib/ai-rate-limit'
+import { getPrisma } from '@/lib/db'
 import { aiExerciseEstimateSchema } from '@/lib/schema'
 
 export async function POST(request: Request) {
   const userOrRes = await getAuthUser(request)
   if (userOrRes instanceof Response) return userOrRes
+  const user = userOrRes
+
+  const prisma = getPrisma(env)
+
+  const allowed = await checkAndIncrementAiUsage(prisma, user.uid, DAILY_LIMITS.free)
+  if (!allowed) {
+    return Response.json({ error: '本日のAIリクエスト上限に達しました' }, { status: 429 })
+  }
 
   const body = await request.json()
   const parsed = aiExerciseEstimateSchema.safeParse(body)
@@ -15,8 +26,15 @@ export async function POST(request: Request) {
   }
 
   const { name, duration_min } = parsed.data
+  const modelParam = (body as { model?: string }).model
 
-  const result = await env.AI.run('@hf/nousresearch/hermes-2-pro-mistral-7b', {
+  const profile = await prisma.userProfile.findUnique({ where: { userId: user.uid } })
+  const modelId = modelParam || profile?.aiUtilityModel || DEFAULT_UTILITY_MODEL
+  if (!isModelAllowed(modelId, 'exercise', 'free')) {
+    return Response.json({ error: 'このモデルは利用できません' }, { status: 403 })
+  }
+
+  const result = await env.AI.run(modelId as Parameters<typeof env.AI.run>[0], {
     messages: [
       {
         role: 'system',
@@ -33,7 +51,7 @@ MET値を使用して正確に計算してください。体重は平均的な�
     max_tokens: 256
   })
 
-  const text = 'response' in result ? (result.response as string) : ''
+  const text = typeof result === 'object' && result !== null && 'response' in result ? (result.response as string) : ''
 
   try {
     const match = text.match(/\{[\s\S]*?\}/)

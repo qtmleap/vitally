@@ -15,6 +15,8 @@ function toResponse(p: {
   activityLevel: string
   goal: string
   calorieGoal: number
+  aiAdviceModel: string | null
+  aiUtilityModel: string | null
 }) {
   return {
     age: p.age,
@@ -24,7 +26,9 @@ function toResponse(p: {
     gender: p.gender,
     activityLevel: p.activityLevel,
     goals: p.goal.split(',') as Goal[],
-    calorieGoal: p.calorieGoal
+    calorieGoal: p.calorieGoal,
+    aiAdviceModel: p.aiAdviceModel,
+    aiUtilityModel: p.aiUtilityModel
   }
 }
 

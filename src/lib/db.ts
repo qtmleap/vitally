@@ -56,6 +56,8 @@ export interface UserProfileRow {
   activityLevel: string
   goals: string[]
   calorieGoal: number
+  aiAdviceModel: string | null
+  aiUtilityModel: string | null
 }
 
 export interface ExerciseRow {
