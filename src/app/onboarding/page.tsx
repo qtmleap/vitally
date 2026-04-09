@@ -2,7 +2,17 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, ArrowRight, Dumbbell, Scale, TrendingDown, TrendingUp } from 'lucide-react'
+import {
+  ArrowLeft,
+  ArrowRight,
+  Bot,
+  Dumbbell,
+  Flame,
+  Scale,
+  TrendingDown,
+  TrendingUp,
+  UtensilsCrossed
+} from 'lucide-react'
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
 import { useState } from 'react'
@@ -45,8 +55,41 @@ const activityDescriptions: Record<ActivityLevel, string> = {
   very_active: 'アスリートレベル'
 }
 
+const TOTAL_STEPS = 3
+
+const features = [
+  {
+    icon: UtensilsCrossed,
+    color: 'text-green-500',
+    bg: 'bg-green-500/10',
+    title: '食事を記録',
+    description: '毎日の食事をかんたんに記録。カロリーと栄養素を自動計算します'
+  },
+  {
+    icon: Dumbbell,
+    color: 'text-blue-500',
+    bg: 'bg-blue-500/10',
+    title: '運動を管理',
+    description: '運動の消費カロリーを記録して、1日のバランスを確認'
+  },
+  {
+    icon: Flame,
+    color: 'text-orange-500',
+    bg: 'bg-orange-500/10',
+    title: 'カロリー目標',
+    description: 'あなたに合った目標を自動設定。毎日の進捗が一目でわかります'
+  },
+  {
+    icon: Bot,
+    color: 'text-purple-500',
+    bg: 'bg-purple-500/10',
+    title: 'AI アドバイス',
+    description: 'AI があなたの食事バランスを評価して改善点をアドバイス'
+  }
+]
+
 export default function OnboardingPage() {
-  const [step, setStep] = useState(1)
+  const [step, setStep] = useState(0)
   const router = useRouter()
   const queryClient = useQueryClient()
 
@@ -102,17 +145,12 @@ export default function OnboardingPage() {
   return (
     <div className='flex min-h-dvh flex-col items-center justify-center p-4'>
       <div className='w-full max-w-md'>
-        <m.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className='mb-8 text-center'>
-          <h1 className='text-2xl font-bold'>Vitally</h1>
-          <p className='text-muted-foreground mt-1 text-sm'>あなたに合った目標を設定しましょう</p>
-        </m.div>
-
         {/* Step indicator */}
         <div className='mb-6 flex items-center justify-center gap-2'>
-          {[1, 2].map((s) => (
+          {Array.from({ length: TOTAL_STEPS }, (_, i) => (
             <div
-              key={s}
-              className={cn('h-1.5 rounded-full transition-all', s === step ? 'bg-primary w-8' : 'bg-muted w-4')}
+              key={i}
+              className={cn('h-1.5 rounded-full transition-all', i === step ? 'bg-primary w-8' : 'bg-muted w-4')}
             />
           ))}
         </div>
@@ -120,6 +158,67 @@ export default function OnboardingPage() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <AnimatePresence mode='wait' custom={step}>
+              {/* Step 0: Welcome */}
+              {step === 0 && (
+                <m.div
+                  key='step0'
+                  custom={1}
+                  variants={slideVariants}
+                  initial='enter'
+                  animate='center'
+                  exit='exit'
+                  transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+                  className='space-y-6'
+                >
+                  <div className='text-center'>
+                    <m.h1
+                      className='text-3xl font-bold'
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 }}
+                    >
+                      Vitally へようこそ
+                    </m.h1>
+                    <m.p
+                      className='text-muted-foreground mt-2 text-sm'
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.2 }}
+                    >
+                      健康的な毎日をサポートするアプリです
+                    </m.p>
+                  </div>
+
+                  <div className='space-y-3'>
+                    {features.map((f, i) => (
+                      <m.div
+                        key={f.title}
+                        className='flex items-start gap-3 rounded-xl border px-4 py-3'
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.15 + i * 0.08, type: 'spring', stiffness: 300, damping: 24 }}
+                      >
+                        <div className={cn('flex size-9 shrink-0 items-center justify-center rounded-lg', f.bg)}>
+                          <f.icon className={cn('size-4.5', f.color)} />
+                        </div>
+                        <div>
+                          <p className='text-sm font-medium'>{f.title}</p>
+                          <p className='text-muted-foreground text-xs leading-relaxed'>{f.description}</p>
+                        </div>
+                      </m.div>
+                    ))}
+                  </div>
+
+                  <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
+                    <Button type='button' className='w-full gap-2' onClick={() => setStep(1)}>
+                      はじめる
+                      <ArrowRight className='size-4' />
+                    </Button>
+                  </m.div>
+                </m.div>
+              )}
+
+              {/* Step 1: Profile */}
               {step === 1 && (
                 <m.div
                   key='step1'
@@ -131,6 +230,11 @@ export default function OnboardingPage() {
                   transition={{ type: 'spring', stiffness: 300, damping: 28 }}
                   className='space-y-5'
                 >
+                  <div className='text-center'>
+                    <h2 className='text-lg font-bold'>あなたのことを教えてください</h2>
+                    <p className='text-muted-foreground mt-1 text-xs'>最適なカロリー目標を計算します</p>
+                  </div>
+
                   <FormField
                     control={form.control}
                     name='gender'
@@ -234,13 +338,25 @@ export default function OnboardingPage() {
                       </FormItem>
                     )}
                   />
-                  <Button type='button' className='w-full gap-2' disabled={!canGoToStep2} onClick={() => setStep(2)}>
-                    次へ
-                    <ArrowRight className='size-4' />
-                  </Button>
+                  <div className='flex gap-2'>
+                    <Button type='button' variant='outline' className='gap-1' onClick={() => setStep(0)}>
+                      <ArrowLeft className='size-4' />
+                      戻る
+                    </Button>
+                    <Button
+                      type='button'
+                      className='flex-1 gap-2'
+                      disabled={!canGoToStep2}
+                      onClick={() => setStep(2)}
+                    >
+                      次へ
+                      <ArrowRight className='size-4' />
+                    </Button>
+                  </div>
                 </m.div>
               )}
 
+              {/* Step 2: Goal */}
               {step === 2 && (
                 <m.div
                   key='step2'
@@ -252,6 +368,11 @@ export default function OnboardingPage() {
                   transition={{ type: 'spring', stiffness: 300, damping: 28 }}
                   className='space-y-5'
                 >
+                  <div className='text-center'>
+                    <h2 className='text-lg font-bold'>目標を設定しましょう</h2>
+                    <p className='text-muted-foreground mt-1 text-xs'>あとから変更できます</p>
+                  </div>
+
                   <FormField
                     control={form.control}
                     name='activity_level'
