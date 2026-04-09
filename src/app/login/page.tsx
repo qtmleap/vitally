@@ -286,11 +286,10 @@ export default function LoginPage() {
       </section>
 
       {/* CTA Section */}
-      <section className='px-6 pb-12 lg:pb-20'>
+      <section className='border-t px-6 py-12 text-center lg:py-20'>
         <m.div
-          className='bg-primary/5 mx-auto max-w-7xl rounded-3xl px-6 py-10 text-center lg:py-16'
-          initial={init({ opacity: 0, scale: 0.97 })}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={init({ opacity: 0, y: 16 })}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8 }}
         >
           <h2 className='text-xl font-bold lg:text-2xl'>今すぐ始めましょう</h2>
