@@ -1,19 +1,19 @@
 'use client'
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
-import { Check, Minus, Plus, Search } from 'lucide-react'
-import { useState } from 'react'
+import { Minus, Plus, Trash2 } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import type { MealWithFood } from '@/lib/db'
 import { api } from '@/lib/api'
-import type { FoodRow, MealWithFood } from '@/lib/db'
-import { useDebouncedValue } from '@/lib/hooks'
-import type { MealUpdateInput } from '@/lib/schema'
+import type { MealType } from '@/lib/schema'
+import { mealTypeLabels } from '@/lib/schema'
 import { cn } from '@/lib/utils'
 
 const QUICK_FRACTIONS = [
@@ -23,210 +23,219 @@ const QUICK_FRACTIONS = [
   { label: '1', value: 1 }
 ]
 
+interface EditItem {
+  id: string
+  foodName: string
+  foodCalories: number
+  quantity: number
+  deleted: boolean
+}
+
 interface EditMealDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  mealId: string
+  meals: MealWithFood[]
+  mealType: MealType
 }
 
-export function EditMealDialog({ open, onOpenChange, mealId }: EditMealDialogProps) {
+export function EditMealDialog({ open, onOpenChange, meals, mealType }: EditMealDialogProps) {
   const queryClient = useQueryClient()
+  const [items, setItems] = useState<EditItem[]>([])
 
-  const { data: meal } = useQuery<MealWithFood>({
-    queryKey: ['meal', mealId],
-    queryFn: () => api.meals.get(mealId),
-    enabled: open && !!mealId
-  })
-
-  const [selectedFoodId, setSelectedFoodId] = useState<string | null>(null)
-  const [quantity, setQuantity] = useState<number | null>(null)
-  const [search, setSearch] = useState('')
-
-  const debouncedSearch = useDebouncedValue(search, 300)
-
-  const activeFoodId = selectedFoodId ?? meal?.food_id ?? ''
-  const activeQuantity = quantity ?? meal?.quantity ?? 1
-
-  const { data: foods = [] } = useQuery<FoodRow[]>({
-    queryKey: ['foods', debouncedSearch],
-    queryFn: () => api.foods.list(debouncedSearch || undefined),
-    enabled: open
-  })
-
-  const selectedFood = foods.find((f) => f.id === activeFoodId)
-
-  const mutation = useMutation({
-    mutationFn: (data: MealUpdateInput) => api.meals.update(mealId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['meals'] })
-      queryClient.invalidateQueries({ queryKey: ['meal', mealId] })
-      toast.success('食事を更新しました')
-      onOpenChange(false)
+  useEffect(() => {
+    if (open && meals.length > 0) {
+      setItems(
+        meals.map((meal) => ({
+          id: meal.id,
+          foodName: meal.food_name,
+          foodCalories: meal.food_calories,
+          quantity: meal.quantity,
+          deleted: false
+        }))
+      )
     }
+  }, [open, meals])
+
+  const updateMutation = useMutation({
+    mutationFn: (item: { id: string; quantity: number }) => api.meals.update(item.id, { quantity: item.quantity })
   })
 
-  const handleSave = () => {
-    const data: MealUpdateInput = {}
-    if (selectedFoodId !== null) data.food_id = selectedFoodId
-    if (quantity !== null) data.quantity = quantity
-    mutation.mutate(data)
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => api.meals.delete(id)
+  })
+
+  const [saving, setSaving] = useState(false)
+
+  const handleSave = async () => {
+    setSaving(true)
+    try {
+      const updates = items.filter((i) => !i.deleted)
+      const deletes = items.filter((i) => i.deleted)
+
+      await Promise.all([
+        ...updates
+          .filter((i) => {
+            const orig = meals.find((m) => m.id === i.id)
+            return orig && orig.quantity !== i.quantity
+          })
+          .map((i) => updateMutation.mutateAsync({ id: i.id, quantity: i.quantity })),
+        ...deletes.map((i) => deleteMutation.mutateAsync(i.id))
+      ])
+
+      queryClient.invalidateQueries({ queryKey: ['meals'] })
+      const deleted = deletes.length
+      const updated = updates.filter((i) => {
+        const orig = meals.find((m) => m.id === i.id)
+        return orig && orig.quantity !== i.quantity
+      }).length
+      if (deleted > 0 && updated > 0) {
+        toast.success(`${updated}件更新、${deleted}件削除しました`)
+      } else if (deleted > 0) {
+        toast.success(`${deleted}件削除しました`)
+      } else if (updated > 0) {
+        toast.success(`${updated}件更新しました`)
+      }
+      onOpenChange(false)
+    } finally {
+      setSaving(false)
+    }
   }
 
   const handleOpenChange = (next: boolean) => {
-    if (!next) {
-      setSelectedFoodId(null)
-      setQuantity(null)
-      setSearch('')
-    }
+    if (!next) setItems([])
     onOpenChange(next)
   }
 
-  const adjust = (delta: number) => {
-    const current = activeQuantity
-    const next = Math.max(0.1, Math.round((current + delta * 0.5) * 10) / 10)
-    setQuantity(next)
+  const adjust = (id: string, delta: number) => {
+    setItems((prev) =>
+      prev.map((i) => {
+        if (i.id !== id) return i
+        const next = Math.max(0.1, Math.round((i.quantity + delta * 0.5) * 10) / 10)
+        return { ...i, quantity: next }
+      })
+    )
   }
+
+  const setQuantity = (id: string, value: number) => {
+    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, quantity: value } : i)))
+  }
+
+  const toggleDelete = (id: string) => {
+    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, deleted: !i.deleted } : i)))
+  }
+
+  const activeItems = items.filter((i) => !i.deleted)
+  const totalCalories = activeItems.reduce((s, i) => s + i.foodCalories * i.quantity, 0)
+  const hasChanges = items.some((i) => {
+    if (i.deleted) return true
+    const orig = meals.find((m) => m.id === i.id)
+    return orig && orig.quantity !== i.quantity
+  })
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className='flex max-h-[85dvh] flex-col gap-0 p-0'>
         <DialogHeader className='border-b px-4 py-3'>
-          <DialogTitle>食事を編集</DialogTitle>
+          <DialogTitle>{mealTypeLabels[mealType]}を編集</DialogTitle>
         </DialogHeader>
 
-        <div className='min-h-0 flex-1 overflow-y-auto px-4 py-3 space-y-4'>
-          {/* Food search */}
-          <div className='space-y-1.5'>
-            <p className='text-sm font-medium'>食品を変更</p>
-            <div className='relative'>
-              <Search className='text-muted-foreground pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2' />
-              <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder='食品名を検索...'
-                className='pl-9'
-              />
-            </div>
-
-            <AnimatePresence>
-              {foods.length > 0 && (
-                <m.div
-                  className='space-y-0.5'
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-                >
-                  {foods.map((food, i) => {
-                    const isSelected = activeFoodId === food.id
-                    return (
-                      <m.button
-                        key={food.id}
-                        type='button'
-                        onClick={() => setSelectedFoodId(food.id)}
-                        className={cn(
-                          'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors',
-                          isSelected ? 'bg-primary/10' : 'hover:bg-muted'
-                        )}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.03, type: 'spring', stiffness: 400, damping: 25 }}
-                        whileTap={{ scale: 0.97 }}
-                        layout
-                      >
-                        <m.div
-                          className={cn(
-                            'flex size-5 shrink-0 items-center justify-center rounded-full border transition-colors',
-                            isSelected
-                              ? 'border-primary bg-primary text-primary-foreground'
-                              : 'border-muted-foreground/30'
-                          )}
-                          animate={isSelected ? { scale: [1, 1.3, 1] } : { scale: 1 }}
-                          transition={{ duration: 0.3 }}
-                        >
-                          {isSelected && <Check className='size-3' />}
-                        </m.div>
-                        <div className='flex-1'>
-                          <p className='text-sm'>{food.name}</p>
-                          <p className='text-muted-foreground text-xs'>
-                            {food.calories} kcal / {food.serving}
-                          </p>
-                        </div>
-                      </m.button>
-                    )
-                  })}
-                </m.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Selected food info */}
-          {selectedFood && (
-            <m.div
-              className='bg-muted/50 rounded-lg px-3 py-2.5'
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-            >
-              <p className='text-sm font-medium'>{selectedFood.name}</p>
-              <p className='text-muted-foreground text-xs mt-0.5'>
-                {selectedFood.calories} kcal / P:{selectedFood.protein}g F:{selectedFood.fat}g C:{selectedFood.carbs}g
-              </p>
-            </m.div>
-          )}
-
-          {/* Quantity */}
-          <div className='space-y-1.5'>
-            <p className='text-sm font-medium'>数量（食分）</p>
-            <div className='flex items-center gap-2'>
-              <button
-                type='button'
-                onClick={() => adjust(-1)}
-                className='text-muted-foreground hover:text-foreground rounded p-0.5'
+        <div className='min-h-0 flex-1 overflow-y-auto px-4 py-3'>
+          <AnimatePresence mode='popLayout'>
+            {items.map((item) => (
+              <m.div
+                key={item.id}
+                layout
+                initial={{ opacity: 0, x: -20, height: 0 }}
+                animate={{ opacity: 1, x: 0, height: 'auto' }}
+                exit={{ opacity: 0, x: 20, height: 0 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                className='py-1.5'
               >
-                <Minus className='size-4' />
-              </button>
-              <Input
-                type='number'
-                step='0.1'
-                value={activeQuantity}
-                onChange={(e) => {
-                  const v = Number.parseFloat(e.target.value)
-                  if (!Number.isNaN(v)) setQuantity(v)
-                }}
-                className='h-9 w-20 px-2 text-center'
-              />
-              <button
-                type='button'
-                onClick={() => adjust(1)}
-                className='text-muted-foreground hover:text-foreground rounded p-0.5'
-              >
-                <Plus className='size-4' />
-              </button>
-            </div>
-            <div className='flex gap-1'>
-              {QUICK_FRACTIONS.map((f) => (
-                <button
-                  key={f.label}
-                  type='button'
-                  onClick={() => setQuantity(f.value)}
+                <div
                   className={cn(
-                    'rounded-md border px-2 py-0.5 text-[10px] transition-colors',
-                    activeQuantity === f.value
-                      ? 'border-primary bg-primary/10 text-primary font-medium'
-                      : 'text-muted-foreground hover:text-foreground hover:border-foreground/30'
+                    'space-y-1.5 rounded-lg px-3 py-2.5 transition-opacity',
+                    item.deleted && 'opacity-40'
                   )}
                 >
-                  {f.label}
-                </button>
-              ))}
-            </div>
-          </div>
+                  <div className='flex items-center gap-2'>
+                    <button
+                      type='button'
+                      onClick={() => toggleDelete(item.id)}
+                      className={cn(
+                        'shrink-0 transition-colors',
+                        item.deleted
+                          ? 'text-destructive hover:text-destructive/80'
+                          : 'text-muted-foreground hover:text-destructive'
+                      )}
+                    >
+                      <Trash2 className='size-4' />
+                    </button>
+                    <div className='min-w-0 flex-1'>
+                      <p className={cn('truncate text-sm', item.deleted && 'line-through')}>{item.foodName}</p>
+                      <p className='text-muted-foreground text-xs'>
+                        {Math.round(item.foodCalories * item.quantity)} kcal
+                      </p>
+                    </div>
+                    {!item.deleted && (
+                      <div className='flex shrink-0 items-center gap-1'>
+                        <button
+                          type='button'
+                          onClick={() => adjust(item.id, -1)}
+                          className='text-muted-foreground hover:text-foreground rounded p-0.5'
+                        >
+                          <Minus className='size-3.5' />
+                        </button>
+                        <Input
+                          type='number'
+                          step='0.1'
+                          value={item.quantity}
+                          onChange={(e) => {
+                            const v = Number.parseFloat(e.target.value)
+                            if (!Number.isNaN(v) && v > 0) setQuantity(item.id, v)
+                          }}
+                          className='h-7 w-14 px-1 text-center text-xs'
+                        />
+                        <button
+                          type='button'
+                          onClick={() => adjust(item.id, 1)}
+                          className='text-muted-foreground hover:text-foreground rounded p-0.5'
+                        >
+                          <Plus className='size-3.5' />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  {!item.deleted && (
+                    <div className='flex gap-1 pl-6'>
+                      {QUICK_FRACTIONS.map((f) => (
+                        <button
+                          key={f.label}
+                          type='button'
+                          onClick={() => setQuantity(item.id, f.value)}
+                          className={cn(
+                            'rounded-md border px-2 py-0.5 text-[10px] transition-colors',
+                            item.quantity === f.value
+                              ? 'border-primary bg-primary/10 text-primary font-medium'
+                              : 'text-muted-foreground hover:text-foreground hover:border-foreground/30'
+                          )}
+                        >
+                          {f.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </m.div>
+            ))}
+          </AnimatePresence>
         </div>
 
-        <div className='border-t px-4 py-3'>
-          <Button onClick={handleSave} className='w-full' disabled={mutation.isPending}>
-            {mutation.isPending ? '保存中...' : '保存'}
+        <div className='border-t px-4 py-3 space-y-1'>
+          <div className='text-muted-foreground mb-1 text-center text-xs'>
+            合計 {Math.round(totalCalories)} kcal
+          </div>
+          <Button onClick={handleSave} className='w-full' disabled={saving || !hasChanges}>
+            {saving ? '保存中...' : '保存'}
           </Button>
         </div>
       </DialogContent>

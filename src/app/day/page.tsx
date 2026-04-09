@@ -27,7 +27,7 @@ export default function DayPage() {
   const date = useAtomValue(selectedDateAtom)
   const queryClient = useQueryClient()
   const [dialogType, setDialogType] = useState<MealType | null>(null)
-  const [editingMealId, setEditingMealId] = useState<string | null>(null)
+  const [editingMealType, setEditingMealType] = useState<MealType | null>(null)
 
   const copyMutation = useMutation({
     mutationFn: () => {
@@ -171,7 +171,7 @@ export default function DayPage() {
                     {items.length > 0 ? (
                       <m.button
                         type='button'
-                        onClick={() => setEditingMealId(items[0].id)}
+                        onClick={() => setEditingMealType(type)}
                         className='text-muted-foreground hover:text-foreground'
                         whileTap={{ scale: 0.85 }}
                         transition={{ type: 'spring', stiffness: 500, damping: 15 }}
@@ -289,11 +289,14 @@ export default function DayPage() {
           date={date}
         />
       )}
-      <EditMealDialog
-        open={!!editingMealId}
-        onOpenChange={(open) => { if (!open) setEditingMealId(null) }}
-        mealId={editingMealId ?? ''}
-      />
+      {editingMealType && (
+        <EditMealDialog
+          open={!!editingMealType}
+          onOpenChange={(open) => { if (!open) setEditingMealType(null) }}
+          meals={grouped[editingMealType] ?? []}
+          mealType={editingMealType}
+        />
+      )}
     </m.div>
   )
 }

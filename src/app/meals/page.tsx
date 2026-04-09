@@ -1,8 +1,8 @@
 'use client'
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useAtomValue } from 'jotai'
-import { Pencil, Plus, Trash2 } from 'lucide-react'
+import { Pencil, Plus } from 'lucide-react'
 import { useState } from 'react'
 import Link from 'vinext/shims/link'
 import { DateNav } from '@/components/date-nav'
@@ -19,15 +19,10 @@ import { mealTypeLabels } from '@/lib/schema'
 
 export default function MealsPage() {
   const date = useAtomValue(selectedDateAtom)
-  const queryClient = useQueryClient()
-  const [editingMealId, setEditingMealId] = useState<string | null>(null)
+  const [editingMealType, setEditingMealType] = useState<MealType | null>(null)
   const { data: meals = [] } = useQuery<MealWithFood[]>({
     queryKey: ['meals', date],
     queryFn: () => api.meals.list(date)
-  })
-  const deleteMutation = useMutation({
-    mutationFn: api.meals.delete,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['meals', date] })
   })
 
   const grouped = meals.reduce(
@@ -57,9 +52,12 @@ export default function MealsPage() {
           if (!items?.length) return null
           return (
             <div key={type}>
-              <Badge variant='secondary' className='mb-2'>
-                {mealTypeLabels[type]}
-              </Badge>
+              <div className='mb-2 flex items-center gap-2'>
+                <Badge variant='secondary'>{mealTypeLabels[type]}</Badge>
+                <Button variant='ghost' size='icon' className='size-7' onClick={() => setEditingMealType(type)}>
+                  <Pencil className='size-3.5' />
+                </Button>
+              </div>
               <div className='space-y-2'>
                 {items.map((meal) => (
                   <Card key={meal.id}>
@@ -67,16 +65,9 @@ export default function MealsPage() {
                       <div>
                         <p className='font-medium'>{meal.food_name}</p>
                         <p className='text-muted-foreground text-xs'>
-                          {Math.round(meal.food_calories * meal.quantity)}kcal (×{meal.quantity})
+                          {Math.round(meal.food_calories * meal.quantity)}kcal ({'\u00d7'}
+                          {meal.quantity})
                         </p>
-                      </div>
-                      <div className='flex'>
-                        <Button variant='ghost' size='icon' onClick={() => setEditingMealId(meal.id)}>
-                          <Pencil className='size-4' />
-                        </Button>
-                        <Button variant='ghost' size='icon' onClick={() => deleteMutation.mutate(meal.id)}>
-                          <Trash2 className='size-4 text-destructive' />
-                        </Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -89,11 +80,16 @@ export default function MealsPage() {
           <p className='text-muted-foreground py-8 text-center text-sm'>この日の食事記録はありません</p>
         )}
       </div>
-      <EditMealDialog
-        open={!!editingMealId}
-        onOpenChange={(open) => { if (!open) setEditingMealId(null) }}
-        mealId={editingMealId ?? ''}
-      />
+      {editingMealType && (
+        <EditMealDialog
+          open={!!editingMealType}
+          onOpenChange={(open) => {
+            if (!open) setEditingMealType(null)
+          }}
+          meals={grouped[editingMealType] ?? []}
+          mealType={editingMealType}
+        />
+      )}
     </div>
   )
 }
