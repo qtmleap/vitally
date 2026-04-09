@@ -104,9 +104,20 @@ export default function OnboardingPage() {
       body_fat_pct: null,
       gender: 'male',
       activity_level: 'moderate',
-      goal: 'maintain'
+      goals: ['maintain']
     }
   })
+
+  const toggleGoal = (g: GoalType) => {
+    const current = form.getValues('goals')
+    if (g === 'maintain') {
+      form.setValue('goals', ['maintain'], { shouldValidate: true })
+    } else {
+      const without = current.filter((v) => v !== 'maintain' && v !== g)
+      const next = current.includes(g) ? without : [...without, g]
+      form.setValue('goals', next.length > 0 ? next : ['maintain'], { shouldValidate: true })
+    }
+  }
 
   const mutation = useMutation({
     mutationFn: api.profile.update,
@@ -127,7 +138,7 @@ export default function OnboardingPage() {
           weightKg: watchAll.weight_kg,
           gender: watchAll.gender,
           activityLevel: watchAll.activity_level,
-          goal: watchAll.goal
+          goals: watchAll.goals
         })
       : null
 
@@ -412,27 +423,28 @@ export default function OnboardingPage() {
 
                   <FormField
                     control={form.control}
-                    name='goal'
+                    name='goals'
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>目標</FormLabel>
+                        <FormLabel>目標 (複数選択可)</FormLabel>
                         <div className='grid grid-cols-2 gap-2'>
                           {goals.map((g) => {
                             const Icon = goalIcons[g]
+                            const selected = (field.value as GoalType[]).includes(g)
                             return (
                               <button
                                 key={g}
                                 type='button'
-                                onClick={() => field.onChange(g)}
+                                onClick={() => toggleGoal(g)}
                                 className={cn(
                                   'flex items-center gap-3 rounded-xl border px-3 py-3 text-left transition-colors',
-                                  field.value === g ? 'border-primary bg-primary/5' : 'hover:bg-muted'
+                                  selected ? 'border-primary bg-primary/5' : 'hover:bg-muted'
                                 )}
                               >
                                 <Icon
                                   className={cn(
                                     'size-4.5 shrink-0',
-                                    field.value === g ? 'text-primary' : 'text-muted-foreground'
+                                    selected ? 'text-primary' : 'text-muted-foreground'
                                   )}
                                 />
                                 <span className='text-xs font-medium'>{goalLabels[g]}</span>

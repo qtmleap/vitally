@@ -92,7 +92,7 @@ export const profileSchema = z.object({
   body_fat_pct: z.number().min(1).max(60).nullable().default(null),
   gender: z.enum(genders),
   activity_level: z.enum(activityLevels),
-  goal: z.enum(goals)
+  goals: z.array(z.enum(goals)).min(1, '目標を1つ以上選択してください')
 })
 export type ProfileInput = z.infer<typeof profileSchema>
 

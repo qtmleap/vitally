@@ -24,7 +24,7 @@ export function calculateCalorieGoal(params: {
   weightKg: number
   gender: Gender
   activityLevel: ActivityLevel
-  goal: Goal
+  goals: Goal[]
 }): number {
   const bmr =
     params.gender === 'male'
@@ -32,5 +32,7 @@ export function calculateCalorieGoal(params: {
       : 10 * params.weightKg + 6.25 * params.heightCm - 5 * params.age - 161
 
   const tdee = bmr * activityMultipliers[params.activityLevel]
-  return Math.round(tdee * goalMultipliers[params.goal])
+  const g = params.goals.length > 0 ? params.goals : (['maintain'] as Goal[])
+  const avgMultiplier = g.reduce((s, goal) => s + goalMultipliers[goal], 0) / g.length
+  return Math.round(tdee * avgMultiplier)
 }

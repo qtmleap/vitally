@@ -54,7 +54,7 @@ export interface UserProfileRow {
   bodyFatPct: number | null
   gender: string
   activityLevel: string
-  goal: string
+  goals: string[]
   calorieGoal: number
 }
 
