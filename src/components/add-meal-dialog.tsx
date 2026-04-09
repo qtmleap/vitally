@@ -54,6 +54,25 @@ function useDebouncedValue<T>(value: T, delay: number): T {
   return debounced
 }
 
+const QUICK_FRACTIONS = [
+  { label: '1/4', value: 0.25 },
+  { label: '1/2', value: 0.5 },
+  { label: '3/4', value: 0.75 },
+  { label: '1', value: 1 }
+]
+
+function calcCalories(food: FoodRow, amount: number, unit: Unit): number {
+  if (unit === 'serving') return food.calories * amount
+  // g モード: serving テキストから基準グラムを抽出、なければ 100g ベース
+  const servingGrams = parseServingGrams(food.serving)
+  return (food.calories / servingGrams) * amount
+}
+
+function parseServingGrams(serving: string): number {
+  const match = serving.match(/(\d+)\s*g/i)
+  return match ? Number(match[1]) : 100
+}
+
 function BasketRow({
   item,
   onRemove,
@@ -72,31 +91,40 @@ function BasketRow({
   const amount = form.watch('amount')
   const unit = item.unit
 
-  const calcCal = unit === 'g' ? (item.food.calories / 100) * amount : item.food.calories * amount
+  const cal = calcCalories(item.food, amount, unit)
   const step = unit === 'g' ? 10 : 0.5
+  const servingGrams = parseServingGrams(item.food.serving)
 
   const adjust = (delta: number) => {
-    const next = Math.max(step, Math.round((amount + delta * step) * 10) / 10)
+    const next = Math.max(unit === 'g' ? 1 : 0.1, Math.round((amount + delta * step) * 10) / 10)
     form.setValue('amount', next, { shouldValidate: true })
     onUpdate(next, unit)
   }
 
+  const setAmount = (v: number) => {
+    form.setValue('amount', v, { shouldValidate: true })
+    onUpdate(v, unit)
+  }
+
   const toggleUnit = () => {
     const newUnit: Unit = unit === 'serving' ? 'g' : 'serving'
-    const newAmount = newUnit === 'g' ? 100 : 1
+    const newAmount = newUnit === 'g' ? servingGrams : 1
     form.setValue('amount', newAmount, { shouldValidate: true })
     onUpdate(newAmount, newUnit)
   }
 
   return (
-    <div className='space-y-1'>
+    <div className='space-y-1.5'>
       <div className='flex items-center gap-2'>
         <button type='button' onClick={onRemove} className='text-muted-foreground hover:text-destructive shrink-0'>
           <X className='size-4' />
         </button>
         <div className='min-w-0 flex-1'>
           <p className='truncate text-sm'>{item.food.name}</p>
-          <p className='text-muted-foreground text-xs'>{Math.round(calcCal)} kcal</p>
+          <p className='text-muted-foreground text-xs'>
+            {Math.round(cal)} kcal
+            <span className='ml-1 opacity-60'>({item.food.serving})</span>
+          </p>
         </div>
         <div className='flex shrink-0 items-center gap-1'>
           <button type='button' onClick={() => adjust(-1)} className='text-muted-foreground hover:text-foreground rounded p-0.5'>
@@ -140,6 +168,25 @@ function BasketRow({
           </button>
         </div>
       </div>
+      {unit === 'serving' && (
+        <div className='flex gap-1 pl-6'>
+          {QUICK_FRACTIONS.map((f) => (
+            <button
+              key={f.label}
+              type='button'
+              onClick={() => setAmount(f.value)}
+              className={cn(
+                'rounded-md border px-2 py-0.5 text-[10px] transition-colors',
+                amount === f.value
+                  ? 'border-primary bg-primary/10 text-primary font-medium'
+                  : 'text-muted-foreground hover:text-foreground hover:border-foreground/30'
+              )}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -246,17 +293,15 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
     })
   }, [])
 
-  const totalCalories = basket.reduce((s, item) => {
-    const cal = item.unit === 'g' ? (item.food.calories / 100) * item.amount : item.food.calories * item.amount
-    return s + cal
-  }, 0)
+  const totalCalories = basket.reduce((s, item) => s + calcCalories(item.food, item.amount, item.unit), 0)
 
   const hasInvalid = basket.some((item) => item.amount < 0.1)
 
   const saveMutation = useMutation({
     mutationFn: async () => {
       for (const item of basket) {
-        const quantity = item.unit === 'g' ? item.amount / 100 : item.amount
+        const quantity =
+          item.unit === 'g' ? item.amount / parseServingGrams(item.food.serving) : item.amount
         await api.meals.create({ date, meal_type: mealType, food_id: item.food.id, quantity })
       }
     },
