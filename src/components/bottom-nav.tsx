@@ -5,6 +5,7 @@ import { Apple, CalendarDays, Home, Plus, Settings } from 'lucide-react'
 import * as m from 'motion/react-m'
 import { useState } from 'react'
 import Link from 'vinext/shims/link'
+import { usePathname } from 'vinext/shims/navigation'
 
 import { AddMealDialog } from '@/components/add-meal-dialog'
 import { QuickAddSheet } from '@/components/quick-add-sheet'
@@ -26,6 +27,9 @@ export function BottomNav() {
   const [sheetOpen, setSheetOpen] = useState(false)
   const [mealDialogType, setMealDialogType] = useState<MealType | null>(null)
   const date = useAtomValue(selectedDateAtom)
+  const pathname = usePathname()
+
+  if (pathname === '/onboarding') return null
 
   return (
     <>
