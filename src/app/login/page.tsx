@@ -1,5 +1,6 @@
 'use client'
 
+import { Activity, ChartLine, Sparkles, UtensilsCrossed } from 'lucide-react'
 import * as m from 'motion/react-m'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'vinext/shims/navigation'
@@ -31,6 +32,29 @@ function GoogleIcon() {
     </svg>
   )
 }
+
+const features = [
+  {
+    icon: UtensilsCrossed,
+    title: '食事記録',
+    description: '毎日の食事をかんたんに記録。AI が栄養素を自動推定'
+  },
+  {
+    icon: Activity,
+    title: '運動記録',
+    description: '運動時間と消費カロリーを記録。AI が推定もサポート'
+  },
+  {
+    icon: ChartLine,
+    title: 'カロリー管理',
+    description: '摂取・消費カロリーをひと目で把握。PFC バランスも表示'
+  },
+  {
+    icon: Sparkles,
+    title: 'AI アドバイス',
+    description: 'AI があなたの記録を分析して、健康的な食生活をアドバイス'
+  }
+]
 
 export default function LoginPage() {
   const { user, loading } = useAuth()
@@ -65,59 +89,64 @@ export default function LoginPage() {
   }
 
   return (
-    <div className='flex h-dvh flex-col items-center justify-center px-6'>
+    <div className='flex min-h-dvh flex-col px-6 py-12'>
+      {/* Hero */}
       <m.div
-        className='flex w-full max-w-sm flex-col items-center gap-8'
+        className='flex flex-1 flex-col items-center justify-center gap-6'
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: 'spring', stiffness: 300, damping: 24 }}
       >
-        <div className='flex flex-col items-center gap-3'>
-          <m.div
-            className='bg-primary/10 flex size-16 items-center justify-center rounded-2xl'
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 20, delay: 0.1 }}
-          >
-            <span className='text-3xl'>🥗</span>
-          </m.div>
-          <m.div
-            className='text-center'
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            <h1 className='text-2xl font-bold tracking-tight'>HealthLog</h1>
-            <p className='text-muted-foreground mt-1 text-sm'>毎日の食事と運動を記録して健康管理</p>
-          </m.div>
-        </div>
-
         <m.div
-          className='w-full'
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          className='bg-primary/10 flex size-20 items-center justify-center rounded-3xl'
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 20, delay: 0.1 }}
         >
-          <Button
-            variant='outline'
-            size='lg'
-            className='w-full gap-3'
-            onClick={handleGoogleSignIn}
-            disabled={signing}
-          >
-            <GoogleIcon />
-            {signing ? 'ログイン中...' : 'Google でログイン'}
-          </Button>
+          <span className='text-4xl'>🥗</span>
         </m.div>
+        <m.div className='text-center' initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+          <h1 className='text-3xl font-bold tracking-tight'>HealthLog</h1>
+          <p className='text-muted-foreground mt-2 text-base'>毎日の食事と運動を記録して、健康的な生活をサポート</p>
+        </m.div>
+      </m.div>
 
-        <m.p
-          className='text-muted-foreground/60 text-center text-xs'
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-        >
+      {/* Features */}
+      <m.div
+        className='grid grid-cols-2 gap-3 py-8'
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3 }}
+      >
+        {features.map((feature, i) => (
+          <m.div
+            key={feature.title}
+            className='bg-muted/50 rounded-xl p-3'
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35 + i * 0.08, type: 'spring', stiffness: 300, damping: 24 }}
+          >
+            <feature.icon className='text-primary mb-2 size-5' />
+            <p className='text-sm font-medium'>{feature.title}</p>
+            <p className='text-muted-foreground mt-0.5 text-xs leading-relaxed'>{feature.description}</p>
+          </m.div>
+        ))}
+      </m.div>
+
+      {/* CTA */}
+      <m.div
+        className='space-y-3 pb-4'
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6 }}
+      >
+        <Button size='lg' className='w-full gap-3' onClick={handleGoogleSignIn} disabled={signing}>
+          <GoogleIcon />
+          {signing ? 'ログイン中...' : 'Google で始める'}
+        </Button>
+        <p className='text-muted-foreground/60 text-center text-xs'>
           ログインすることで利用規約とプライバシーポリシーに同意したものとみなします
-        </m.p>
+        </p>
       </m.div>
     </div>
   )

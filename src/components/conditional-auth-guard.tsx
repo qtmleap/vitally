@@ -1,13 +1,21 @@
 'use client'
+
 import { usePathname } from 'vinext/shims/navigation'
 import { AuthGuard } from './auth-guard'
+import { useAuth } from './auth-provider'
 
-export function ConditionalAuthGuard({ children }: { children: React.ReactNode }) {
+interface ConditionalAuthGuardProps {
+  authenticated: React.ReactNode
+  unauthenticated: React.ReactNode
+}
+
+export function ConditionalAuthGuard({ authenticated, unauthenticated }: ConditionalAuthGuardProps) {
   const pathname = usePathname()
+  const { user, loading } = useAuth()
 
-  if (pathname === '/login') {
-    return <>{children}</>
+  if (pathname === '/login' || (!loading && !user)) {
+    return <>{unauthenticated}</>
   }
 
-  return <AuthGuard>{children}</AuthGuard>
+  return <AuthGuard>{authenticated}</AuthGuard>
 }

@@ -37,12 +37,21 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       </head>
       <body className='bg-background text-foreground antialiased'>
         <Providers>
-          <ConditionalAuthGuard>
-            <div className='mx-auto min-h-dvh max-w-lg pb-20'>
-              <ErrorBoundary>{children}</ErrorBoundary>
-            </div>
-            <BottomNav />
-          </ConditionalAuthGuard>
+          <ConditionalAuthGuard
+            authenticated={
+              <>
+                <div className='mx-auto min-h-dvh max-w-lg pb-20'>
+                  <ErrorBoundary>{children}</ErrorBoundary>
+                </div>
+                <BottomNav />
+              </>
+            }
+            unauthenticated={
+              <div className='mx-auto min-h-dvh max-w-lg'>
+                <ErrorBoundary>{children}</ErrorBoundary>
+              </div>
+            }
+          />
           <Toaster position='top-center' />
         </Providers>
       </body>
