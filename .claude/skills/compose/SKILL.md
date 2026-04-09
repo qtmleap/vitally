@@ -1,99 +1,104 @@
 ---
 name: compose
-description: Orchestrate a team of frontend, backend, and test agents to plan and execute a feature or fix. The leader agent consults each specialist, builds an execution plan with cost estimates and phases, saves it as markdown, and awaits user approval before executing.
+description: Assemble an Agent Team as leader and run the plan → approve → execute workflow
 user_invocable: true
 ---
 
-# /compose - Team Orchestration Workflow
+# /compose — Agent Teams Workflow
 
-The user wants to plan and execute a feature or fix using the agent team.
+You are the **leader agent** for this project. Follow this workflow strictly.
 
-## Instructions
+## Phase 1: Hearing
 
-You are acting as the **leader**. Follow this workflow precisely:
+Ask the user **what they want to achieve**. Keep it brief — 1-2 sentences.
+If the user already specified a task in their message, use that directly.
 
-### Step 1: Understand the Request
+## Phase 2: Planning
 
-Read the user's message carefully. If unclear, ask one clarifying question before proceeding.
+Once you have the user's goal:
 
-### Step 2: Consult Each Agent
+1. Check available agents (under `.claude/agents/`):
+   - **frontend**: React + TailwindCSS + Shadcn/ui + TanStack Router UI implementation
+   - **backend**: Hono API endpoints, Prisma schemas, Cloudflare Workers logic
+   - **qa**: Type checking, lint, format fixes, commitlint-format commits
 
-Spawn three agents **in parallel**, one for each specialist role. Send each agent the task description and ask them to assess the work according to their agent definition.
+2. Have each relevant agent propose subtasks in **Plan mode**:
+   - Launch agents via the Agent tool: "Propose the subtasks you should own for this goal as a bullet list (do not write code)"
+   - Launch in parallel for efficiency
 
-Use the agent definitions from `.claude/agents/`:
-- **frontend** (`.claude/agents/frontend.md`): Ask what frontend work is needed.
-- **backend** (`.claude/agents/backend.md`): Ask what backend work is needed.
-- **tester** (`.claude/agents/tester.md`): Ask what test/validation work is needed.
-
-Each agent should respond with:
-- Files to create or modify
-- Cost estimate: **S** (< 30 min), **M** (30 min - 2 hrs), **L** (2 - 5 hrs), **XL** (5+ hrs)
-- Phases for incremental delivery and expected effect of each phase
-- Dependencies on other agents
-- Or explicitly: "No work required for this task."
-
-### Step 3: Build the Execution Plan
-
-Compile all agent responses into a structured markdown plan:
+3. Consolidate proposals and save a plan document to `docs/plans/`:
 
 ```markdown
-# Execution Plan: [Title]
+# Work Plan: [Title]
+Date: [ISO 8601]
 
-## Summary
-[What will be built and why]
+## Goal
+[User's goal]
 
-## Agents
+## Tasks
 
-### Frontend
-- **Cost**: [S/M/L/XL]
-- **Files**: [list]
-- **Phases**:
-  - Phase N: [description] - [effect/outcome]
-- **Dependencies**: [list or "None"]
+### [Agent Name]
+- [ ] Subtask 1
+- [ ] Subtask 2
 
-### Backend
-- **Cost**: [S/M/L/XL]
-- **Files**: [list]
-- **Phases**:
-  - Phase N: [description] - [effect/outcome]
-- **Dependencies**: [list or "None"]
-
-### Tester
-- **Cost**: [S/M/L/XL]
-- **Tasks**: [list]
-- **Phases**:
-  - Phase N: [description] - [effect/outcome]
-- **Dependencies**: [list or "None"]
-
-### Agents with No Work
-- [Agent name]: [reason]
+### [Agent Name]
+- [ ] Subtask 1
 
 ## Execution Order
-1. [What runs first, what can be parallelized]
-2. [Sequential dependencies]
-3. [Final validation by tester]
+1. Parallel: [task group]
+2. Sequential: [task group]
 
-## Total Estimated Cost
-[Combined S/M/L/XL with brief justification]
+## Deliverables
+- [file path]: [description]
 
-## Risks & Notes
-[Edge cases, open questions, decisions needed]
+## Risks / Notes
+- [known issues]
 ```
 
-### Step 4: Save and Present
+## Phase 3: Approval
 
-1. Save the plan to `features/plans/[task-description].md` (use a concise English kebab-case slug describing the task, e.g., `add-weight-tracking.md`, `fix-meal-form-validation.md`).
-2. Present a summary of the plan to the user **in Japanese**.
-3. Ask: **"この計画で実行してよろしいですか？"**
+Present the plan to the user and confirm:
+- "Shall I proceed with this plan?"
+- Incorporate any requested changes
 
-### Step 5: Execute (only after explicit approval)
+**Do NOT proceed to Phase 4 without explicit user approval.**
 
-If the user approves:
-1. Spawn agents respecting the dependency order from the plan.
-2. Run independent work **in parallel** where possible.
-3. After frontend and backend complete, run the tester agent for validation.
-4. Report final results to the user **in Japanese**.
+## Phase 4: Execution
 
-If the user requests changes, update the plan accordingly and re-present.
+After approval:
 
-**IMPORTANT**: Never execute without user approval. The plan-then-approve step is mandatory.
+1. Create a task list with TodoWrite
+2. Launch agents via the Agent tool (in parallel where possible)
+   - Provide each agent with specific file paths, changes, and constraints
+   - Frontend and backend share API contracts (Zod schemas) — define schemas first, then parallelize
+3. If API schema changes are involved:
+   - Define Zod schemas in `schemas/*.dto.ts` (PascalCase) before implementation
+   - Backend implements Hono endpoints matching the schema
+   - Frontend consumes via Zodios client
+4. If DB schema changes are involved:
+   - Use Prisma migration workflow (see `.claude/skills/prisma-d1.md`)
+   - Never modify D1 directly with raw SQL
+5. Review each agent's results
+6. Launch the **qa** agent to run type check, lint, fix issues, and commit:
+   ```sh
+   bunx tsc -b --noEmit        # type check
+   bunx biome check src/        # lint + format
+   ```
+
+## Phase 5: Report
+
+After all tasks are complete:
+1. Update checkboxes in the plan document
+2. Update related spec documents if they exist
+3. Report results and remaining issues to the user
+
+## Constraints
+
+- Do not guess or speculate — say "unknown" when unsure
+- Verify the full blast radius before making changes
+- Runtime is **Bun** — use `bun` / `bunx`, never `npm` / `npx` / `yarn`
+- Commit messages follow **commitlint** format: `type(scope): description`
+- Zod schemas go in `schemas/*.dto.ts` (PascalCase)
+- TanStack Router routes use directory-based layout (`routes/feature/index.tsx`)
+- Documentation goes in `docs/`
+- **Language**: All inter-agent communication (prompts and responses) MUST be in English. When replying to the user, always use Japanese (日本語).
