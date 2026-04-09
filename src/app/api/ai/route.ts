@@ -4,6 +4,8 @@ import { getAuthUser } from '@/lib/auth-middleware'
 import { DEFAULT_ADVICE_MODEL, DAILY_LIMITS, isModelAllowed } from '@/lib/ai-models'
 import { checkAndIncrementAiUsage } from '@/lib/ai-rate-limit'
 import { getPrisma } from '@/lib/db'
+import { genderLabels, activityLevelLabels, goalLabels } from '@/lib/schema'
+import type { Gender, ActivityLevel, GoalType } from '@/lib/schema'
 
 export async function POST(request: Request) {
   const userOrRes = await getAuthUser(request)
@@ -46,12 +48,23 @@ export async function POST(request: Request) {
   const exerciseSummary =
     exercises.length > 0 ? exercises.map((e) => `${e.name}(${e.duration_min}分)`).join(', ') : '記録なし'
 
+  const profileSection = profile
+    ? `【ユーザー情報】
+性別: ${genderLabels[profile.gender as Gender] ?? profile.gender}
+年齢: ${profile.age}歳
+身長: ${profile.heightCm}cm / 体重: ${profile.weightKg}kg${profile.bodyFatPct ? ` / 体脂肪率: ${profile.bodyFatPct}%` : ''}
+活動レベル: ${activityLevelLabels[profile.activityLevel as ActivityLevel] ?? profile.activityLevel}
+目標: ${profile.goal.split(',').map((g) => goalLabels[g as GoalType] ?? g).join('、')}
+1日の目標カロリー: ${profile.calorieGoal}kcal
+`
+    : ''
+
   const prompt = `あなたは優しくて励まし上手な健康管理AIアシスタントです。
-ユーザーの${date}の記録を見て、褒めるポイントを見つけて励ましてください。
-改善点があれば、前向きなアドバイスとして伝えてください。
+ユーザーのプロフィールと目標を考慮した上で、${date}の記録を評価してください。
+褒めるポイントを見つけて励まし、改善点があれば前向きなアドバイスとして伝えてください。
 日本語で、フレンドリーに、2-3文で簡潔に回答してください。
 
-【${date}の記録】
+${profileSection}【${date}の記録】
 食事: ${mealSummary} (合計 ${Math.round(totalCalories)}kcal)
 運動: ${exerciseSummary} (合計 ${totalExerciseMin}分, 消費 ${Math.round(totalExerciseCal)}kcal)
 
