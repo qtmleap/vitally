@@ -214,6 +214,8 @@ export function Dashboard() {
   const totalFat = meals.reduce((s, m) => s + m.food_fat * m.quantity, 0)
   const totalCarbs = meals.reduce((s, m) => s + m.food_carbs * m.quantity, 0)
 
+  const skipAnimation = useSkipAnimation()
+
   const calPct = (totalIntake / CALORIE_GOAL) * 100
   const exPct = (totalExMin / EXERCISE_GOAL) * 100
   const calGoalReached = totalIntake > 0 && totalIntake <= CALORIE_GOAL && calPct >= 80
@@ -234,8 +236,6 @@ export function Dashboard() {
   const nextMonth = () => {
     if (calMonth.isBefore(d, 'month')) setCalMonth((m) => m!.add(1, 'month'))
   }
-
-  const skipAnimation = useSkipAnimation()
   const hasMeals = meals.length > 0
   const hasExercises = exercises.length > 0
   const hasAnyData = hasMeals || hasExercises
