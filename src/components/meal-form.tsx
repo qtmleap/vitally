@@ -15,7 +15,9 @@ import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { UpdatingOverlay } from '@/components/updating-overlay'
 import { api } from '@/lib/api'
+import { useMinPending } from '@/lib/use-min-pending'
 import { useSkipAnimation } from '@/lib/use-skip-animation'
 import { selectedDateAtom } from '@/lib/atoms'
 import type { FoodRow } from '@/lib/db'
@@ -49,6 +51,8 @@ export function MealForm() {
       toast.success('食事を記録しました')
     }
   })
+
+  const showOverlay = useMinPending(mutation.isPending)
 
   const onSubmit = (values: MealInput) => {
     mutation.mutate({ ...values, date })
@@ -143,6 +147,7 @@ export function MealForm() {
           </Button>
         </form>
       </Form>
+      <UpdatingOverlay show={showOverlay} message='食事を保存中...' />
     </m.div>
   )
 }

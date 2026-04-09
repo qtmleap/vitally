@@ -11,8 +11,10 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import type { FoodRow, MealWithFood } from '@/lib/db'
+import { UpdatingOverlay } from '@/components/updating-overlay'
 import { api } from '@/lib/api'
 import { useDebouncedValue } from '@/lib/hooks'
+import { useMinPending } from '@/lib/use-min-pending'
 import type { MealType } from '@/lib/schema'
 import { mealTypeLabels } from '@/lib/schema'
 import { cn } from '@/lib/utils'
@@ -76,6 +78,7 @@ export function EditMealDialog({ open, onOpenChange, meals, mealType, date }: Ed
   })
 
   const [saving, setSaving] = useState(false)
+  const showSaveOverlay = useMinPending(saving)
 
   const handleSave = async () => {
     setSaving(true)
@@ -293,6 +296,7 @@ export function EditMealDialog({ open, onOpenChange, meals, mealType, date }: Ed
           </Button>
         </div>
       </DialogContent>
+      <UpdatingOverlay show={showSaveOverlay} message='食事を更新中...' />
     </Dialog>
   )
 }

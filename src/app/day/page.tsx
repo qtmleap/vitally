@@ -11,6 +11,7 @@ import { Suspense, useState } from 'react'
 import { AddMealDialog } from '@/components/add-meal-dialog'
 import { AiThinkingOverlay } from '@/components/ai-thinking-overlay'
 import { EditMealDialog } from '@/components/edit-meal-dialog'
+import { UpdatingOverlay } from '@/components/updating-overlay'
 import { DateNav } from '@/components/date-nav'
 import { DayFab } from '@/components/day-fab'
 import { PageHeader } from '@/components/page-header'
@@ -18,6 +19,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { api } from '@/lib/api'
 import { useSkipAnimation } from '@/lib/use-skip-animation'
+import { useMinPending } from '@/lib/use-min-pending'
 import { selectedDateAtom } from '@/lib/atoms'
 import type { ExerciseRow, MealWithFood } from '@/lib/db'
 import type { MealType } from '@/lib/schema'
@@ -73,6 +75,8 @@ function DayPageContent() {
       toast.success('前日の食事をコピーしました')
     }
   })
+
+  const showCopyOverlay = useMinPending(copyMutation.isPending)
 
   const totalIntake = meals.reduce((s, m) => s + m.food_calories * m.quantity, 0)
   const totalBurn = exercises.reduce((s, e) => s + (e.calories ?? 0), 0)
@@ -362,6 +366,7 @@ function DayPageContent() {
         />
       )}
       <AiThinkingOverlay show={adviceMutation.isPending} />
+      <UpdatingOverlay show={showCopyOverlay} message='前日の食事をコピー中...' />
     </m.div>
   )
 }

@@ -16,9 +16,11 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { UpdatingOverlay } from '@/components/updating-overlay'
 import { api } from '@/lib/api'
 import type { FoodRow, MealTemplateRow } from '@/lib/db'
 import { useDebouncedValue } from '@/lib/hooks'
+import { useMinPending } from '@/lib/use-min-pending'
 import { cn } from '@/lib/utils'
 import type { MealType } from '@/lib/schema'
 import { mealTypeLabels } from '@/lib/schema'
@@ -309,6 +311,8 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
       onOpenChange(false)
     }
   })
+
+  const showSaveOverlay = useMinPending(saveMutation.isPending)
 
   const handleOpenChange = (next: boolean) => {
     if (!next) {
@@ -642,6 +646,7 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
         </AnimatePresence>
       </DialogContent>
       <AiThinkingOverlay show={aiMutation.isPending} message='栄養素を推定中...' />
+      <UpdatingOverlay show={showSaveOverlay} message='食事を保存中...' />
     </Dialog>
   )
 }

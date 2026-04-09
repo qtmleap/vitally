@@ -14,7 +14,9 @@ import { PageHeader } from '@/components/page-header'
 import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { UpdatingOverlay } from '@/components/updating-overlay'
 import { api } from '@/lib/api'
+import { useMinPending } from '@/lib/use-min-pending'
 import { useSkipAnimation } from '@/lib/use-skip-animation'
 import { selectedDateAtom } from '@/lib/atoms'
 import { exerciseSchema, type ExerciseInput } from '@/lib/schema'
@@ -49,6 +51,8 @@ export function ExerciseForm() {
       toast.success(`消費カロリーをAIで推定しました: ${data.calories} kcal`)
     }
   })
+
+  const showOverlay = useMinPending(mutation.isPending)
 
   const watchedName = form.watch('name')
   const watchedDuration = form.watch('duration_min')
@@ -136,6 +140,7 @@ export function ExerciseForm() {
         </form>
       </Form>
       <AiThinkingOverlay show={estimateMutation.isPending} message='消費カロリーを推定中...' />
+      <UpdatingOverlay show={showOverlay} message='運動を保存中...' />
     </m.div>
   )
 }
