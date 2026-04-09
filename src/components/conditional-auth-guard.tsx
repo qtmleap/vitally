@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { usePathname, useRouter } from 'vinext/shims/navigation'
-import { useEffect } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { AuthGuard } from './auth-guard'
 import { useAuth } from './auth-provider'
 import { api } from '@/lib/api'
@@ -14,20 +14,47 @@ interface ConditionalAuthGuardProps {
   unauthenticated: React.ReactNode
 }
 
+/** 認証済みユーザーのプロフィールチェック（QueryClientProvider 内で安全に useQuery を使うため分離） */
+function ProfileGate({ children }: { children: ReactNode }) {
+  const pathname = usePathname()
+  const router = useRouter()
+  const isOnboarding = pathname === '/onboarding'
+
+  const { data: profileData, isLoading } = useQuery({
+    queryKey: ['profile'],
+    queryFn: api.profile.get,
+    staleTime: Number.POSITIVE_INFINITY
+  })
+
+  useEffect(() => {
+    if (!isLoading && profileData && !profileData.profile && !isOnboarding) {
+      router.push('/onboarding')
+    }
+  }, [isLoading, profileData, isOnboarding, router])
+
+  useEffect(() => {
+    if (!isLoading && profileData?.profile && isOnboarding) {
+      router.push('/')
+    }
+  }, [isLoading, profileData, isOnboarding, router])
+
+  if (isLoading) {
+    return (
+      <div className='flex h-dvh items-center justify-center'>
+        <div className='text-muted-foreground text-sm'>読み込み中...</div>
+      </div>
+    )
+  }
+
+  return <>{children}</>
+}
+
 export function ConditionalAuthGuard({ authenticated, unauthenticated }: ConditionalAuthGuardProps) {
   const pathname = usePathname()
   const router = useRouter()
   const { user, loading } = useAuth()
 
   const isPublic = PUBLIC_PATHS.includes(pathname)
-  const isOnboarding = pathname === '/onboarding'
-
-  const { data: profileData, isLoading: profileLoading } = useQuery({
-    queryKey: ['profile'],
-    queryFn: api.profile.get,
-    enabled: !!user,
-    staleTime: Number.POSITIVE_INFINITY
-  })
 
   useEffect(() => {
     if (!loading && !user && !isPublic) {
@@ -35,25 +62,11 @@ export function ConditionalAuthGuard({ authenticated, unauthenticated }: Conditi
     }
   }, [loading, user, isPublic, router])
 
-  // プロフィール未作成 → オンボーディングへ
-  useEffect(() => {
-    if (user && !profileLoading && profileData && !profileData.profile && !isOnboarding && !isPublic) {
-      router.push('/onboarding')
-    }
-  }, [user, profileLoading, profileData, isOnboarding, isPublic, router])
-
-  // プロフィール作成済み → オンボーディングから離脱
-  useEffect(() => {
-    if (user && !profileLoading && profileData?.profile && isOnboarding) {
-      router.push('/')
-    }
-  }, [user, profileLoading, profileData, isOnboarding, router])
-
   if (isPublic) {
     return <>{unauthenticated}</>
   }
 
-  if (loading || (user && profileLoading)) {
+  if (loading) {
     return (
       <div className='flex h-dvh items-center justify-center'>
         <div className='text-muted-foreground text-sm'>読み込み中...</div>
@@ -63,5 +76,9 @@ export function ConditionalAuthGuard({ authenticated, unauthenticated }: Conditi
 
   if (!user) return null
 
-  return <AuthGuard>{authenticated}</AuthGuard>
+  return (
+    <AuthGuard>
+      <ProfileGate>{authenticated}</ProfileGate>
+    </AuthGuard>
+  )
 }
