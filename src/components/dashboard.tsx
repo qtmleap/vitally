@@ -3,13 +3,14 @@
 import dayjs from 'dayjs'
 import { useQuery } from '@tanstack/react-query'
 import { useSetAtom } from 'jotai'
-import { Bot, ChevronLeft, ChevronRight, Flame, Footprints, Plus, Trophy, Utensils } from 'lucide-react'
+import { Bot, ChevronLeft, ChevronRight, Flame, Footprints, Plus, RefreshCw, Trophy, Utensils } from 'lucide-react'
 import * as m from 'motion/react-m'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'vinext/shims/navigation'
 import Link from 'vinext/shims/link'
 
 import { api } from '@/lib/api'
+import { useVersionCheck } from '@/lib/use-version-check'
 import { selectedDateAtom } from '@/lib/atoms'
 import { today } from '@/lib/date'
 import type { ExerciseRow, MealWithFood } from '@/lib/db'
@@ -173,6 +174,7 @@ function StreakBanner({ streak }: { streak: number }) {
 export function Dashboard() {
   const [now, setNow] = useState('')
   const [calMonth, setCalMonth] = useState<dayjs.Dayjs | null>(null)
+  const { hasUpdate, update } = useVersionCheck()
   useEffect(() => {
     const t = today()
     setNow(t)
@@ -300,6 +302,25 @@ export function Dashboard() {
         <h1 className='text-xl font-bold'>HealthLog</h1>
         <span className='text-muted-foreground text-xs'>{d.format('M月D日 (dd)')}</span>
       </m.div>
+
+      {hasUpdate && (
+        <m.button
+          type='button'
+          onClick={update}
+          className='flex w-full items-center gap-3 rounded-2xl bg-blue-500/10 px-4 py-3 text-left transition-colors active:bg-blue-500/20'
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+        >
+          <div className='flex size-10 items-center justify-center rounded-xl bg-blue-500/15'>
+            <RefreshCw className='size-5 text-blue-500' />
+          </div>
+          <div className='flex-1'>
+            <p className='text-sm font-bold'>アップデートがあります</p>
+            <p className='text-muted-foreground text-xs'>タップして最新版に更新</p>
+          </div>
+        </m.button>
+      )}
 
       <StreakBanner streak={streak} />
 
