@@ -27,7 +27,7 @@ function ExercisesPageContent() {
 
   return (
     <div className='p-4'>
-      <PageHeader title='運動記録'>
+      <PageHeader title='運動記録' back>
         <Button asChild size='sm'>
           <Link href='/exercises/new'>
             <Plus className='mr-1 size-4' />

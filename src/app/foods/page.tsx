@@ -50,7 +50,7 @@ function FoodsPageContent() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: 'spring', stiffness: 300, damping: 24 }}
     >
-      <PageHeader title='食品管理'>
+      <PageHeader title='食品管理' back>
         <div className='flex gap-1'>
           <Button variant='outline' size='icon' className='size-8' onClick={() => setScannerOpen(true)}>
             <ScanBarcode className='size-4' />

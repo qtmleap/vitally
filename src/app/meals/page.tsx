@@ -37,7 +37,7 @@ function MealsPageContent() {
 
   return (
     <div className='p-4'>
-      <PageHeader title='食事記録'>
+      <PageHeader title='食事記録' back>
         <Button asChild size='sm'>
           <Link href='/meals/new'>
             <Plus className='mr-1 size-4' />
