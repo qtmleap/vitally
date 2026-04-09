@@ -39,12 +39,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <Providers>
           <ConditionalAuthGuard
             authenticated={
-              <>
-                <div className='mx-auto min-h-dvh max-w-5xl pb-20'>
-                  <ErrorBoundary>{children}</ErrorBoundary>
-                </div>
-                <BottomNav />
-              </>
+              <div className='mx-auto min-h-dvh max-w-5xl pb-20'>
+                <ErrorBoundary>{children}</ErrorBoundary>
+              </div>
             }
             unauthenticated={
               <div className='min-h-dvh'>
@@ -52,6 +49,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               </div>
             }
           />
+          <BottomNav />
           <Toaster position='top-center' />
         </Providers>
       </body>

@@ -29,7 +29,8 @@ export function BottomNav() {
   const date = useAtomValue(selectedDateAtom)
   const pathname = usePathname()
 
-  if (pathname === '/onboarding') return null
+  const hiddenPaths = ['/', '/onboarding', '/terms', '/privacy']
+  if (hiddenPaths.includes(pathname)) return null
 
   return (
     <>
