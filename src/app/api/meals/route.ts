@@ -5,7 +5,9 @@ import { getPrisma } from '@/lib/db'
 import { mealSchema } from '@/lib/schema'
 
 export async function GET(request: Request) {
-  const user = await getAuthUser(request)
+  const userOrRes = await getAuthUser(request)
+  if (userOrRes instanceof Response) return userOrRes
+  const user = userOrRes
   const url = new URL(request.url)
   const date = url.searchParams.get('date')
 
@@ -38,7 +40,9 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const user = await getAuthUser(request)
+  const userOrRes = await getAuthUser(request)
+  if (userOrRes instanceof Response) return userOrRes
+  const user = userOrRes
   const body = await request.json()
   const parsed = mealSchema.safeParse(body)
 
@@ -57,7 +61,9 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const user = await getAuthUser(request)
+  const userOrRes = await getAuthUser(request)
+  if (userOrRes instanceof Response) return userOrRes
+  const user = userOrRes
   const url = new URL(request.url)
   const id = url.searchParams.get('id')
 
