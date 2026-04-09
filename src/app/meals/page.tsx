@@ -88,6 +88,7 @@ export default function MealsPage() {
           }}
           meals={grouped[editingMealType] ?? []}
           mealType={editingMealType}
+          date={date}
         />
       )}
     </div>

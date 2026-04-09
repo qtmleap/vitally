@@ -295,6 +295,7 @@ export default function DayPage() {
           onOpenChange={(open) => { if (!open) setEditingMealType(null) }}
           meals={grouped[editingMealType] ?? []}
           mealType={editingMealType}
+          date={date}
         />
       )}
     </m.div>
