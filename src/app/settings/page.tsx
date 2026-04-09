@@ -6,19 +6,24 @@ import {
   Database,
   Heart,
   Info,
+  LogOut,
   Moon,
   Palette,
   Shield,
   Sun,
   Trash2,
+  User,
   UtensilsCrossed
 } from 'lucide-react'
 import * as m from 'motion/react-m'
 import Link from 'vinext/shims/link'
+import { useRouter } from 'vinext/shims/navigation'
 import type { ReactNode } from 'react'
 
 import { PageHeader } from '@/components/page-header'
 import { useDarkMode } from '@/components/providers'
+import { useAuth } from '@/components/auth-provider'
+import { signOutUser } from '@/lib/auth'
 
 const APP_VERSION = '0.1.0'
 
@@ -77,10 +82,17 @@ function SettingsRow({
 
 export default function SettingsPage() {
   const { dark, toggle } = useDarkMode()
+  const { user } = useAuth()
+  const router = useRouter()
 
   const handleClearCache = () => {
     localStorage.clear()
     window.location.reload()
+  }
+
+  const handleSignOut = async () => {
+    await signOutUser()
+    router.push('/login')
   }
 
   return (
@@ -92,6 +104,27 @@ export default function SettingsPage() {
     >
       <PageHeader title='設定' />
       <div className='mt-2 space-y-6'>
+        {user && (
+          <m.div
+            className='bg-muted/40 flex items-center gap-4 rounded-2xl px-4 py-4'
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.1 }}
+          >
+            {user.photoURL ? (
+              <img src={user.photoURL} alt={user.displayName ?? 'ユーザー'} className='size-12 rounded-full object-cover' referrerPolicy='no-referrer' />
+            ) : (
+              <div className='bg-muted flex size-12 items-center justify-center rounded-full'>
+                <User className='text-muted-foreground size-6' />
+              </div>
+            )}
+            <div className='min-w-0 flex-1'>
+              <p className='truncate text-sm font-semibold'>{user.displayName ?? '名前未設定'}</p>
+              <p className='text-muted-foreground truncate text-xs'>{user.email}</p>
+            </div>
+          </m.div>
+        )}
+
         <SettingsGroup label='一般'>
           <SettingsRow
             icon={dark ? <Moon className='size-5' /> : <Sun className='size-5' />}
@@ -122,6 +155,15 @@ export default function SettingsPage() {
           <SettingsRow icon={<Info className='size-5' />} label='バージョン' value={`v${APP_VERSION}`} />
           <SettingsRow icon={<Shield className='size-5' />} label='プライバシーポリシー' value='準備中' />
           <SettingsRow icon={<Heart className='size-5' />} label='ライセンス' value='MIT' />
+        </SettingsGroup>
+
+        <SettingsGroup label='アカウント'>
+          <SettingsRow
+            icon={<LogOut className='size-5' />}
+            label='ログアウト'
+            onClick={handleSignOut}
+            destructive
+          />
         </SettingsGroup>
 
         <m.div

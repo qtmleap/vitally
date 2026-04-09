@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { BottomNav } from '@/components/bottom-nav'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { Providers } from '@/components/providers'
+import { ConditionalAuthGuard } from '@/components/conditional-auth-guard'
 import { Toaster } from '@/components/ui/sonner'
 import '@/index.css'
 
@@ -36,10 +37,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       </head>
       <body className='bg-background text-foreground antialiased'>
         <Providers>
-          <div className='mx-auto min-h-dvh max-w-lg pb-20'>
-            <ErrorBoundary>{children}</ErrorBoundary>
-          </div>
-          <BottomNav />
+          <ConditionalAuthGuard>
+            <div className='mx-auto min-h-dvh max-w-lg pb-20'>
+              <ErrorBoundary>{children}</ErrorBoundary>
+            </div>
+            <BottomNav />
+          </ConditionalAuthGuard>
           <Toaster position='top-center' />
         </Providers>
       </body>

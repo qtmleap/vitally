@@ -5,6 +5,7 @@ import { LazyMotion, domAnimation } from 'motion/react'
 import { Provider as JotaiProvider } from 'jotai'
 import type { ReactNode } from 'react'
 import { useEffect, useState } from 'react'
+import { AuthProvider } from '@/components/auth-provider'
 
 function useDarkMode() {
   const [dark, setDark] = useState(false)
@@ -48,10 +49,12 @@ export function Providers({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <LazyMotion features={domAnimation} strict>
-      <JotaiProvider>
-        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-      </JotaiProvider>
-    </LazyMotion>
+    <AuthProvider>
+      <LazyMotion features={domAnimation} strict>
+        <JotaiProvider>
+          <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+        </JotaiProvider>
+      </LazyMotion>
+    </AuthProvider>
   )
 }
