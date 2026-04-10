@@ -28,12 +28,13 @@ async function authFetch(url: string, init?: RequestInit): Promise<Response> {
 
 const json = async <T>(res: Response): Promise<T> => {
   if (!res.ok) {
-    if (res.status === 401) {
-      const { signOutUser } = await import('@/lib/auth')
-      await signOutUser()
-      window.location.href = '/'
-      throw new Error('認証エラー')
-    }
+    // TODO: 401 時のサインアウト+リダイレクトは一旦無効化
+    // if (res.status === 401) {
+    //   const { signOutUser } = await import('@/lib/auth')
+    //   await signOutUser()
+    //   window.location.href = '/'
+    //   throw new Error('認証エラー')
+    // }
     const msg = res.status === 404 ? 'データが見つかりません' : `通信エラー (${res.status})`
     toast.error(msg)
     throw new Error(msg)
