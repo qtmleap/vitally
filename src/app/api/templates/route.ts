@@ -14,7 +14,30 @@ export async function GET(request: Request) {
     include: { items: { include: { food: true } } },
     orderBy: { createdAt: 'desc' }
   })
-  return Response.json(templates)
+
+  return Response.json(
+    templates.map((t) => ({
+      id: t.id,
+      name: t.name,
+      mealType: t.mealType,
+      createdAt: t.createdAt,
+      items: t.items.map((item) => ({
+        id: item.id,
+        foodId: item.foodId,
+        quantity: item.quantity,
+        food: {
+          id: item.food.id,
+          name: item.food.name,
+          calories: item.food.calories,
+          protein: item.food.protein,
+          fat: item.food.fat,
+          carbs: item.food.carbs,
+          serving: item.food.serving,
+          createdAt: item.food.createdAt
+        }
+      }))
+    }))
+  )
 }
 
 export async function POST(request: Request) {
@@ -41,7 +64,30 @@ export async function POST(request: Request) {
     include: { items: { include: { food: true } } }
   })
 
-  return Response.json(template, { status: 201 })
+  return Response.json(
+    {
+      id: template.id,
+      name: template.name,
+      mealType: template.mealType,
+      createdAt: template.createdAt,
+      items: template.items.map((item) => ({
+        id: item.id,
+        foodId: item.foodId,
+        quantity: item.quantity,
+        food: {
+          id: item.food.id,
+          name: item.food.name,
+          calories: item.food.calories,
+          protein: item.food.protein,
+          fat: item.food.fat,
+          carbs: item.food.carbs,
+          serving: item.food.serving,
+          createdAt: item.food.createdAt
+        }
+      }))
+    },
+    { status: 201 }
+  )
 }
 
 export async function DELETE(request: Request) {

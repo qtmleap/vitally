@@ -54,10 +54,26 @@ export async function POST(request: Request) {
   const prisma = getPrisma(env)
 
   const meal = await prisma.meal.create({
-    data: { date, mealType: meal_type, foodId: food_id, quantity, userId: user.uid }
+    data: { date, mealType: meal_type, foodId: food_id, quantity, userId: user.uid },
+    include: { food: true }
   })
 
-  return Response.json(meal, { status: 201 })
+  return Response.json(
+    {
+      id: meal.id,
+      date: meal.date,
+      meal_type: meal.mealType,
+      food_id: meal.foodId,
+      quantity: meal.quantity,
+      created_at: meal.createdAt,
+      food_name: meal.food.name,
+      food_calories: meal.food.calories,
+      food_protein: meal.food.protein,
+      food_fat: meal.food.fat,
+      food_carbs: meal.food.carbs
+    },
+    { status: 201 }
+  )
 }
 
 export async function DELETE(request: Request) {

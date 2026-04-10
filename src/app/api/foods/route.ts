@@ -21,7 +21,18 @@ export async function GET(request: Request) {
     take: limit
   })
 
-  return Response.json(foods)
+  return Response.json(
+    foods.map((f) => ({
+      id: f.id,
+      name: f.name,
+      calories: f.calories,
+      protein: f.protein,
+      fat: f.fat,
+      carbs: f.carbs,
+      serving: f.serving,
+      createdAt: f.createdAt
+    }))
+  )
 }
 
 export async function POST(request: Request) {
@@ -39,7 +50,19 @@ export async function POST(request: Request) {
   const prisma = getPrisma(env)
   const food = await prisma.food.create({ data: { ...parsed.data, userId: user.uid } })
 
-  return Response.json(food, { status: 201 })
+  return Response.json(
+    {
+      id: food.id,
+      name: food.name,
+      calories: food.calories,
+      protein: food.protein,
+      fat: food.fat,
+      carbs: food.carbs,
+      serving: food.serving,
+      createdAt: food.createdAt
+    },
+    { status: 201 }
+  )
 }
 
 export async function DELETE(request: Request) {

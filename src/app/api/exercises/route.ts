@@ -27,7 +27,7 @@ export async function GET(request: Request) {
     name: e.name,
     duration_min: e.durationMin,
     calories: e.calories,
-    created_at: e.createdAt
+    createdAt: e.createdAt
   }))
 
   return Response.json(results)
@@ -51,7 +51,17 @@ export async function POST(request: Request) {
     data: { date, name, durationMin: duration_min, calories, userId: user.uid }
   })
 
-  return Response.json(exercise, { status: 201 })
+  return Response.json(
+    {
+      id: exercise.id,
+      date: exercise.date,
+      name: exercise.name,
+      duration_min: exercise.durationMin,
+      calories: exercise.calories,
+      createdAt: exercise.createdAt
+    },
+    { status: 201 }
+  )
 }
 
 export async function DELETE(request: Request) {
