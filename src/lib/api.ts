@@ -1,21 +1,20 @@
-import { Zodios } from '@zodios/core'
-import axios from 'axios'
+import { Zodios, type ZodiosPlugin } from '@zodios/core'
 import { toast } from 'sonner'
 
 import { apiDefinition } from './api-contract'
 
-const axiosInstance = axios.create()
-
-axiosInstance.interceptors.response.use(
-  (res) => res,
-  (error) => {
-    const status = error.response?.status
-    const serverMessage =
-      typeof error.response?.data?.error === 'string' ? (error.response.data.error as string) : undefined
+const errorToastPlugin: ZodiosPlugin = {
+  name: 'error-toast',
+  error: async (_api, _config, error) => {
+    const response = (error as { response?: { status?: number; data?: unknown } }).response
+    const status = response?.status
+    const data = response?.data as { error?: unknown } | undefined
+    const serverMessage = typeof data?.error === 'string' ? data.error : undefined
     const fallback = status === 404 ? 'データが見つかりません' : `通信エラー (${status})`
     toast.error(serverMessage ?? fallback)
-    return Promise.reject(error)
+    throw error
   }
-)
+}
 
-export const api = new Zodios('/api', apiDefinition, { axiosInstance })
+export const api = new Zodios('/api', apiDefinition)
+api.use(errorToastPlugin)
