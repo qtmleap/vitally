@@ -34,7 +34,7 @@ function ProfileGate({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!isLoading && profileData?.profile && isOnboarding) {
-      router.push('/')
+      router.push('/me')
     }
   }, [isLoading, profileData, isOnboarding, router])
 

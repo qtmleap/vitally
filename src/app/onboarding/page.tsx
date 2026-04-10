@@ -124,7 +124,7 @@ export default function OnboardingPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] })
       toast.success('プロフィールを保存しました')
-      router.push('/')
+      router.push('/me')
     }
   })
 

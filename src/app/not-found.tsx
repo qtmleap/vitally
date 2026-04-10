@@ -29,7 +29,7 @@ export default function NotFoundPage() {
         </div>
         <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
           <Button asChild>
-            <Link href='/'>
+            <Link href='/me'>
               <Home className='mr-2 size-4' />
               ホームに戻る
             </Link>

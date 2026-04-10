@@ -15,7 +15,7 @@ import { today } from '@/lib/date'
 import type { MealType } from '@/lib/schema'
 
 const leftNav = [
-  { href: '/', label: 'ホーム', icon: Home },
+  { href: '/me', label: 'ホーム', icon: Home },
   { href: '/day', label: '今日', icon: CalendarDays }
 ]
 

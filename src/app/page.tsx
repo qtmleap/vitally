@@ -1,13 +1,21 @@
 'use client'
 
+import { useRouter } from 'vinext/shims/navigation'
+import { useEffect } from 'react'
 import { useAuth } from '@/components/auth-provider'
-import { Dashboard } from '@/components/dashboard'
 import { LandingPage } from '@/components/landing-page'
 
 export default function Home() {
   const { user, loading } = useAuth()
+  const router = useRouter()
 
-  if (loading) {
+  useEffect(() => {
+    if (!loading && user) {
+      router.push('/me')
+    }
+  }, [loading, user, router])
+
+  if (loading || user) {
     return (
       <div className='flex h-dvh items-center justify-center'>
         <div className='text-muted-foreground text-sm'>読み込み中...</div>
@@ -15,7 +23,5 @@ export default function Home() {
     )
   }
 
-  if (!user) return <LandingPage />
-
-  return <Dashboard />
+  return <LandingPage />
 }
