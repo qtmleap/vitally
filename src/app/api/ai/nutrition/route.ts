@@ -39,7 +39,8 @@ export async function POST(request: Request) {
         role: 'system',
         content: `あなたは栄養士です。食品の栄養成分を日本の食品成分表に基づいて概算してください。
 以下のJSON形式のみで回答してください。説明文は不要です。
-{"calories": 数値, "protein": 数値, "fat": 数値, "carbs": 数値, "serving": "量の説明"}`
+serving は量のみ（例: "60g", "1本", "200ml"）で、食品名を含めないでください。
+{"calories": 数値, "protein": 数値, "fat": 数値, "carbs": 数値, "serving": "量のみ"}`
       },
       {
         role: 'user',
