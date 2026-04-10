@@ -46,8 +46,12 @@ export const mealTemplateItemSchema = z.object({
 
 export const mealTemplateCreateSchema = z.object({
   name: z.string().min(1, '名前を入力してください'),
-  meal_type: z.enum(mealTypes).optional(),
   items: z.array(mealTemplateItemSchema).min(1, '1品目以上追加してください')
+})
+
+export const mealTemplateUpdateSchema = z.object({
+  name: z.string().min(1, '名前を入力してください').optional(),
+  items: z.array(mealTemplateItemSchema).min(1, '1品目以上追加してください').optional()
 })
 
 export const mealCopySchema = z.object({
@@ -97,6 +101,7 @@ export const profileSchema = z.object({
 export type ProfileInput = z.infer<typeof profileSchema>
 
 export type MealTemplateCreateInput = z.infer<typeof mealTemplateCreateSchema>
+export type MealTemplateUpdateInput = z.infer<typeof mealTemplateUpdateSchema>
 export type MealCopyInput = z.infer<typeof mealCopySchema>
 export type FoodInput = z.infer<typeof foodSchema>
 export type MealInput = z.infer<typeof mealSchema>

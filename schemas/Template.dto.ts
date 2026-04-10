@@ -14,8 +14,8 @@ export type MealTemplateItemRow = z.infer<typeof MealTemplateItemRowSchema>
 export const MealTemplateRowSchema = z.object({
   id: z.string(),
   name: z.string(),
-  mealType: z.string().nullable(),
   createdAt: z.string(),
+  updatedAt: z.string(),
   items: z.array(MealTemplateItemRowSchema)
 })
 

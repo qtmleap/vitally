@@ -93,9 +93,9 @@ model Meal {
 model MealTemplate {
   id        String             @id @default(dbgenerated("(lower(hex(randomblob(16))))"))
   name      String
-  mealType  String?            @map("meal_type")
   userId    String             @map("user_id")
   createdAt DateTime           @default(now()) @map("created_at")
+  updatedAt DateTime           @updatedAt @map("updated_at")
   items     MealTemplateItem[]
   user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 

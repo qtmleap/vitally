@@ -19,8 +19,8 @@ export async function GET(request: Request) {
     templates.map((t) => ({
       id: t.id,
       name: t.name,
-      mealType: t.mealType,
       createdAt: t.createdAt,
+      updatedAt: t.updatedAt,
       items: t.items.map((item) => ({
         id: item.id,
         foodId: item.foodId,
@@ -51,13 +51,12 @@ export async function POST(request: Request) {
     return Response.json({ error: parsed.error.flatten() }, { status: 400 })
   }
 
-  const { name, meal_type, items } = parsed.data
+  const { name, items } = parsed.data
   const prisma = getPrisma(env)
 
   const template = await prisma.mealTemplate.create({
     data: {
       name,
-      mealType: meal_type,
       userId: user.uid,
       items: { create: items.map((i) => ({ foodId: i.food_id, quantity: i.quantity })) }
     },
@@ -68,8 +67,8 @@ export async function POST(request: Request) {
     {
       id: template.id,
       name: template.name,
-      mealType: template.mealType,
       createdAt: template.createdAt,
+      updatedAt: template.updatedAt,
       items: template.items.map((item) => ({
         id: item.id,
         foodId: item.foodId,

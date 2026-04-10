@@ -1,21 +1,23 @@
 'use client'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Bookmark, Trash2 } from 'lucide-react'
+import { Bookmark, Pencil, Trash2 } from 'lucide-react'
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
+import { useState } from 'react'
 import { toast } from 'sonner'
 
+import { EditTemplateDialog } from '@/components/edit-template-dialog'
 import { PageHeader } from '@/components/page-header'
 import { Button } from '@/components/ui/button'
 import { api } from '@/lib/api'
 import type { MealTemplateRow } from '@/lib/db'
-import { type MealType, mealTypeLabels } from '@/lib/schema'
 import { useSkipAnimation } from '@/lib/use-skip-animation'
 
 export default function TemplatesPage() {
   const queryClient = useQueryClient()
   const skipAnimation = useSkipAnimation()
+  const [editing, setEditing] = useState<MealTemplateRow | null>(null)
 
   const { data: templates = [], isLoading } = useQuery<MealTemplateRow[]>({
     queryKey: ['templates'],
@@ -59,11 +61,6 @@ export default function TemplatesPage() {
                     <Bookmark className='text-primary size-4 shrink-0' />
                     <p className='truncate text-sm font-medium'>{template.name}</p>
                   </div>
-                  {template.mealType && (
-                    <p className='text-muted-foreground mt-0.5 ml-6 text-xs'>
-                      {mealTypeLabels[template.mealType as MealType]}
-                    </p>
-                  )}
                   <div className='mt-2 ml-6 space-y-0.5'>
                     {template.items.map((item) => (
                       <div key={item.id} className='text-muted-foreground flex items-center justify-between text-xs'>
@@ -77,15 +74,25 @@ export default function TemplatesPage() {
                     {template.items.length}品目
                   </p>
                 </div>
-                <Button
-                  variant='ghost'
-                  size='icon'
-                  className='text-muted-foreground hover:text-destructive size-8 shrink-0'
-                  onClick={() => deleteMutation.mutate(template.id)}
-                  disabled={deleteMutation.isPending}
-                >
-                  <Trash2 className='size-4' />
-                </Button>
+                <div className='flex shrink-0 gap-0.5'>
+                  <Button
+                    variant='ghost'
+                    size='icon'
+                    className='text-muted-foreground hover:text-foreground size-8'
+                    onClick={() => setEditing(template)}
+                  >
+                    <Pencil className='size-4' />
+                  </Button>
+                  <Button
+                    variant='ghost'
+                    size='icon'
+                    className='text-muted-foreground hover:text-destructive size-8'
+                    onClick={() => deleteMutation.mutate(template.id)}
+                    disabled={deleteMutation.isPending}
+                  >
+                    <Trash2 className='size-4' />
+                  </Button>
+                </div>
               </div>
             </m.div>
           ))}
@@ -104,6 +111,16 @@ export default function TemplatesPage() {
           </m.div>
         )}
       </div>
+
+      {editing && (
+        <EditTemplateDialog
+          open={!!editing}
+          onOpenChange={(open) => {
+            if (!open) setEditing(null)
+          }}
+          template={editing}
+        />
+      )}
     </m.div>
   )
 }

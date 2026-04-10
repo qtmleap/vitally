@@ -225,7 +225,7 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
     enabled: open
   })
 
-  const filteredTemplates = templates.filter((t) => t.mealType === null || t.mealType === mealType)
+  const filteredTemplates = templates
 
   const aiMutation = useMutation({
     mutationFn: (name: string) => api.estimateNutrition({ name, save: true }),
@@ -255,7 +255,6 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
     mutationFn: (name: string) =>
       api.createTemplate({
         name,
-        meal_type: mealType,
         items: basket.map((i) => ({ food_id: i.food.id, quantity: i.amount }))
       }),
     onSuccess: () => {

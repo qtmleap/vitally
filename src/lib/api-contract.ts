@@ -15,6 +15,7 @@ import {
   mealCopySchema,
   mealSchema,
   mealTemplateCreateSchema,
+  mealTemplateUpdateSchema,
   mealUpdateSchema,
   profileSchema
 } from './schema'
@@ -232,6 +233,16 @@ export const apiDefinition = makeApi([
     alias: 'createTemplate',
     response: MealTemplateRowSchema,
     parameters: [{ name: 'body', type: 'Body', schema: mealTemplateCreateSchema }]
+  },
+  {
+    method: 'put',
+    path: '/templates/:id',
+    alias: 'updateTemplate',
+    response: MealTemplateRowSchema,
+    parameters: [
+      { name: 'id', type: 'Path', schema: z.string() },
+      { name: 'body', type: 'Body', schema: mealTemplateUpdateSchema }
+    ]
   },
   {
     method: 'delete',

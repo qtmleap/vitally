@@ -76,8 +76,8 @@ const sampleProfileNullBodyFat = {
 const sampleTemplate = {
   id: 'tmpl-1',
   name: '朝食セット',
-  mealType: 'breakfast',
   createdAt: '2026-04-10T00:00:00.000Z',
+  updatedAt: '2026-04-10T00:00:00.000Z',
   items: [
     {
       id: 'item-1',
@@ -86,11 +86,6 @@ const sampleTemplate = {
       food: sampleFood
     }
   ]
-}
-
-const sampleTemplateNullMealType = {
-  ...sampleTemplate,
-  mealType: null
 }
 
 // --- Tests ---
@@ -194,8 +189,9 @@ describe('MealTemplateRowSchema', () => {
     expect(MealTemplateRowSchema.safeParse(sampleTemplate).success).toBe(true)
   })
 
-  test('mealType が null でも受け入れる', () => {
-    expect(MealTemplateRowSchema.safeParse(sampleTemplateNullMealType).success).toBe(true)
+  test('updatedAt が必須', () => {
+    const { updatedAt: _, ...withoutUpdatedAt } = sampleTemplate
+    expect(MealTemplateRowSchema.safeParse(withoutUpdatedAt).success).toBe(false)
   })
 
   test('items 内の food が FoodRowSchema に準拠する', () => {
