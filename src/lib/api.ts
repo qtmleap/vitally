@@ -10,8 +10,10 @@ axiosInstance.interceptors.response.use(
   (res) => res,
   (error) => {
     const status = error.response?.status
-    const msg = status === 404 ? 'データが見つかりません' : `通信エラー (${status})`
-    toast.error(msg)
+    const serverMessage =
+      typeof error.response?.data?.error === 'string' ? (error.response.data.error as string) : undefined
+    const fallback = status === 404 ? 'データが見つかりません' : `通信エラー (${status})`
+    toast.error(serverMessage ?? fallback)
     return Promise.reject(error)
   }
 )
