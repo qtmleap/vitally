@@ -1,21 +1,20 @@
 'use client'
 
 import { useCallback, useState } from 'react'
+import { useSearchParams } from 'vinext/shims/navigation'
 
 import { today } from '@/lib/date'
 
-function getInitialDate(): string {
-  if (typeof window === 'undefined') return today()
-  const urlDate = new URLSearchParams(window.location.search).get('date')
-  return urlDate && /^\d{4}-\d{2}-\d{2}$/.test(urlDate) ? urlDate : today()
-}
-
 /**
  * URL の ?date= パラメータと同期する日付 state。
- * 初期値は URL から読み取り、変更時は URL を書き換える。
+ * 初期値は URL から読み取り（SSR でも動作）、変更時は URL を書き換える。
  */
 export function useDateParam(): [string, (date: string) => void] {
-  const [date, setDate] = useState(getInitialDate)
+  const searchParams = useSearchParams()
+  const [date, setDate] = useState(() => {
+    const urlDate = searchParams.get('date')
+    return urlDate && /^\d{4}-\d{2}-\d{2}$/.test(urlDate) ? urlDate : today()
+  })
 
   const setDateAndUrl = useCallback((next: string) => {
     setDate(next)
