@@ -1,4 +1,5 @@
 import { env } from 'cloudflare:workers'
+import { aiGatewayOptions } from '@/lib/ai-gateway'
 import { DAILY_LIMITS, DEFAULT_UTILITY_MODEL, isModelAllowed } from '@/lib/ai-models'
 import { checkAndIncrementAiUsage } from '@/lib/ai-rate-limit'
 import { parseAiTextResponse } from '@/lib/ai-response'
@@ -34,22 +35,26 @@ export async function POST(request: Request) {
     return Response.json({ error: 'このモデルは利用できません' }, { status: 403 })
   }
 
-  const result = await env.AI.run(modelId as Parameters<typeof env.AI.run>[0], {
-    messages: [
-      {
-        role: 'system',
-        content: `あなたはエクササイズフィジオロジスト（運動生理学者）です。指定された運動と時間に基づいて消費カロリーを概算してください。
+  const result = await env.AI.run(
+    modelId as Parameters<typeof env.AI.run>[0],
+    {
+      messages: [
+        {
+          role: 'system',
+          content: `あなたはエクササイズフィジオロジスト（運動生理学者）です。指定された運動と時間に基づいて消費カロリーを概算してください。
 MET値を使用して正確に計算してください。体重は平均的な成人（約65kg）と仮定してください。
 以下のJSON形式のみで回答してください。説明文は不要です。
 {"calories": 数値}`
-      },
-      {
-        role: 'user',
-        content: `${name} を ${duration_min} 分間行った場合の消費カロリー`
-      }
-    ],
-    max_tokens: 256
-  })
+        },
+        {
+          role: 'user',
+          content: `${name} を ${duration_min} 分間行った場合の消費カロリー`
+        }
+      ],
+      max_tokens: 256
+    },
+    aiGatewayOptions(env, { userId: user.uid, endpoint: 'exercise' })
+  )
 
   const aiResponse = parseAiTextResponse(result)
   if (!aiResponse) {

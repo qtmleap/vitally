@@ -1,4 +1,5 @@
 import { env } from 'cloudflare:workers'
+import { aiGatewayOptions } from '@/lib/ai-gateway'
 import { DAILY_LIMITS, DEFAULT_UTILITY_MODEL, isModelAllowed } from '@/lib/ai-models'
 import { checkAndIncrementAiUsage } from '@/lib/ai-rate-limit'
 import { parseAiTextResponse } from '@/lib/ai-response'
@@ -36,21 +37,25 @@ export async function POST(request: Request) {
 
   const servingText = serving || '1食分'
 
-  const result = await env.AI.run(modelId as Parameters<typeof env.AI.run>[0], {
-    messages: [
-      {
-        role: 'system',
-        content: `あなたは栄養士です。指定された食品と量に対する栄養成分を日本の食品成分表に基づいて概算してください。
+  const result = await env.AI.run(
+    modelId as Parameters<typeof env.AI.run>[0],
+    {
+      messages: [
+        {
+          role: 'system',
+          content: `あなたは栄養士です。指定された食品と量に対する栄養成分を日本の食品成分表に基づいて概算してください。
 以下のJSON形式のみで回答してください。説明文は不要です。
 {"calories": 数値, "protein": 数値, "fat": 数値, "carbs": 数値}`
-      },
-      {
-        role: 'user',
-        content: `食品名: ${name}\n量: ${servingText}\n上記の量あたりの栄養成分を返してください。`
-      }
-    ],
-    max_tokens: 256
-  })
+        },
+        {
+          role: 'user',
+          content: `食品名: ${name}\n量: ${servingText}\n上記の量あたりの栄養成分を返してください。`
+        }
+      ],
+      max_tokens: 256
+    },
+    aiGatewayOptions(env, { userId: user.uid, endpoint: 'nutrition' })
+  )
 
   const aiResponse = parseAiTextResponse(result)
   if (!aiResponse) {

@@ -1,4 +1,5 @@
 import { env } from 'cloudflare:workers'
+import { aiGatewayOptions } from '@/lib/ai-gateway'
 import { DAILY_LIMITS, DEFAULT_ADVICE_MODEL, isModelAllowed } from '@/lib/ai-models'
 import { checkAndIncrementAiUsage } from '@/lib/ai-rate-limit'
 import { parseAiTextResponse } from '@/lib/ai-response'
@@ -75,10 +76,14 @@ ${profileSection}【${date}の記録】
 
 記録がまだない場合は、記録をつけること自体を応援してください。`
 
-    const result = await env.AI.run(modelId as Parameters<typeof env.AI.run>[0], {
-      messages: [{ role: 'user', content: prompt }],
-      max_tokens: 256
-    })
+    const result = await env.AI.run(
+      modelId as Parameters<typeof env.AI.run>[0],
+      {
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 256
+      },
+      aiGatewayOptions(env, { userId: user.uid, endpoint: 'advice' })
+    )
 
     const aiResponse = parseAiTextResponse(result)
     if (!aiResponse) {

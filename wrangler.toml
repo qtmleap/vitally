@@ -17,6 +17,7 @@ database_id = "27b1d06e-d478-4d50-87ec-4f8386e4f670"
 
 [vars]
 FIREBASE_PROJECT_ID = "vitally-a056d"
+AI_GATEWAY_ID = "health-app"
 
 [ai]
 binding = "AI"
@@ -37,6 +38,10 @@ database_id = "f78ed787-a04c-468f-af0d-9816164459d7"
 
 [env.staging.ai]
 binding = "AI"
+
+[env.staging.vars]
+FIREBASE_PROJECT_ID = "vitally-a056d"
+AI_GATEWAY_ID = "health-app-staging"
 
 [env.staging.observability]
 enabled = true
