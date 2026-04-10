@@ -1,5 +1,6 @@
 'use client'
 
+import dayjs from 'dayjs'
 import { useSetAtom } from 'jotai'
 import { Apple, Dumbbell, UtensilsCrossed, X } from 'lucide-react'
 import { AnimatePresence } from 'motion/react'
@@ -18,7 +19,7 @@ interface QuickAddSheetProps {
 }
 
 function getMealTypeByTime(): MealType {
-  const h = new Date().getHours()
+  const h = dayjs().hour()
   if (h < 10) return 'breakfast'
   if (h < 14) return 'lunch'
   if (h < 17) return 'snack'

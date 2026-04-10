@@ -1,6 +1,7 @@
 'use client'
 
 import { useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query'
+import dayjs from 'dayjs'
 import { Bot, Loader2, Pencil, Plus, Sparkles } from 'lucide-react'
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
@@ -83,7 +84,7 @@ function DayPageContent() {
   )
 
   const getMealTypeByTime = (): MealType => {
-    const h = new Date().getHours()
+    const h = dayjs().hour()
     if (h < 10) return 'breakfast'
     if (h < 14) return 'lunch'
     if (h < 17) return 'snack'

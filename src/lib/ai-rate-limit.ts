@@ -1,4 +1,5 @@
 import type { PrismaClient } from '@/generated/prisma/client/edge'
+import { today as todayDate } from '@/lib/date'
 
 /**
  * AI リクエストのレート制限チェック＆カウント増加。
@@ -9,7 +10,7 @@ export async function checkAndIncrementAiUsage(
   userId: string,
   dailyLimit: number
 ): Promise<boolean> {
-  const today = new Date().toISOString().slice(0, 10)
+  const today = todayDate()
 
   const usage = await prisma.aiUsage.upsert({
     where: { userId_date: { userId, date: today } },

@@ -2,6 +2,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import dayjs from 'dayjs'
 import { Bookmark, Check, History, Minus, Plus, Search, Sparkles, X } from 'lucide-react'
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
@@ -240,7 +241,7 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
           fat: result.fat,
           carbs: result.carbs,
           serving: result.serving,
-          createdAt: result.createdAt ?? new Date().toISOString()
+          createdAt: result.createdAt ?? dayjs().toISOString()
         }
         setBasket((prev) => {
           if (prev.some((item) => item.food.id === food.id)) return prev
