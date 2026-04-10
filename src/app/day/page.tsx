@@ -1,11 +1,11 @@
 'use client'
 
-import { useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { Bot, Loader2, Pencil, Plus, Sparkles } from 'lucide-react'
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
-import { Suspense, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import Link from 'vinext/shims/link'
 import { AddMealDialog } from '@/components/add-meal-dialog'
 import { AiThinkingOverlay } from '@/components/ai-thinking-overlay'
@@ -45,6 +45,23 @@ function DayPageContent() {
     queryKey: ['exercises', date],
     queryFn: () => api.listExercises({ queries: { date } })
   })
+
+  // 前後1日をプリフェッチしてチェブロン移動を即応にする
+  const queryClient = useQueryClient()
+  useEffect(() => {
+    const prev = dayjs(date).subtract(1, 'day').format('YYYY-MM-DD')
+    const next = dayjs(date).add(1, 'day').format('YYYY-MM-DD')
+    for (const d of [prev, next]) {
+      queryClient.prefetchQuery({
+        queryKey: ['meals', d],
+        queryFn: () => api.listMeals({ queries: { date: d } })
+      })
+      queryClient.prefetchQuery({
+        queryKey: ['exercises', d],
+        queryFn: () => api.listExercises({ queries: { date: d } })
+      })
+    }
+  }, [date, queryClient])
 
   const adviceMutation = useMutation({
     mutationFn: () =>
