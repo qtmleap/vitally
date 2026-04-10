@@ -1,7 +1,6 @@
 'use client'
 
 import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
-import { useAtomValue } from 'jotai'
 import { Bot, Copy, Loader2, Pencil, Plus, Sparkles } from 'lucide-react'
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
@@ -18,17 +17,17 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { UpdatingOverlay } from '@/components/updating-overlay'
 import { api } from '@/lib/api'
-import { selectedDateAtom } from '@/lib/atoms'
 import type { ExerciseRow, MealWithFood } from '@/lib/db'
 import type { MealType } from '@/lib/schema'
 import { mealTypeLabels } from '@/lib/schema'
+import { useDateParam } from '@/lib/use-date-param'
 import { useMinPending } from '@/lib/use-min-pending'
 import { useSkipAnimation } from '@/lib/use-skip-animation'
 
 const DEFAULT_CALORIE_GOAL = 2000
 
 function DayPageContent() {
-  const date = useAtomValue(selectedDateAtom)
+  const date = useDateParam()
   const queryClient = useQueryClient()
   const [dialogType, setDialogType] = useState<MealType | null>(null)
   const [editingMealType, setEditingMealType] = useState<MealType | null>(null)
