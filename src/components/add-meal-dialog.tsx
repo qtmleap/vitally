@@ -3,13 +3,12 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Bookmark, Check, History, Minus, Plus, Search, Sparkles, X } from 'lucide-react'
+import { AnimatePresence } from 'motion/react'
+import * as m from 'motion/react-m'
 import { useCallback, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
-
-import { AnimatePresence } from 'motion/react'
-import * as m from 'motion/react-m'
 
 import { AiThinkingOverlay } from '@/components/ai-thinking-overlay'
 import { Button } from '@/components/ui/button'
@@ -20,10 +19,10 @@ import { UpdatingOverlay } from '@/components/updating-overlay'
 import { api } from '@/lib/api'
 import type { FoodRow, MealTemplateRow } from '@/lib/db'
 import { useDebouncedValue } from '@/lib/hooks'
-import { useMinPending } from '@/lib/use-min-pending'
-import { cn } from '@/lib/utils'
 import type { MealType } from '@/lib/schema'
 import { mealTypeLabels } from '@/lib/schema'
+import { useMinPending } from '@/lib/use-min-pending'
+import { cn } from '@/lib/utils'
 
 type Unit = 'serving' | 'g'
 type MealSource = 'eating_out' | 'home_cooking'
@@ -122,7 +121,11 @@ function BasketRow({
           </p>
         </div>
         <div className='flex shrink-0 items-center gap-1'>
-          <button type='button' onClick={() => adjust(-1)} className='text-muted-foreground hover:text-foreground rounded p-0.5'>
+          <button
+            type='button'
+            onClick={() => adjust(-1)}
+            className='text-muted-foreground hover:text-foreground rounded p-0.5'
+          >
             <Minus className='size-3.5' />
           </button>
           <Form {...form}>
@@ -151,7 +154,11 @@ function BasketRow({
               )}
             />
           </Form>
-          <button type='button' onClick={() => adjust(1)} className='text-muted-foreground hover:text-foreground rounded p-0.5'>
+          <button
+            type='button'
+            onClick={() => adjust(1)}
+            className='text-muted-foreground hover:text-foreground rounded p-0.5'
+          >
             <Plus className='size-3.5' />
           </button>
           <button
@@ -202,28 +209,26 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
 
   const { data: foods = [] } = useQuery<FoodRow[]>({
     queryKey: ['foods', debouncedSearch],
-    queryFn: () => api.foods.list(debouncedSearch || undefined),
+    queryFn: () => api.listFoods({ queries: { q: debouncedSearch || undefined } }),
     enabled: open
   })
 
   const { data: templates = [] } = useQuery<MealTemplateRow[]>({
     queryKey: ['templates'],
-    queryFn: () => api.templates.list(),
+    queryFn: () => api.listTemplates(),
     enabled: open
   })
 
   const { data: frequentFoods = [] } = useQuery<FoodRow[]>({
     queryKey: ['foods', 'frequent'],
-    queryFn: () => api.foods.frequent(5),
+    queryFn: () => api.listFrequentFoods({ queries: { limit: 5 } }),
     enabled: open
   })
 
-  const filteredTemplates = templates.filter(
-    (t) => t.mealType === null || t.mealType === mealType
-  )
+  const filteredTemplates = templates.filter((t) => t.mealType === null || t.mealType === mealType)
 
   const aiMutation = useMutation({
-    mutationFn: (name: string) => api.ai.estimateNutrition({ name, save: true }),
+    mutationFn: (name: string) => api.estimateNutrition({ name, save: true }),
     onSuccess: (result, name) => {
       if (result.id && result.name) {
         const food: FoodRow = {
@@ -248,7 +253,7 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
 
   const saveTemplateMutation = useMutation({
     mutationFn: (name: string) =>
-      api.templates.create({
+      api.createTemplate({
         name,
         meal_type: mealType,
         items: basket.map((i) => ({ food_id: i.food.id, quantity: i.amount }))
@@ -273,9 +278,7 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
   }, [])
 
   const updateItem = useCallback((foodId: string, amount: number, unit: Unit) => {
-    setBasket((prev) =>
-      prev.map((item) => (item.food.id === foodId ? { ...item, amount, unit } : item))
-    )
+    setBasket((prev) => prev.map((item) => (item.food.id === foodId ? { ...item, amount, unit } : item)))
   }, [])
 
   const applyTemplate = useCallback((template: MealTemplateRow) => {
@@ -295,9 +298,8 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
   const saveMutation = useMutation({
     mutationFn: async () => {
       for (const item of basket) {
-        const quantity =
-          item.unit === 'g' ? item.amount / parseServingGrams(item.food.serving) : item.amount
-        await api.meals.create({ date, meal_type: mealType, food_id: item.food.id, quantity })
+        const quantity = item.unit === 'g' ? item.amount / parseServingGrams(item.food.serving) : item.amount
+        await api.createMeal({ date, meal_type: mealType, food_id: item.food.id, quantity })
       }
     },
     onSuccess: () => {
@@ -432,10 +434,7 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
                     {aiMutation.isPending ? '推定中...' : 'AI で栄養素を推定'}
                   </Button>
                 ) : (
-                  <a
-                    href='/foods/new'
-                    className='text-primary text-sm underline underline-offset-4 hover:opacity-80'
-                  >
+                  <a href='/foods/new' className='text-primary text-sm underline underline-offset-4 hover:opacity-80'>
                     新しい食品を登録する
                   </a>
                 )}
@@ -494,7 +493,9 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
                           <m.div
                             className={cn(
                               'flex size-5 shrink-0 items-center justify-center rounded-full border transition-colors',
-                              selected ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground/30'
+                              selected
+                                ? 'border-primary bg-primary text-primary-foreground'
+                                : 'border-muted-foreground/30'
                             )}
                             animate={selected ? { scale: [1, 1.3, 1] } : { scale: 1 }}
                             transition={{ duration: 0.3 }}
@@ -568,7 +569,9 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
                   className='w-full'
                   disabled={saveMutation.isPending || hasInvalid}
                 >
-                  {saveMutation.isPending ? '保存中...' : `${basket.length}品目を追加（${Math.round(totalCalories)} kcal）`}
+                  {saveMutation.isPending
+                    ? '保存中...'
+                    : `${basket.length}品目を追加（${Math.round(totalCalories)} kcal）`}
                 </Button>
 
                 <Button
@@ -593,9 +596,7 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
                     >
                       <Form {...templateForm}>
                         <form
-                          onSubmit={templateForm.handleSubmit((data) =>
-                            saveTemplateMutation.mutate(data.name)
-                          )}
+                          onSubmit={templateForm.handleSubmit((data) => saveTemplateMutation.mutate(data.name))}
                           className='flex gap-2 pt-1'
                         >
                           <FormField

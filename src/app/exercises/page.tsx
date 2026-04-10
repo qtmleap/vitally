@@ -1,6 +1,6 @@
 'use client'
 
-import { useMutation, useSuspenseQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import { useAtomValue } from 'jotai'
 import { Plus, Trash2 } from 'lucide-react'
 import { Suspense } from 'react'
@@ -18,10 +18,10 @@ function ExercisesPageContent() {
   const queryClient = useQueryClient()
   const { data: exercises } = useSuspenseQuery<ExerciseRow[]>({
     queryKey: ['exercises', date],
-    queryFn: () => api.exercises.list(date)
+    queryFn: () => api.listExercises({ queries: { date } })
   })
   const deleteMutation = useMutation({
-    mutationFn: api.exercises.delete,
+    mutationFn: (id: string) => api.deleteExercise(undefined, { queries: { id } }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['exercises', date] })
   })
 
@@ -62,7 +62,13 @@ function ExercisesPageContent() {
 
 export default function ExercisesPage() {
   return (
-    <Suspense fallback={<div className='p-4'><p className='text-muted-foreground py-8 text-center text-sm'>読み込み中...</p></div>}>
+    <Suspense
+      fallback={
+        <div className='p-4'>
+          <p className='text-muted-foreground py-8 text-center text-sm'>読み込み中...</p>
+        </div>
+      }
+    >
       <ExercisesPageContent />
     </Suspense>
   )

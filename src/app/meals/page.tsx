@@ -22,7 +22,7 @@ function MealsPageContent() {
   const [editingMealType, setEditingMealType] = useState<MealType | null>(null)
   const { data: meals } = useSuspenseQuery<MealWithFood[]>({
     queryKey: ['meals', date],
-    queryFn: () => api.meals.list(date)
+    queryFn: () => api.listMeals({ queries: { date } })
   })
 
   const grouped = meals.reduce(
@@ -97,7 +97,13 @@ function MealsPageContent() {
 
 export default function MealsPage() {
   return (
-    <Suspense fallback={<div className='p-4'><p className='text-muted-foreground py-8 text-center text-sm'>読み込み中...</p></div>}>
+    <Suspense
+      fallback={
+        <div className='p-4'>
+          <p className='text-muted-foreground py-8 text-center text-sm'>読み込み中...</p>
+        </div>
+      }
+    >
       <MealsPageContent />
     </Suspense>
   )

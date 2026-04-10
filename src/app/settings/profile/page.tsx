@@ -6,8 +6,8 @@ import { Dumbbell, Percent, Scale, TrendingDown, TrendingUp } from 'lucide-react
 import * as m from 'motion/react-m'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
-import { useRouter } from 'vinext/shims/navigation'
 import { toast } from 'sonner'
+import { useRouter } from 'vinext/shims/navigation'
 
 import { PageHeader } from '@/components/page-header'
 import { Button } from '@/components/ui/button'
@@ -20,14 +20,14 @@ import { calculateCalorieGoal } from '@/lib/calorie-calc'
 import type { UserProfileRow } from '@/lib/db'
 import {
   type ActivityLevel,
-  type GoalType,
-  type ProfileInput,
   activityLevelLabels,
   activityLevels,
+  type GoalType,
   genderLabels,
   genders,
   goalLabels,
   goals,
+  type ProfileInput,
   profileSchema
 } from '@/lib/schema'
 import { useSkipAnimation } from '@/lib/use-skip-animation'
@@ -55,7 +55,7 @@ export default function ProfileSettingsPage() {
 
   const { data: profileData, isLoading } = useQuery<{ profile: UserProfileRow | null }>({
     queryKey: ['profile'],
-    queryFn: api.profile.get
+    queryFn: () => api.getProfile()
   })
 
   const form = useForm<ProfileInput>({
@@ -98,7 +98,7 @@ export default function ProfileSettingsPage() {
   }, [profileData, form])
 
   const mutation = useMutation({
-    mutationFn: api.profile.update,
+    mutationFn: (data: Parameters<typeof api.updateProfile>[0]) => api.updateProfile(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] })
       toast.success('プロフィールを更新しました')
@@ -308,10 +308,7 @@ export default function ProfileSettingsPage() {
                         )}
                       >
                         <Icon
-                          className={cn(
-                            'size-4.5 shrink-0',
-                            selected ? 'text-primary' : 'text-muted-foreground'
-                          )}
+                          className={cn('size-4.5 shrink-0', selected ? 'text-primary' : 'text-muted-foreground')}
                         />
                         <span className='text-xs font-medium'>{goalLabels[g]}</span>
                       </button>

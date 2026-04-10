@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react'
 
 import { BottomNav } from '@/components/bottom-nav'
+import { ConditionalAuthGuard } from '@/components/conditional-auth-guard'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { Providers } from '@/components/providers'
-import { ConditionalAuthGuard } from '@/components/conditional-auth-guard'
 import { Toaster } from '@/components/ui/sonner'
 import '@/index.css'
 
@@ -19,6 +19,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <meta charSet='UTF-8' />
         <meta name='viewport' content='width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1' />
         <script
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: theme initialization script must run inline before paint
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches))document.documentElement.classList.add('dark')}catch(e){}})()`
           }}
@@ -30,6 +31,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <meta name='apple-mobile-web-app-status-bar-style' content='default' />
         <link rel='apple-touch-icon' href='/icon-192.svg' />
         <script
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: service worker registration must run inline
           dangerouslySetInnerHTML={{
             __html: `if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js')`
           }}

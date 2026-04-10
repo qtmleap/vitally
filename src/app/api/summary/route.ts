@@ -30,12 +30,14 @@ export async function GET(request: Request) {
   const days: Record<string, { calories: number; exercise_min: number }> = {}
 
   for (const m of meals) {
-    const d = (days[m.date] ??= { calories: 0, exercise_min: 0 })
+    if (!days[m.date]) days[m.date] = { calories: 0, exercise_min: 0 }
+    const d = days[m.date]
     d.calories += m.food.calories * m.quantity
   }
 
   for (const e of exercises) {
-    const d = (days[e.date] ??= { calories: 0, exercise_min: 0 })
+    if (!days[e.date]) days[e.date] = { calories: 0, exercise_min: 0 }
+    const d = days[e.date]
     d.exercise_min += e.durationMin
   }
 

@@ -1,30 +1,29 @@
 'use client'
 
-import { useMutation, useQuery, useSuspenseQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import { useAtomValue } from 'jotai'
 import { Bot, Copy, Loader2, Pencil, Plus, Sparkles } from 'lucide-react'
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
-import Link from 'vinext/shims/link'
 import { Suspense, useState } from 'react'
-
+import { toast } from 'sonner'
+import Link from 'vinext/shims/link'
 import { AddMealDialog } from '@/components/add-meal-dialog'
 import { AiThinkingOverlay } from '@/components/ai-thinking-overlay'
-import { EditMealDialog } from '@/components/edit-meal-dialog'
-import { UpdatingOverlay } from '@/components/updating-overlay'
 import { DateNav } from '@/components/date-nav'
 import { DayFab } from '@/components/day-fab'
+import { EditMealDialog } from '@/components/edit-meal-dialog'
 import { PageHeader } from '@/components/page-header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { UpdatingOverlay } from '@/components/updating-overlay'
 import { api } from '@/lib/api'
-import { useSkipAnimation } from '@/lib/use-skip-animation'
-import { useMinPending } from '@/lib/use-min-pending'
 import { selectedDateAtom } from '@/lib/atoms'
-import type { ExerciseRow, MealWithFood, UserProfileRow } from '@/lib/db'
+import type { ExerciseRow, MealWithFood } from '@/lib/db'
 import type { MealType } from '@/lib/schema'
 import { mealTypeLabels } from '@/lib/schema'
-import { toast } from 'sonner'
+import { useMinPending } from '@/lib/use-min-pending'
+import { useSkipAnimation } from '@/lib/use-skip-animation'
 
 const DEFAULT_CALORIE_GOAL = 2000
 
@@ -37,23 +36,23 @@ function DayPageContent() {
 
   const { data: profileData } = useQuery({
     queryKey: ['profile'],
-    queryFn: api.profile.get,
+    queryFn: () => api.getProfile(),
     staleTime: Number.POSITIVE_INFINITY
   })
   const calorieGoal = profileData?.profile?.calorieGoal ?? DEFAULT_CALORIE_GOAL
 
   const { data: meals } = useSuspenseQuery<MealWithFood[]>({
     queryKey: ['meals', date],
-    queryFn: () => api.meals.list(date)
+    queryFn: () => api.listMeals({ queries: { date } })
   })
   const { data: exercises } = useSuspenseQuery<ExerciseRow[]>({
     queryKey: ['exercises', date],
-    queryFn: () => api.exercises.list(date)
+    queryFn: () => api.listExercises({ queries: { date } })
   })
 
   const adviceMutation = useMutation({
     mutationFn: () =>
-      api.ai.getAdvice({
+      api.getAdvice({
         meals: meals.map((m) => ({
           food_name: m.food_name,
           calories: m.food_calories,
@@ -75,7 +74,7 @@ function DayPageContent() {
       const d = new Date(date)
       d.setDate(d.getDate() - 1)
       const yesterday = d.toISOString().slice(0, 10)
-      return api.meals.copy({ from_date: yesterday, to_date: date })
+      return api.copyMeals({ from_date: yesterday, to_date: date })
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['meals', date] })
@@ -147,7 +146,11 @@ function DayPageContent() {
                 onClick={() => adviceMutation.mutate()}
                 disabled={adviceMutation.isPending}
               >
-                {adviceMutation.isPending ? <Loader2 className='mr-1 size-3 animate-spin' /> : <Bot className='mr-1 size-3' />}
+                {adviceMutation.isPending ? (
+                  <Loader2 className='mr-1 size-3 animate-spin' />
+                ) : (
+                  <Bot className='mr-1 size-3' />
+                )}
                 再評価
               </Button>
             </CardContent>
@@ -159,11 +162,7 @@ function DayPageContent() {
             onClick={() => adviceMutation.mutate()}
             disabled={adviceMutation.isPending}
           >
-            {adviceMutation.isPending ? (
-              <Loader2 className='size-4 animate-spin' />
-            ) : (
-              <Sparkles className='size-4' />
-            )}
+            {adviceMutation.isPending ? <Loader2 className='size-4 animate-spin' /> : <Sparkles className='size-4' />}
             {adviceMutation.isPending ? '評価中...' : 'AI に今日の記録を評価してもらう'}
           </Button>
         )}
@@ -358,7 +357,9 @@ function DayPageContent() {
       {dialogType && (
         <AddMealDialog
           open={!!dialogType}
-          onOpenChange={(open) => { if (!open) setDialogType(null) }}
+          onOpenChange={(open) => {
+            if (!open) setDialogType(null)
+          }}
           mealType={dialogType}
           date={date}
         />
@@ -366,7 +367,9 @@ function DayPageContent() {
       {editingMealType && (
         <EditMealDialog
           open={!!editingMealType}
-          onOpenChange={(open) => { if (!open) setEditingMealType(null) }}
+          onOpenChange={(open) => {
+            if (!open) setEditingMealType(null)
+          }}
           meals={grouped[editingMealType] ?? []}
           mealType={editingMealType}
           date={date}
@@ -380,7 +383,13 @@ function DayPageContent() {
 
 export default function DayPage() {
   return (
-    <Suspense fallback={<div className='p-4'><p className='text-muted-foreground py-8 text-center text-sm'>読み込み中...</p></div>}>
+    <Suspense
+      fallback={
+        <div className='p-4'>
+          <p className='text-muted-foreground py-8 text-center text-sm'>読み込み中...</p>
+        </div>
+      }
+    >
       <DayPageContent />
     </Suspense>
   )

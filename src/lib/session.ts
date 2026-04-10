@@ -9,7 +9,10 @@ function base64url(buf: ArrayBuffer): string {
 }
 
 function base64urlDecode(str: string): ArrayBuffer {
-  const padded = str.replace(/-/g, '+').replace(/_/g, '/').padEnd(str.length + ((4 - (str.length % 4)) % 4), '=')
+  const padded = str
+    .replace(/-/g, '+')
+    .replace(/_/g, '/')
+    .padEnd(str.length + ((4 - (str.length % 4)) % 4), '=')
   const bytes = Uint8Array.from(atob(padded), (c) => c.charCodeAt(0))
   return bytes.buffer as ArrayBuffer
 }
@@ -22,13 +25,9 @@ export async function signSessionJwt(payload: { uid: string; email: string }, se
     enc.encode(JSON.stringify({ ...payload, iat: now, exp: now + SESSION_MAX_AGE })).buffer as ArrayBuffer
   )
   const data = `${header}.${body}`
-  const key = await crypto.subtle.importKey(
-    'raw',
-    enc.encode(secret),
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign']
-  )
+  const key = await crypto.subtle.importKey('raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, [
+    'sign'
+  ])
   const sig = await crypto.subtle.sign('HMAC', key, enc.encode(data))
   return `${data}.${base64url(sig)}`
 }
@@ -39,13 +38,9 @@ export async function verifySessionJwt(token: string, secret: string): Promise<{
     if (parts.length !== 3) return null
     const [headerPart, bodyPart, sigPart] = parts
     const enc = new TextEncoder()
-    const key = await crypto.subtle.importKey(
-      'raw',
-      enc.encode(secret),
-      { name: 'HMAC', hash: 'SHA-256' },
-      false,
-      ['verify']
-    )
+    const key = await crypto.subtle.importKey('raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, [
+      'verify'
+    ])
     const data = enc.encode(`${headerPart}.${bodyPart}`)
     const sig = base64urlDecode(sigPart)
     const valid = await crypto.subtle.verify('HMAC', key, sig, data)

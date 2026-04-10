@@ -4,11 +4,10 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAtomValue } from 'jotai'
 import { Check } from 'lucide-react'
+import * as m from 'motion/react-m'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
-
-import * as m from 'motion/react-m'
 
 import { PageHeader } from '@/components/page-header'
 import { Button } from '@/components/ui/button'
@@ -17,11 +16,11 @@ import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { UpdatingOverlay } from '@/components/updating-overlay'
 import { api } from '@/lib/api'
-import { useMinPending } from '@/lib/use-min-pending'
-import { useSkipAnimation } from '@/lib/use-skip-animation'
 import { selectedDateAtom } from '@/lib/atoms'
 import type { FoodRow } from '@/lib/db'
-import { mealSchema, mealTypeLabels, mealTypes, type MealInput } from '@/lib/schema'
+import { type MealInput, mealSchema, mealTypeLabels, mealTypes } from '@/lib/schema'
+import { useMinPending } from '@/lib/use-min-pending'
+import { useSkipAnimation } from '@/lib/use-skip-animation'
 
 export function MealForm() {
   const date = useAtomValue(selectedDateAtom)
@@ -31,7 +30,7 @@ export function MealForm() {
 
   const { data: foods = [] } = useQuery<FoodRow[]>({
     queryKey: ['foods', search],
-    queryFn: () => api.foods.list(search || undefined)
+    queryFn: () => api.listFoods({ queries: { q: search || undefined } })
   })
 
   const form = useForm<MealInput>({
@@ -43,7 +42,7 @@ export function MealForm() {
   const selectedFood = foods.find((f) => f.id === foodId)
 
   const mutation = useMutation({
-    mutationFn: api.meals.create,
+    mutationFn: (data: Parameters<typeof api.createMeal>[0]) => api.createMeal(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['meals'] })
       form.reset({ date, meal_type: form.getValues('meal_type'), food_id: '', quantity: 1 })

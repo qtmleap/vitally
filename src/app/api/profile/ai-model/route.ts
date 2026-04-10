@@ -1,8 +1,8 @@
 import { env } from 'cloudflare:workers'
 
 import { getAuthUser } from '@/lib/auth-middleware'
-import { getPrisma } from '@/lib/db'
 import type { Goal } from '@/lib/calorie-calc'
+import { getPrisma } from '@/lib/db'
 
 export async function PUT(request: Request) {
   const userOrRes = await getAuthUser(request)

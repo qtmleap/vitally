@@ -1,7 +1,7 @@
 'use client'
 
-import { PageHeader } from '@/components/page-header'
 import { ForceLightMode } from '@/components/force-light-mode'
+import { PageHeader } from '@/components/page-header'
 
 export default function TermsPage() {
   return (
@@ -22,7 +22,8 @@ export default function TermsPage() {
         <section className='space-y-2'>
           <h2 className='text-base font-semibold'>2. アカウント</h2>
           <p>
-            本サービスへのログインには Google アカウントを使用します。ユーザーは自身のアカウント情報の正確性について責任を負います。
+            本サービスへのログインには Google
+            アカウントを使用します。ユーザーは自身のアカウント情報の正確性について責任を負います。
             アカウントの不正利用が判明した場合は速やかにご連絡ください。
           </p>
         </section>
@@ -41,7 +42,8 @@ export default function TermsPage() {
         <section className='space-y-2'>
           <h2 className='text-base font-semibold'>4. 免責事項</h2>
           <p>
-            本サービスの AI アドバイスは参考情報の提供を目的としており、医療的な診断・助言・治療の代替となるものではありません。
+            本サービスの AI
+            アドバイスは参考情報の提供を目的としており、医療的な診断・助言・治療の代替となるものではありません。
             健康に関する判断は必ず医療専門家にご相談ください。
           </p>
           <p>

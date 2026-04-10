@@ -1,6 +1,6 @@
 'use client'
-import { useRouter } from 'vinext/shims/navigation'
 import { useEffect } from 'react'
+import { useRouter } from 'vinext/shims/navigation'
 import { useAuth } from './auth-provider'
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {

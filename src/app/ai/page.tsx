@@ -18,16 +18,16 @@ function AiPageContent() {
 
   const { data: meals } = useSuspenseQuery<MealWithFood[]>({
     queryKey: ['meals', date],
-    queryFn: () => api.meals.list(date)
+    queryFn: () => api.listMeals({ queries: { date } })
   })
   const { data: exercises } = useSuspenseQuery<ExerciseRow[]>({
     queryKey: ['exercises', date],
-    queryFn: () => api.exercises.list(date)
+    queryFn: () => api.listExercises({ queries: { date } })
   })
 
   const adviceMutation = useMutation({
     mutationFn: () =>
-      api.ai.getAdvice({
+      api.getAdvice({
         meals: meals.map((m) => ({
           food_name: m.food_name,
           calories: m.food_calories,
@@ -71,7 +71,13 @@ function AiPageContent() {
 
 export default function AiPage() {
   return (
-    <Suspense fallback={<div className='p-4'><p className='text-muted-foreground py-8 text-center text-sm'>読み込み中...</p></div>}>
+    <Suspense
+      fallback={
+        <div className='p-4'>
+          <p className='text-muted-foreground py-8 text-center text-sm'>読み込み中...</p>
+        </div>
+      }
+    >
       <AiPageContent />
     </Suspense>
   )

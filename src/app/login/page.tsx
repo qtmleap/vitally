@@ -1,7 +1,7 @@
 'use client'
 
-import { useRouter } from 'vinext/shims/navigation'
 import { useEffect } from 'react'
+import { useRouter } from 'vinext/shims/navigation'
 
 export default function LoginRedirect() {
   const router = useRouter()

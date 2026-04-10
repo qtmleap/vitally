@@ -1,11 +1,10 @@
 import { env } from 'cloudflare:workers'
-
-import { getAuthUser } from '@/lib/auth-middleware'
-import { DEFAULT_ADVICE_MODEL, DAILY_LIMITS, isModelAllowed } from '@/lib/ai-models'
+import { DAILY_LIMITS, DEFAULT_ADVICE_MODEL, isModelAllowed } from '@/lib/ai-models'
 import { checkAndIncrementAiUsage } from '@/lib/ai-rate-limit'
+import { getAuthUser } from '@/lib/auth-middleware'
 import { getPrisma } from '@/lib/db'
-import { genderLabels, activityLevelLabels, goalLabels } from '@/lib/schema'
-import type { Gender, ActivityLevel, GoalType } from '@/lib/schema'
+import type { ActivityLevel, Gender, GoalType } from '@/lib/schema'
+import { activityLevelLabels, genderLabels, goalLabels } from '@/lib/schema'
 
 export async function POST(request: Request) {
   const userOrRes = await getAuthUser(request)
@@ -54,7 +53,10 @@ export async function POST(request: Request) {
 年齢: ${profile.age}歳
 身長: ${profile.heightCm}cm / 体重: ${profile.weightKg}kg${profile.bodyFatPct ? ` / 体脂肪率: ${profile.bodyFatPct}%` : ''}
 活動レベル: ${activityLevelLabels[profile.activityLevel as ActivityLevel] ?? profile.activityLevel}
-目標: ${profile.goal.split(',').map((g) => goalLabels[g as GoalType] ?? g).join('、')}
+目標: ${profile.goal
+        .split(',')
+        .map((g) => goalLabels[g as GoalType] ?? g)
+        .join('、')}
 1日の目標カロリー: ${profile.calorieGoal}kcal
 `
     : ''

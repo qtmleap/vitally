@@ -1,17 +1,16 @@
 'use client'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Bookmark, Plus, Trash2 } from 'lucide-react'
+import { Bookmark, Trash2 } from 'lucide-react'
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
-import Link from 'vinext/shims/link'
 import { toast } from 'sonner'
 
 import { PageHeader } from '@/components/page-header'
 import { Button } from '@/components/ui/button'
 import { api } from '@/lib/api'
 import type { MealTemplateRow } from '@/lib/db'
-import { mealTypeLabels, type MealType } from '@/lib/schema'
+import { type MealType, mealTypeLabels } from '@/lib/schema'
 import { useSkipAnimation } from '@/lib/use-skip-animation'
 
 export default function TemplatesPage() {
@@ -20,11 +19,11 @@ export default function TemplatesPage() {
 
   const { data: templates = [], isLoading } = useQuery<MealTemplateRow[]>({
     queryKey: ['templates'],
-    queryFn: api.templates.list
+    queryFn: () => api.listTemplates()
   })
 
   const deleteMutation = useMutation({
-    mutationFn: api.templates.delete,
+    mutationFn: (id: string) => api.deleteTemplate(undefined, { queries: { id } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['templates'] })
       toast.success('テンプレートを削除しました')
@@ -41,9 +40,7 @@ export default function TemplatesPage() {
       <PageHeader title='献立テンプレート' back />
 
       <div className='mt-4 space-y-3'>
-        {isLoading && (
-          <p className='text-muted-foreground py-8 text-center text-sm'>読み込み中...</p>
-        )}
+        {isLoading && <p className='text-muted-foreground py-8 text-center text-sm'>読み込み中...</p>}
 
         <AnimatePresence mode='popLayout'>
           {templates.map((template, i) => (
@@ -76,8 +73,8 @@ export default function TemplatesPage() {
                     ))}
                   </div>
                   <p className='text-muted-foreground mt-1 ml-6 text-[11px]'>
-                    合計 {Math.round(template.items.reduce((s, i) => s + i.food.calories * i.quantity, 0))} kcal
-                    ・{template.items.length}品目
+                    合計 {Math.round(template.items.reduce((s, i) => s + i.food.calories * i.quantity, 0))} kcal ・
+                    {template.items.length}品目
                   </p>
                 </div>
                 <Button

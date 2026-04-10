@@ -1,8 +1,8 @@
 import { env } from 'cloudflare:workers'
 
 import { getAuthUser } from '@/lib/auth-middleware'
-import { calculateCalorieGoal } from '@/lib/calorie-calc'
 import type { Goal } from '@/lib/calorie-calc'
+import { calculateCalorieGoal } from '@/lib/calorie-calc'
 import { getPrisma } from '@/lib/db'
 import { profileSchema } from '@/lib/schema'
 

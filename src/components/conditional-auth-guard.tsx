@@ -1,11 +1,11 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
+import { type ReactNode, useEffect } from 'react'
 import { usePathname, useRouter } from 'vinext/shims/navigation'
-import { useEffect, type ReactNode } from 'react'
+import { api } from '@/lib/api'
 import { AuthGuard } from './auth-guard'
 import { useAuth } from './auth-provider'
-import { api } from '@/lib/api'
 
 const PUBLIC_PATHS = ['/', '/terms', '/privacy']
 
@@ -22,7 +22,7 @@ function ProfileGate({ children }: { children: ReactNode }) {
 
   const { data: profileData, isLoading } = useQuery({
     queryKey: ['profile'],
-    queryFn: api.profile.get,
+    queryFn: () => api.getProfile(),
     staleTime: Number.POSITIVE_INFINITY
   })
 

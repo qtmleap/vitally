@@ -1,8 +1,8 @@
 'use client'
 
+import { Loader2 } from 'lucide-react'
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
-import { Loader2 } from 'lucide-react'
 
 interface UpdatingOverlayProps {
   show: boolean

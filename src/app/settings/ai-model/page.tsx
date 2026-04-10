@@ -7,8 +7,8 @@ import { toast } from 'sonner'
 
 import { PageHeader } from '@/components/page-header'
 import { Badge } from '@/components/ui/badge'
-import { api } from '@/lib/api'
 import { type AiCategory, type AiModel, getModelsForCategory } from '@/lib/ai-models'
+import { api } from '@/lib/api'
 import type { UserProfileRow } from '@/lib/db'
 import { useSkipAnimation } from '@/lib/use-skip-animation'
 import { cn } from '@/lib/utils'
@@ -18,15 +18,7 @@ const categories: { key: AiCategory; label: string; description: string }[] = [
   { key: 'nutrition', label: '栄養推定 / 運動推定', description: '食品の栄養素・消費カロリーの推定' }
 ]
 
-function ModelCard({
-  model,
-  selected,
-  onSelect
-}: {
-  model: AiModel
-  selected: boolean
-  onSelect: () => void
-}) {
+function ModelCard({ model, selected, onSelect }: { model: AiModel; selected: boolean; onSelect: () => void }) {
   const isPro = model.tier === 'pro'
 
   return (
@@ -61,8 +53,12 @@ function ModelCard({
             品質
             {Array.from({ length: 5 }, (_, i) => (
               <Star
+                // biome-ignore lint/suspicious/noArrayIndexKey: static star rating array
                 key={i}
-                className={cn('size-2.5', i < model.rating.quality ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30')}
+                className={cn(
+                  'size-2.5',
+                  i < model.rating.quality ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30'
+                )}
               />
             ))}
           </span>
@@ -70,14 +66,17 @@ function ModelCard({
             速度
             {Array.from({ length: 5 }, (_, i) => (
               <Star
+                // biome-ignore lint/suspicious/noArrayIndexKey: static star rating array
                 key={i}
-                className={cn('size-2.5', i < model.rating.speed ? 'fill-blue-400 text-blue-400' : 'text-muted-foreground/30')}
+                className={cn(
+                  'size-2.5',
+                  i < model.rating.speed ? 'fill-blue-400 text-blue-400' : 'text-muted-foreground/30'
+                )}
               />
             ))}
           </span>
           <span className='flex items-center gap-0.5'>
-            <Zap className='size-2.5' />
-            ~{model.neuronsPerReq}/回
+            <Zap className='size-2.5' />~{model.neuronsPerReq}/回
           </span>
         </div>
       </div>
@@ -91,12 +90,11 @@ export default function AiModelSettingsPage() {
 
   const { data: profileData, isLoading } = useQuery<{ profile: UserProfileRow | null }>({
     queryKey: ['profile'],
-    queryFn: api.profile.get
+    queryFn: () => api.getProfile()
   })
 
   const mutation = useMutation({
-    mutationFn: (data: { aiAdviceModel?: string; aiUtilityModel?: string }) =>
-      api.profile.updateAiModels(data),
+    mutationFn: (data: { aiAdviceModel?: string; aiUtilityModel?: string }) => api.updateAiModels(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] })
       toast.success('AI モデルを変更しました')
@@ -132,8 +130,7 @@ export default function AiModelSettingsPage() {
       <div className='mt-4 space-y-6'>
         {categories.map(({ key, label, description }) => {
           const models = getModelsForCategory(key)
-          const currentModel =
-            key === 'advice' ? profile.aiAdviceModel : profile.aiUtilityModel
+          const currentModel = key === 'advice' ? profile.aiAdviceModel : profile.aiUtilityModel
 
           return (
             <div key={key}>

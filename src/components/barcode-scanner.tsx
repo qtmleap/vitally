@@ -34,20 +34,23 @@ export function BarcodeScanner({ open, onOpenChange, onResult }: BarcodeScannerP
     setScanning(false)
   }, [])
 
-  const lookup = useCallback(async (code: string) => {
-    setError('')
-    setLoading(true)
-    try {
-      const result = await api.barcode.lookup(code)
-      if (!result.name) throw new Error('not found')
-      onResult(result)
-      onOpenChange(false)
-    } catch {
-      setError(`「${code}」に該当する食品が見つかりませんでした`)
-    } finally {
-      setLoading(false)
-    }
-  }, [onResult, onOpenChange])
+  const lookup = useCallback(
+    async (code: string) => {
+      setError('')
+      setLoading(true)
+      try {
+        const result = await api.lookupBarcode({ queries: { code } })
+        if (!result.name) throw new Error('not found')
+        onResult(result)
+        onOpenChange(false)
+      } catch {
+        setError(`「${code}」に該当する食品が見つかりませんでした`)
+      } finally {
+        setLoading(false)
+      }
+    },
+    [onResult, onOpenChange]
+  )
 
   const startScanner = useCallback(async () => {
     if (!readerRef.current || scannerRef.current) return
@@ -92,7 +95,13 @@ export function BarcodeScanner({ open, onOpenChange, onResult }: BarcodeScannerP
   }
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) stopScanner(); onOpenChange(v) }}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        if (!v) stopScanner()
+        onOpenChange(v)
+      }}
+    >
       <DialogContent className='max-w-sm gap-4'>
         <DialogHeader>
           <DialogTitle className='flex items-center gap-2'>

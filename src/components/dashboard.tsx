@@ -1,24 +1,23 @@
 'use client'
 
-import dayjs from 'dayjs'
 import { useQuery } from '@tanstack/react-query'
+import dayjs from 'dayjs'
 import { useSetAtom } from 'jotai'
 import { Bot, ChevronLeft, ChevronRight, Flame, Footprints, Plus, RefreshCw, Trophy, Utensils } from 'lucide-react'
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
 import { useEffect, useState } from 'react'
-import { useRouter } from 'vinext/shims/navigation'
 import Link from 'vinext/shims/link'
-
+import { useRouter } from 'vinext/shims/navigation'
+import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import { api } from '@/lib/api'
-import { useVersionCheck } from '@/lib/use-version-check'
-import { useSkipAnimation } from '@/lib/use-skip-animation'
 import { selectedDateAtom } from '@/lib/atoms'
 import { today } from '@/lib/date'
 import type { ExerciseRow, MealWithFood, UserProfileRow } from '@/lib/db'
+import { useSkipAnimation } from '@/lib/use-skip-animation'
+import { useVersionCheck } from '@/lib/use-version-check'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
 
 const DEFAULT_CALORIE_GOAL = 2000
 const EXERCISE_GOAL = 30
@@ -78,6 +77,7 @@ function DashboardSkeleton() {
         <Skeleton className='h-5 w-20' />
         <div className='grid grid-cols-7 gap-0.5'>
           {Array.from({ length: 35 }, (_, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton placeholder grid
             <Skeleton key={i} className='aspect-square rounded-xl' />
           ))}
         </div>
@@ -190,28 +190,28 @@ export function Dashboard() {
 
   const { data: profileData } = useQuery<{ profile: UserProfileRow | null }>({
     queryKey: ['profile'],
-    queryFn: api.profile.get,
+    queryFn: () => api.getProfile(),
     staleTime: Number.POSITIVE_INFINITY
   })
   const calorieGoal = profileData?.profile?.calorieGoal ?? DEFAULT_CALORIE_GOAL
 
   const { data: meals = [] } = useQuery<MealWithFood[]>({
     queryKey: ['meals', now],
-    queryFn: () => api.meals.list(now),
+    queryFn: () => api.listMeals({ queries: { date: now } }),
     enabled: !!now
   })
   const { data: exercises = [] } = useQuery<ExerciseRow[]>({
     queryKey: ['exercises', now],
-    queryFn: () => api.exercises.list(now),
+    queryFn: () => api.listExercises({ queries: { date: now } }),
     enabled: !!now
   })
   const { data: monthSummary = {} } = useQuery({
     queryKey: ['summary', calMonthStr],
     queryFn: () => {
-      const m = calMonth!
-      const from = m.format('YYYY-MM-DD')
-      const to = m.endOf('month').format('YYYY-MM-DD')
-      return api.summary.month(from, to)
+      if (!calMonth) throw new Error('calMonth is null')
+      const from = calMonth.format('YYYY-MM-DD')
+      const to = calMonth.endOf('month').format('YYYY-MM-DD')
+      return api.getMonthlySummary({ queries: { from, to } })
     },
     enabled: !!calMonth
   })
@@ -241,9 +241,9 @@ export function Dashboard() {
     router.push('/day')
   }
 
-  const prevMonth = () => setCalMonth((m) => m!.subtract(1, 'month'))
+  const prevMonth = () => setCalMonth((m) => (m ? m.subtract(1, 'month') : null))
   const nextMonth = () => {
-    if (calMonth.isBefore(d, 'month')) setCalMonth((m) => m!.add(1, 'month'))
+    if (calMonth.isBefore(d, 'month')) setCalMonth((m) => (m ? m.add(1, 'month') : null))
   }
   const hasMeals = meals.length > 0
   const hasExercises = exercises.length > 0
@@ -353,7 +353,9 @@ export function Dashboard() {
             >
               <m.div
                 animate={updateState === 'preparing' ? { rotate: 360 } : { rotate: 0 }}
-                transition={updateState === 'preparing' ? { duration: 1.5, repeat: Number.POSITIVE_INFINITY, ease: 'linear' } : {}}
+                transition={
+                  updateState === 'preparing' ? { duration: 1.5, repeat: Number.POSITIVE_INFINITY, ease: 'linear' } : {}
+                }
               >
                 <RefreshCw className='size-8 text-white' />
               </m.div>
@@ -370,7 +372,11 @@ export function Dashboard() {
               </div>
               <div className='mt-2 h-9'>
                 {updateState === 'ready' && (
-                  <m.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 300, damping: 24 }}>
+                  <m.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+                  >
                     <Button onClick={reload} size='sm' className='rounded-full px-6'>
                       再読み込み
                     </Button>
@@ -528,6 +534,7 @@ export function Dashboard() {
                 </span>
               ))}
               {Array.from({ length: startDow }, (_, i) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: static empty calendar day spacers
                 <span key={`e-${i}`} />
               ))}
               {Array.from({ length: daysInMonth }, (_, i) => {

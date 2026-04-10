@@ -1,8 +1,8 @@
 'use client'
 
+import { Sparkles } from 'lucide-react'
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
-import { Sparkles } from 'lucide-react'
 
 interface AiThinkingOverlayProps {
   show: boolean

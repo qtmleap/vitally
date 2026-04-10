@@ -1,7 +1,7 @@
 'use client'
 
-import { PageHeader } from '@/components/page-header'
 import { ForceLightMode } from '@/components/force-light-mode'
+import { PageHeader } from '@/components/page-header'
 
 export default function PrivacyPage() {
   return (
@@ -42,8 +42,8 @@ export default function PrivacyPage() {
         <section className='space-y-2'>
           <h2 className='text-base font-semibold'>4. 第三者提供</h2>
           <p>
-            法令に基づく場合を除き、ユーザーの個人情報を第三者に提供することはありません。
-            なお、AI アドバイス機能は Cloudflare Workers AI を使用して処理されます。
+            法令に基づく場合を除き、ユーザーの個人情報を第三者に提供することはありません。 なお、AI アドバイス機能は
+            Cloudflare Workers AI を使用して処理されます。
           </p>
         </section>
 

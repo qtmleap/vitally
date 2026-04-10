@@ -1,19 +1,19 @@
 'use client'
 
-import { useMutation, useSuspenseQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import { Plus, ScanBarcode, Search, Trash2 } from 'lucide-react'
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
-import Link from 'vinext/shims/link'
 import { Suspense, useState } from 'react'
+import Link from 'vinext/shims/link'
 
 import { BarcodeScanner } from '@/components/barcode-scanner'
 import { PageHeader } from '@/components/page-header'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { api } from '@/lib/api'
-import { useSkipAnimation } from '@/lib/use-skip-animation'
 import type { FoodRow } from '@/lib/db'
+import { useSkipAnimation } from '@/lib/use-skip-animation'
 
 function FoodsPageContent() {
   const queryClient = useQueryClient()
@@ -23,16 +23,23 @@ function FoodsPageContent() {
 
   const { data: foods } = useSuspenseQuery<FoodRow[]>({
     queryKey: ['foods', search],
-    queryFn: () => api.foods.list(search || undefined)
+    queryFn: () => api.listFoods({ queries: { q: search || undefined } })
   })
 
   const deleteMutation = useMutation({
-    mutationFn: api.foods.delete,
+    mutationFn: (id: string) => api.deleteFood(undefined, { queries: { id } }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['foods'] })
   })
 
-  const handleBarcodeResult = async (result: { name: string; calories: number; protein: number; fat: number; carbs: number; serving: string }) => {
-    await api.foods.create({
+  const handleBarcodeResult = async (result: {
+    name: string
+    calories: number
+    protein: number
+    fat: number
+    carbs: number
+    serving: string
+  }) => {
+    await api.createFood({
       name: result.name,
       calories: result.calories,
       protein: result.protein,
@@ -117,7 +124,13 @@ function FoodsPageContent() {
 
 export default function FoodsPage() {
   return (
-    <Suspense fallback={<div className='p-4'><p className='text-muted-foreground py-8 text-center text-sm'>読み込み中...</p></div>}>
+    <Suspense
+      fallback={
+        <div className='p-4'>
+          <p className='text-muted-foreground py-8 text-center text-sm'>読み込み中...</p>
+        </div>
+      }
+    >
       <FoodsPageContent />
     </Suspense>
   )

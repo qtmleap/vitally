@@ -3,11 +3,10 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ScanBarcode, Sparkles } from 'lucide-react'
+import * as m from 'motion/react-m'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
-
-import * as m from 'motion/react-m'
 
 import { BarcodeScanner } from '@/components/barcode-scanner'
 import { PageHeader } from '@/components/page-header'
@@ -15,8 +14,8 @@ import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { api } from '@/lib/api'
+import { type FoodInput, foodSchema } from '@/lib/schema'
 import { useSkipAnimation } from '@/lib/use-skip-animation'
-import { foodSchema, type FoodInput } from '@/lib/schema'
 
 export function FoodForm() {
   const queryClient = useQueryClient()
@@ -26,11 +25,18 @@ export function FoodForm() {
 
   const form = useForm<FoodInput>({
     resolver: zodResolver(foodSchema) as never,
-    defaultValues: { name: '', calories: undefined as unknown as number, protein: 0, fat: 0, carbs: 0, serving: '1食分' }
+    defaultValues: {
+      name: '',
+      calories: undefined as unknown as number,
+      protein: 0,
+      fat: 0,
+      carbs: 0,
+      serving: '1食分'
+    }
   })
 
   const mutation = useMutation({
-    mutationFn: api.foods.create,
+    mutationFn: (data: Parameters<typeof api.createFood>[0]) => api.createFood(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['foods'] })
       form.reset()
@@ -47,7 +53,7 @@ export function FoodForm() {
     if (!name) return
     setEstimating(true)
     try {
-      const result = await api.ai.estimateNutrition({ name, serving: form.getValues('serving') })
+      const result = await api.estimateNutrition({ name, serving: form.getValues('serving') })
       form.setValue('calories', result.calories, { shouldValidate: true })
       form.setValue('protein', result.protein)
       form.setValue('fat', result.fat)
@@ -60,7 +66,14 @@ export function FoodForm() {
     }
   }
 
-  const handleBarcodeResult = (result: { name: string; calories: number; protein: number; fat: number; carbs: number; serving: string }) => {
+  const handleBarcodeResult = (result: {
+    name: string
+    calories: number
+    protein: number
+    fat: number
+    carbs: number
+    serving: string
+  }) => {
     form.setValue('name', result.name, { shouldValidate: true })
     form.setValue('calories', result.calories, { shouldValidate: true })
     form.setValue('protein', result.protein)

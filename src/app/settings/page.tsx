@@ -18,13 +18,12 @@ import {
   UtensilsCrossed
 } from 'lucide-react'
 import * as m from 'motion/react-m'
+import type { ReactNode } from 'react'
 import Link from 'vinext/shims/link'
 import { useRouter } from 'vinext/shims/navigation'
-import type { ReactNode } from 'react'
-
+import { useAuth } from '@/components/auth-provider'
 import { PageHeader } from '@/components/page-header'
 import { useDarkMode } from '@/components/providers'
-import { useAuth } from '@/components/auth-provider'
 import { signOutUser } from '@/lib/auth'
 import { useSkipAnimation } from '@/lib/use-skip-animation'
 
@@ -116,7 +115,12 @@ export default function SettingsPage() {
             transition={{ delay: 0.1 }}
           >
             {user.photoURL ? (
-              <img src={user.photoURL} alt={user.displayName ?? 'ユーザー'} className='size-12 rounded-full object-cover' referrerPolicy='no-referrer' />
+              <img
+                src={user.photoURL}
+                alt={user.displayName ?? 'ユーザー'}
+                className='size-12 rounded-full object-cover'
+                referrerPolicy='no-referrer'
+              />
             ) : (
               <div className='bg-muted flex size-12 items-center justify-center rounded-full'>
                 <User className='text-muted-foreground size-6' />
@@ -144,11 +148,7 @@ export default function SettingsPage() {
             value={dark ? 'ダーク' : 'ライト'}
             onClick={toggle}
           />
-          <SettingsRow
-            icon={<Palette className='size-5' />}
-            label='アクセントカラー'
-            value='グリーン'
-          />
+          <SettingsRow icon={<Palette className='size-5' />} label='アクセントカラー' value='グリーン' />
         </SettingsGroup>
 
         <SettingsGroup label='データ'>
@@ -171,12 +171,7 @@ export default function SettingsPage() {
         </SettingsGroup>
 
         <SettingsGroup label='アカウント'>
-          <SettingsRow
-            icon={<LogOut className='size-5' />}
-            label='ログアウト'
-            onClick={handleSignOut}
-            destructive
-          />
+          <SettingsRow icon={<LogOut className='size-5' />} label='ログアウト' onClick={handleSignOut} destructive />
         </SettingsGroup>
 
         <m.div

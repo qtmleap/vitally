@@ -18,8 +18,8 @@ import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { useRouter } from 'vinext/shims/navigation'
 import { toast } from 'sonner'
+import { useRouter } from 'vinext/shims/navigation'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -30,14 +30,14 @@ import { api } from '@/lib/api'
 import { calculateCalorieGoal } from '@/lib/calorie-calc'
 import {
   type ActivityLevel,
-  type GoalType,
-  type ProfileInput,
   activityLevelLabels,
   activityLevels,
+  type GoalType,
   genderLabels,
   genders,
   goalLabels,
   goals,
+  type ProfileInput,
   profileSchema
 } from '@/lib/schema'
 import { cn } from '@/lib/utils'
@@ -120,7 +120,7 @@ export default function OnboardingPage() {
   }
 
   const mutation = useMutation({
-    mutationFn: api.profile.update,
+    mutationFn: (data: Parameters<typeof api.updateProfile>[0]) => api.updateProfile(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] })
       toast.success('プロフィールを保存しました')
@@ -142,8 +142,7 @@ export default function OnboardingPage() {
         })
       : null
 
-  const canGoToStep2 =
-    watchAll.gender && watchAll.age >= 10 && watchAll.height_cm >= 100 && watchAll.weight_kg >= 30
+  const canGoToStep2 = watchAll.gender && watchAll.age >= 10 && watchAll.height_cm >= 100 && watchAll.weight_kg >= 30
 
   const onSubmit = (values: ProfileInput) => {
     mutation.mutate(values)
@@ -162,6 +161,7 @@ export default function OnboardingPage() {
         <div className='mb-6 flex items-center justify-center gap-2'>
           {Array.from({ length: TOTAL_STEPS }, (_, i) => (
             <div
+              // biome-ignore lint/suspicious/noArrayIndexKey: static array of fixed-length step indicators
               key={i}
               className={cn('h-1.5 rounded-full transition-all', i === step ? 'bg-primary w-8' : 'bg-muted w-4')}
             />
@@ -356,12 +356,7 @@ export default function OnboardingPage() {
                       <ArrowLeft className='size-4' />
                       戻る
                     </Button>
-                    <Button
-                      type='button'
-                      className='flex-1 gap-2'
-                      disabled={!canGoToStep2}
-                      onClick={() => setStep(2)}
-                    >
+                    <Button type='button' className='flex-1 gap-2' disabled={!canGoToStep2} onClick={() => setStep(2)}>
                       次へ
                       <ArrowRight className='size-4' />
                     </Button>

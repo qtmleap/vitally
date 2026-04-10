@@ -1,8 +1,7 @@
 import { env } from 'cloudflare:workers'
-
-import { getAuthUser } from '@/lib/auth-middleware'
-import { DEFAULT_UTILITY_MODEL, DAILY_LIMITS, isModelAllowed } from '@/lib/ai-models'
+import { DAILY_LIMITS, DEFAULT_UTILITY_MODEL, isModelAllowed } from '@/lib/ai-models'
 import { checkAndIncrementAiUsage } from '@/lib/ai-rate-limit'
+import { getAuthUser } from '@/lib/auth-middleware'
 import { getPrisma } from '@/lib/db'
 import { aiExerciseEstimateSchema } from '@/lib/schema'
 

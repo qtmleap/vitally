@@ -1,9 +1,9 @@
 'use client'
 
-import { Dumbbell, Apple, UtensilsCrossed, X } from 'lucide-react'
+import { useSetAtom } from 'jotai'
+import { Apple, Dumbbell, UtensilsCrossed, X } from 'lucide-react'
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
-import { useSetAtom } from 'jotai'
 import { useRouter } from 'vinext/shims/navigation'
 
 import { selectedDateAtom } from '@/lib/atoms'
@@ -132,4 +132,3 @@ export function QuickAddSheet({ open, onOpenChange, onAddMeal }: QuickAddSheetPr
     </AnimatePresence>
   )
 }
-

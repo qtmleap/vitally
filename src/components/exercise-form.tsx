@@ -4,10 +4,9 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAtomValue } from 'jotai'
 import { Sparkles } from 'lucide-react'
+import * as m from 'motion/react-m'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
-
-import * as m from 'motion/react-m'
 
 import { AiThinkingOverlay } from '@/components/ai-thinking-overlay'
 import { PageHeader } from '@/components/page-header'
@@ -16,10 +15,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input'
 import { UpdatingOverlay } from '@/components/updating-overlay'
 import { api } from '@/lib/api'
+import { selectedDateAtom } from '@/lib/atoms'
+import { type ExerciseInput, exerciseSchema } from '@/lib/schema'
 import { useMinPending } from '@/lib/use-min-pending'
 import { useSkipAnimation } from '@/lib/use-skip-animation'
-import { selectedDateAtom } from '@/lib/atoms'
-import { exerciseSchema, type ExerciseInput } from '@/lib/schema'
 
 export function ExerciseForm() {
   const date = useAtomValue(selectedDateAtom)
@@ -32,7 +31,7 @@ export function ExerciseForm() {
   })
 
   const mutation = useMutation({
-    mutationFn: api.exercises.create,
+    mutationFn: (data: Parameters<typeof api.createExercise>[0]) => api.createExercise(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exercises'] })
       form.reset({ date, name: '', duration_min: undefined as unknown as number, calories: null })
@@ -42,7 +41,7 @@ export function ExerciseForm() {
 
   const estimateMutation = useMutation({
     mutationFn: () =>
-      api.ai.estimateExercise({
+      api.estimateExercise({
         name: form.getValues('name'),
         duration_min: form.getValues('duration_min') as number
       }),

@@ -1,22 +1,22 @@
 'use client'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Check, Plus, Search, Trash2 } from 'lucide-react'
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
-import { Check, Plus, Search, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import type { FoodRow, MealWithFood } from '@/lib/db'
 import { UpdatingOverlay } from '@/components/updating-overlay'
 import { api } from '@/lib/api'
+import type { FoodRow, MealWithFood } from '@/lib/db'
 import { useDebouncedValue } from '@/lib/hooks'
-import { useMinPending } from '@/lib/use-min-pending'
 import type { MealType } from '@/lib/schema'
 import { mealTypeLabels } from '@/lib/schema'
+import { useMinPending } from '@/lib/use-min-pending'
 import { cn } from '@/lib/utils'
 
 interface EditItem {
@@ -63,17 +63,16 @@ export function EditMealDialog({ open, onOpenChange, meals, mealType, date }: Ed
   }, [open, meals])
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => api.meals.delete(id)
+    mutationFn: (id: string) => api.deleteMeal(undefined, { queries: { id } })
   })
 
   const createMutation = useMutation({
-    mutationFn: (data: { date: string; meal_type: MealType; food_id: string; quantity: number }) =>
-      api.meals.create(data)
+    mutationFn: (data: { date: string; meal_type: MealType; food_id: string; quantity: number }) => api.createMeal(data)
   })
 
   const { data: foods = [] } = useQuery<FoodRow[]>({
     queryKey: ['foods', debouncedSearch],
-    queryFn: () => api.foods.list(debouncedSearch || undefined),
+    queryFn: () => api.listFoods({ queries: { q: debouncedSearch || undefined } }),
     enabled: open && showSearch
   })
 
@@ -87,14 +86,16 @@ export function EditMealDialog({ open, onOpenChange, meals, mealType, date }: Ed
 
       await Promise.all([
         ...deletes.map((i) => deleteMutation.mutateAsync(i.id)),
-        ...newItems.map((i) => createMutation.mutateAsync({ date, meal_type: mealType, food_id: i.food.id, quantity: i.quantity }))
+        ...newItems.map((i) =>
+          createMutation.mutateAsync({ date, meal_type: mealType, food_id: i.food.id, quantity: i.quantity })
+        )
       ])
 
       queryClient.invalidateQueries({ queryKey: ['meals'] })
       const msgs: string[] = []
       if (newItems.length > 0) msgs.push(`${newItems.length}件追加`)
       if (deletes.length > 0) msgs.push(`${deletes.length}件削除`)
-      if (msgs.length > 0) toast.success(msgs.join('、') + 'しました')
+      if (msgs.length > 0) toast.success(`${msgs.join('、')}しました`)
       onOpenChange(false)
     } finally {
       setSaving(false)
@@ -173,7 +174,9 @@ export function EditMealDialog({ open, onOpenChange, meals, mealType, date }: Ed
                     size='icon'
                     className={cn(
                       'size-8 shrink-0',
-                      item.deleted ? 'text-destructive hover:text-destructive/80' : 'text-muted-foreground hover:text-destructive'
+                      item.deleted
+                        ? 'text-destructive hover:text-destructive/80'
+                        : 'text-muted-foreground hover:text-destructive'
                     )}
                     onClick={() => toggleDelete(item.id)}
                   >
@@ -199,7 +202,9 @@ export function EditMealDialog({ open, onOpenChange, meals, mealType, date }: Ed
                   <div className='min-w-0 flex-1'>
                     <div className='flex items-center gap-1.5'>
                       <p className='truncate text-sm'>{item.food.name}</p>
-                      <span className='bg-primary/10 text-primary shrink-0 rounded px-1 text-[10px] font-medium'>NEW</span>
+                      <span className='bg-primary/10 text-primary shrink-0 rounded px-1 text-[10px] font-medium'>
+                        NEW
+                      </span>
                     </div>
                     <p className='text-muted-foreground text-xs'>
                       {Math.round(item.food.calories * item.quantity)} kcal
@@ -258,7 +263,9 @@ export function EditMealDialog({ open, onOpenChange, meals, mealType, date }: Ed
                         <m.div
                           className={cn(
                             'flex size-5 shrink-0 items-center justify-center rounded-full border transition-colors',
-                            selected ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground/30'
+                            selected
+                              ? 'border-primary bg-primary text-primary-foreground'
+                              : 'border-muted-foreground/30'
                           )}
                           animate={selected ? { scale: [1, 1.3, 1] } : { scale: 1 }}
                           transition={{ duration: 0.3 }}
@@ -278,11 +285,7 @@ export function EditMealDialog({ open, onOpenChange, meals, mealType, date }: Ed
               )}
             </m.div>
           ) : (
-            <Button
-              variant='outline'
-              className='w-full border-dashed gap-1.5'
-              onClick={() => setShowSearch(true)}
-            >
+            <Button variant='outline' className='w-full border-dashed gap-1.5' onClick={() => setShowSearch(true)}>
               <Plus className='size-4' />
               品目を追加
             </Button>

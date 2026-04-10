@@ -6,11 +6,10 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 
 import Link from 'vinext/shims/link'
-
+import { ForceLightMode } from '@/components/force-light-mode'
 import { Button } from '@/components/ui/button'
 import { signInWithGoogle } from '@/lib/auth'
 import { useSkipAnimation } from '@/lib/use-skip-animation'
-import { ForceLightMode } from '@/components/force-light-mode'
 
 function GoogleIcon() {
   return (
@@ -35,15 +34,7 @@ function GoogleIcon() {
   )
 }
 
-function FloatingCard({
-  children,
-  className,
-  delay
-}: {
-  children: React.ReactNode
-  className: string
-  delay: number
-}) {
+function FloatingCard({ children, className, delay }: { children: React.ReactNode; className: string; delay: number }) {
   return (
     <m.div
       className={className}
@@ -248,9 +239,7 @@ export function LandingPage() {
             transition={{ delay: 0.5 }}
           >
             <h2 className='text-2xl font-bold lg:text-3xl'>主な機能</h2>
-            <p className='text-muted-foreground mt-2 text-sm lg:text-base'>
-              シンプルな操作で、毎日の健康管理を習慣に
-            </p>
+            <p className='text-muted-foreground mt-2 text-sm lg:text-base'>シンプルな操作で、毎日の健康管理を習慣に</p>
           </m.div>
           <div className='grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-6'>
             {features.map((feature, i) => (
@@ -274,11 +263,7 @@ export function LandingPage() {
 
       {/* CTA Section */}
       <section className='border-t px-6 py-12 text-center lg:py-20'>
-        <m.div
-          initial={init({ opacity: 0, y: 16 })}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8 }}
-        >
+        <m.div initial={init({ opacity: 0, y: 16 })} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}>
           <h2 className='text-xl font-bold lg:text-2xl'>今すぐ始めましょう</h2>
           <p className='text-muted-foreground mt-2 text-sm lg:text-base'>
             無料で使えます。Google アカウントがあればすぐにスタート。

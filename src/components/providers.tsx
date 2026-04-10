@@ -1,8 +1,8 @@
 'use client'
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { LazyMotion, domAnimation } from 'motion/react'
 import { Provider as JotaiProvider } from 'jotai'
+import { domAnimation, LazyMotion } from 'motion/react'
 import type { ReactNode } from 'react'
 import { useEffect, useState } from 'react'
 import { AuthProvider } from '@/components/auth-provider'

@@ -6,65 +6,9 @@ export function getPrisma(env: Cloudflare.Env) {
   return new PrismaClient({ adapter })
 }
 
-// フロントエンド API レスポンス型
-export interface FoodRow {
-  id: string
-  name: string
-  calories: number
-  protein: number
-  fat: number
-  carbs: number
-  serving: string
-  createdAt: string
-}
-
-export interface MealWithFood {
-  id: string
-  date: string
-  meal_type: 'breakfast' | 'lunch' | 'dinner' | 'snack'
-  food_id: string
-  quantity: number
-  created_at: string
-  food_name: string
-  food_calories: number
-  food_protein: number
-  food_fat: number
-  food_carbs: number
-}
-
-export interface MealTemplateItemRow {
-  id: string
-  foodId: string
-  quantity: number
-  food: FoodRow
-}
-
-export interface MealTemplateRow {
-  id: string
-  name: string
-  mealType: string | null
-  createdAt: string
-  items: MealTemplateItemRow[]
-}
-
-export interface UserProfileRow {
-  age: number
-  heightCm: number
-  weightKg: number
-  bodyFatPct: number | null
-  gender: string
-  activityLevel: string
-  goals: string[]
-  calorieGoal: number
-  aiAdviceModel: string | null
-  aiUtilityModel: string | null
-}
-
-export interface ExerciseRow {
-  id: string
-  date: string
-  name: string
-  duration_min: number
-  calories: number | null
-  createdAt: string
-}
+export type { ExerciseRow } from '../../schemas/Exercise.dto'
+// フロントエンド API レスポンス型 — schemas/*.dto.ts から再エクスポート
+export type { FoodRow } from '../../schemas/Food.dto'
+export type { MealWithFood } from '../../schemas/Meal.dto'
+export type { UserProfileRow } from '../../schemas/Profile.dto'
+export type { MealTemplateItemRow, MealTemplateRow } from '../../schemas/Template.dto'
