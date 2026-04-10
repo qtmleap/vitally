@@ -28,9 +28,9 @@ export function FoodForm() {
     defaultValues: {
       name: '',
       calories: undefined as unknown as number,
-      protein: 0,
-      fat: 0,
-      carbs: 0,
+      protein: undefined as unknown as number,
+      fat: undefined as unknown as number,
+      carbs: undefined as unknown as number,
       serving: '1食分'
     }
   })
@@ -155,7 +155,8 @@ export function FoodForm() {
                     <Input
                       type='number'
                       {...field}
-                      onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : 0)}
+                      value={field.value ?? ''}
+                      onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
                     />
                   </FormControl>
                   <FormMessage />
@@ -172,7 +173,8 @@ export function FoodForm() {
                     <Input
                       type='number'
                       {...field}
-                      onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : 0)}
+                      value={field.value ?? ''}
+                      onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
                     />
                   </FormControl>
                   <FormMessage />
@@ -189,7 +191,8 @@ export function FoodForm() {
                     <Input
                       type='number'
                       {...field}
-                      onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : 0)}
+                      value={field.value ?? ''}
+                      onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
                     />
                   </FormControl>
                   <FormMessage />

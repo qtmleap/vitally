@@ -134,6 +134,7 @@ export function MealForm() {
                     type='number'
                     step='0.1'
                     {...field}
+                    value={field.value ?? ''}
                     onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
                   />
                 </FormControl>
