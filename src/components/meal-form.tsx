@@ -35,6 +35,7 @@ export function MealForm() {
 
   const form = useForm<MealInput>({
     resolver: zodResolver(mealSchema) as never,
+    mode: 'onBlur',
     defaultValues: { date, meal_type: 'lunch', food_id: '', quantity: 1 }
   })
 

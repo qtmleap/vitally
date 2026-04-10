@@ -202,6 +202,7 @@ export function AddMealDialog({ open, onOpenChange, mealType, date }: AddMealDia
 
   const templateForm = useForm<z.infer<typeof templateNameSchema>>({
     resolver: zodResolver(templateNameSchema),
+    mode: 'onBlur',
     defaultValues: { name: '' }
   })
 

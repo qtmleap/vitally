@@ -25,6 +25,7 @@ export function FoodForm() {
 
   const form = useForm<FoodInput>({
     resolver: zodResolver(foodSchema) as never,
+    mode: 'onBlur',
     defaultValues: {
       name: '',
       calories: undefined as unknown as number,

@@ -60,6 +60,7 @@ export default function ProfileSettingsPage() {
 
   const form = useForm<ProfileInput>({
     resolver: zodResolver(profileSchema) as never,
+    mode: 'onBlur',
     defaultValues: {
       age: undefined as unknown as number,
       height_cm: undefined as unknown as number,

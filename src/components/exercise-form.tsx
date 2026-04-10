@@ -27,6 +27,7 @@ export function ExerciseForm() {
 
   const form = useForm<ExerciseInput>({
     resolver: zodResolver(exerciseSchema) as never,
+    mode: 'onBlur',
     defaultValues: { date, name: '', duration_min: undefined as unknown as number, calories: null }
   })
 
