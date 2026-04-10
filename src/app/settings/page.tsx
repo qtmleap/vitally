@@ -166,7 +166,7 @@ export default function SettingsPage() {
 
         <SettingsGroup label='アプリについて'>
           <SettingsRow icon={<Info className='size-5' />} label='バージョン' value={`v${APP_VERSION}`} />
-          <SettingsRow icon={<Shield className='size-5' />} label='プライバシーポリシー' value='準備中' />
+          <SettingsRow icon={<Shield className='size-5' />} label='プライバシーポリシー' href='/privacy' />
           <SettingsRow icon={<Heart className='size-5' />} label='ライセンス' value='MIT' />
         </SettingsGroup>
 
