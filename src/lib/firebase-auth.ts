@@ -1,50 +1,53 @@
 import { env } from 'cloudflare:workers'
 
 const FIREBASE_PROJECT_ID = 'vitally-a056d'
-const CERTS_URL = 'https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com'
+const JWKS_URL = 'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com'
 
-interface CertCache {
-  certs: Record<string, CryptoKey>
+interface KeyCache {
+  keys: Record<string, CryptoKey>
   expiresAt: number
 }
 
-let certCache: CertCache | null = null
+let keyCache: KeyCache | null = null
 
-async function pemToCryptoKey(pem: string): Promise<CryptoKey> {
-  const lines = pem.split('\n').filter((l) => !l.startsWith('-----'))
-  const b64 = lines.join('')
-  const binary = atob(b64)
-  const der = new ArrayBuffer(binary.length)
-  const view = new Uint8Array(der)
-  for (let i = 0; i < binary.length; i++) {
-    view[i] = binary.charCodeAt(i)
-  }
-  return crypto.subtle.importKey('spki', der, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['verify'])
+interface JwkKey {
+  kid: string
+  kty: string
+  alg: string
+  n: string
+  e: string
+  use: string
 }
 
 async function getPublicKeys(): Promise<Record<string, CryptoKey>> {
   const now = Date.now()
-  if (certCache && certCache.expiresAt > now) {
-    return certCache.certs
+  if (keyCache && keyCache.expiresAt > now) {
+    return keyCache.keys
   }
 
-  const res = await fetch(CERTS_URL)
-  if (!res.ok) throw new Error(`Failed to fetch Google certs: ${res.status}`)
+  const res = await fetch(JWKS_URL)
+  if (!res.ok) throw new Error(`Failed to fetch Google JWKS: ${res.status}`)
 
-  const rawCerts = (await res.json()) as Record<string, string>
-  const certs: Record<string, CryptoKey> = {}
+  const jwks = (await res.json()) as { keys: JwkKey[] }
+  const keys: Record<string, CryptoKey> = {}
   await Promise.all(
-    Object.entries(rawCerts).map(async ([kid, pem]) => {
-      certs[kid] = await pemToCryptoKey(pem)
+    jwks.keys.map(async (jwk) => {
+      keys[jwk.kid] = await crypto.subtle.importKey(
+        'jwk',
+        { kty: jwk.kty, n: jwk.n, e: jwk.e, alg: 'RS256', ext: true },
+        { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+        false,
+        ['verify']
+      )
     })
   )
 
   const cacheControl = res.headers.get('cache-control') ?? ''
   const maxAgeMatch = cacheControl.match(/max-age=(\d+)/)
   const ttl = maxAgeMatch ? Number.parseInt(maxAgeMatch[1], 10) * 1000 : 3600_000
-  certCache = { certs, expiresAt: now + ttl }
+  keyCache = { keys, expiresAt: now + ttl }
 
-  return certs
+  return keys
 }
 
 function base64UrlDecode(str: string): Uint8Array<ArrayBuffer> {
