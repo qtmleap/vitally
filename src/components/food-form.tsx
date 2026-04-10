@@ -58,7 +58,6 @@ export function FoodForm() {
       form.setValue('protein', result.protein)
       form.setValue('fat', result.fat)
       form.setValue('carbs', result.carbs)
-      form.setValue('serving', result.serving)
     } catch {
       // AI 失敗時は何もしない
     } finally {

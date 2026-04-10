@@ -33,18 +33,19 @@ export async function POST(request: Request) {
     return Response.json({ error: 'このモデルは利用できません' }, { status: 403 })
   }
 
+  const servingText = serving || '1食分'
+
   const result = await env.AI.run(modelId as Parameters<typeof env.AI.run>[0], {
     messages: [
       {
         role: 'system',
-        content: `あなたは栄養士です。食品の栄養成分を日本の食品成分表に基づいて概算してください。
+        content: `あなたは栄養士です。指定された食品と量に対する栄養成分を日本の食品成分表に基づいて概算してください。
 以下のJSON形式のみで回答してください。説明文は不要です。
-serving は量のみ（例: "60g", "1本", "200ml"）で、食品名を含めないでください。
-{"calories": 数値, "protein": 数値, "fat": 数値, "carbs": 数値, "serving": "量のみ"}`
+{"calories": 数値, "protein": 数値, "fat": 数値, "carbs": 数値}`
       },
       {
         role: 'user',
-        content: `食品名: ${name}\n量: ${serving || '1食分（一般的な量）'}`
+        content: `食品名: ${name}\n量: ${servingText}\n上記の量あたりの栄養成分を返してください。`
       }
     ],
     max_tokens: 256
@@ -61,7 +62,7 @@ serving は量のみ（例: "60g", "1本", "200ml"）で、食品名を含めな
       protein: Math.round(Number(parsed.protein) || 0),
       fat: Math.round(Number(parsed.fat) || 0),
       carbs: Math.round(Number(parsed.carbs) || 0),
-      serving: String(parsed.serving || '1食分')
+      serving: servingText
     }
     if (save) {
       const food = await prisma.food.create({ data: { name, ...estimate, userId: user.uid } })
