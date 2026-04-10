@@ -2,7 +2,6 @@
 import { onAuthStateChanged, type User } from 'firebase/auth'
 import { createContext, useContext, useEffect, useState } from 'react'
 import { auth } from '@/lib/firebase'
-import { setTokenGetter } from '@/lib/api'
 
 interface AuthContextValue {
   user: User | null
@@ -19,12 +18,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser)
       setLoading(false)
-    })
-
-    setTokenGetter(async () => {
-      const currentUser = auth.currentUser
-      if (!currentUser) return null
-      return currentUser.getIdToken()
     })
 
     return unsubscribe
