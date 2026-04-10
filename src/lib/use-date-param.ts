@@ -1,30 +1,35 @@
 'use client'
 
 import { useAtom } from 'jotai'
-import { useEffect } from 'react'
-import { useSearchParams } from 'vinext/shims/navigation'
+import { useEffect, useRef } from 'react'
 
 import { selectedDateAtom } from '@/lib/atoms'
 import { today } from '@/lib/date'
 
+function getDateFromUrl(): string | null {
+  if (typeof window === 'undefined') return null
+  const params = new URLSearchParams(window.location.search)
+  const d = params.get('date')
+  return d && /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : null
+}
+
 /**
  * URL の ?date= パラメータと selectedDateAtom を双方向同期する。
- * 初回は URL から atom を設定し、atom 変更時に URL を更新する。
  */
 export function useDateParam() {
   const [date, setDate] = useAtom(selectedDateAtom)
-  const searchParams = useSearchParams()
+  const initialized = useRef(false)
 
-  // 初回: URL の ?date= から atom を設定 (マウント時のみ実行)
-  // biome-ignore lint/correctness/useExhaustiveDependencies: mount-only effect to read initial URL param
-  useEffect(() => {
-    const urlDate = searchParams.get('date')
-    if (urlDate && /^\d{4}-\d{2}-\d{2}$/.test(urlDate)) {
+  // 初回のみ: URL の ?date= から atom を同期的に設定
+  if (!initialized.current) {
+    initialized.current = true
+    const urlDate = getDateFromUrl()
+    if (urlDate && urlDate !== date) {
       setDate(urlDate)
     }
-  }, [])
+  }
 
-  // atom 変更時に URL を更新（ナビゲーションを発生させずに URL だけ書き換え）
+  // atom 変更時に URL を更新
   useEffect(() => {
     const url = new URL(window.location.href)
     const current = url.searchParams.get('date')
