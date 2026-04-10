@@ -10,8 +10,15 @@ import { useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { selectedDateAtom } from '@/lib/atoms'
 
-export function DateNav() {
-  const [date, setDate] = useAtom(selectedDateAtom)
+interface DateNavProps {
+  date?: string
+  onDateChange?: (date: string) => void
+}
+
+export function DateNav({ date: dateProp, onDateChange }: DateNavProps = {}) {
+  const [atomDate, setAtomDate] = useAtom(selectedDateAtom)
+  const date = dateProp ?? atomDate
+  const setDate = onDateChange ?? setAtomDate
   const d = dayjs(date)
   const dirRef = useRef(1)
 

@@ -27,7 +27,7 @@ import { useSkipAnimation } from '@/lib/use-skip-animation'
 const DEFAULT_CALORIE_GOAL = 2000
 
 function DayPageContent() {
-  const date = useDateParam()
+  const [date, setDate] = useDateParam()
   const queryClient = useQueryClient()
   const [dialogType, setDialogType] = useState<MealType | null>(null)
   const [editingMealType, setEditingMealType] = useState<MealType | null>(null)
@@ -125,7 +125,7 @@ function DayPageContent() {
         <PageHeader title='日別記録' />
       </m.div>
       <m.div variants={fadeUp}>
-        <DateNav />
+        <DateNav date={date} onDateChange={setDate} />
       </m.div>
 
       {/* AI Advice */}
