@@ -61,7 +61,7 @@ CREATE TABLE "new_meal_templates" (
     "updated_at" DATETIME NOT NULL,
     CONSTRAINT "meal_templates_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
-INSERT INTO "new_meal_templates" ("created_at", "id", "name", "user_id") SELECT "created_at", "id", "name", "user_id" FROM "meal_templates";
+INSERT INTO "new_meal_templates" ("created_at", "id", "name", "user_id", "updated_at") SELECT "created_at", "id", "name", "user_id", "created_at" FROM "meal_templates";
 DROP TABLE "meal_templates";
 ALTER TABLE "new_meal_templates" RENAME TO "meal_templates";
 CREATE INDEX "meal_templates_user_id_idx" ON "meal_templates"("user_id");
