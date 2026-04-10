@@ -1,11 +1,10 @@
 'use client'
 
-import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
-import { Bot, Copy, Loader2, Pencil, Plus, Sparkles } from 'lucide-react'
+import { useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query'
+import { Bot, Loader2, Pencil, Plus, Sparkles } from 'lucide-react'
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
 import { Suspense, useState } from 'react'
-import { toast } from 'sonner'
 import Link from 'vinext/shims/link'
 import { AddMealDialog } from '@/components/add-meal-dialog'
 import { AiThinkingOverlay } from '@/components/ai-thinking-overlay'
@@ -15,20 +14,17 @@ import { EditMealDialog } from '@/components/edit-meal-dialog'
 import { PageHeader } from '@/components/page-header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { UpdatingOverlay } from '@/components/updating-overlay'
 import { api } from '@/lib/api'
 import type { ExerciseRow, MealWithFood } from '@/lib/db'
 import type { MealType } from '@/lib/schema'
 import { mealTypeLabels } from '@/lib/schema'
 import { useDateParam } from '@/lib/use-date-param'
-import { useMinPending } from '@/lib/use-min-pending'
 import { useSkipAnimation } from '@/lib/use-skip-animation'
 
 const DEFAULT_CALORIE_GOAL = 2000
 
 function DayPageContent() {
   const [date, setDate] = useDateParam()
-  const queryClient = useQueryClient()
   const [dialogType, setDialogType] = useState<MealType | null>(null)
   const [editingMealType, setEditingMealType] = useState<MealType | null>(null)
   const [advice, setAdvice] = useState<string | null>(null)
@@ -67,21 +63,6 @@ function DayPageContent() {
       }),
     onSuccess: (data) => setAdvice(data.message)
   })
-
-  const copyMutation = useMutation({
-    mutationFn: () => {
-      const d = new Date(date)
-      d.setDate(d.getDate() - 1)
-      const yesterday = d.toISOString().slice(0, 10)
-      return api.copyMeals({ from_date: yesterday, to_date: date })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['meals', date] })
-      toast.success('前日の食事をコピーしました')
-    }
-  })
-
-  const showCopyOverlay = useMinPending(copyMutation.isPending)
 
   const totalIntake = meals.reduce((s, m) => s + m.food_calories * m.quantity, 0)
   const totalBurn = exercises.reduce((s, e) => s + (e.calories ?? 0), 0)
@@ -211,16 +192,6 @@ function DayPageContent() {
       <m.div variants={fadeUp}>
         <div className='mb-3 flex items-center justify-between'>
           <h2 className='text-sm font-bold'>食事</h2>
-          <Button
-            variant='ghost'
-            size='sm'
-            className='h-7 text-xs'
-            onClick={() => copyMutation.mutate()}
-            disabled={copyMutation.isPending}
-          >
-            <Copy className='mr-1 size-3' />
-            前日からコピー
-          </Button>
         </div>
         <div className='space-y-3'>
           {(['breakfast', 'lunch', 'dinner', 'snack'] as MealType[]).map((type, idx) => {
@@ -375,7 +346,6 @@ function DayPageContent() {
         />
       )}
       <AiThinkingOverlay show={adviceMutation.isPending} />
-      <UpdatingOverlay show={showCopyOverlay} message='前日の食事をコピー中...' />
     </m.div>
   )
 }
