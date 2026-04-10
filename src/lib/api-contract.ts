@@ -3,7 +3,7 @@ import { z } from 'zod'
 
 import { AdviceResponseSchema, ExerciseEstimateSchema, NutritionEstimateSchema } from '../../schemas/Ai.dto'
 import { BarcodeResultSchema } from '../../schemas/Barcode.dto'
-import { ExerciseRowSchema } from '../../schemas/Exercise.dto'
+import { ExerciseRowSchema, RecentExerciseSchema } from '../../schemas/Exercise.dto'
 import { FoodRowSchema } from '../../schemas/Food.dto'
 import { MealWithFoodSchema } from '../../schemas/Meal.dto'
 import { UserProfileRowSchema } from '../../schemas/Profile.dto'
@@ -122,6 +122,13 @@ export const apiDefinition = makeApi([
     alias: 'deleteExercise',
     response: z.object({ ok: z.boolean() }),
     parameters: [{ name: 'id', type: 'Query', schema: z.string() }]
+  },
+  {
+    method: 'get',
+    path: '/exercises/recent',
+    alias: 'listRecentExercises',
+    response: z.array(RecentExerciseSchema),
+    parameters: [{ name: 'limit', type: 'Query', schema: z.number().optional() }]
   },
 
   // --- AI ---

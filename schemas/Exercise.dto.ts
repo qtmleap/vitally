@@ -10,3 +10,9 @@ export const ExerciseRowSchema = z.object({
 })
 
 export type ExerciseRow = z.infer<typeof ExerciseRowSchema>
+
+export const RecentExerciseSchema = z.object({
+  name: z.string()
+})
+
+export type RecentExercise = z.infer<typeof RecentExerciseSchema>

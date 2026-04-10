@@ -1,7 +1,7 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAtomValue } from 'jotai'
 import { Sparkles } from 'lucide-react'
 import * as m from 'motion/react-m'
@@ -37,6 +37,11 @@ export function ExerciseForm() {
       form.reset({ date, name: '', duration_min: undefined as unknown as number, calories: null })
       toast.success('運動を記録しました')
     }
+  })
+
+  const { data: recentExercises = [] } = useQuery({
+    queryKey: ['exercises', 'recent'],
+    queryFn: () => api.listRecentExercises({ queries: { limit: 10 } })
   })
 
   const estimateMutation = useMutation({
@@ -79,6 +84,24 @@ export function ExerciseForm() {
                 <FormControl>
                   <Input placeholder='ランニング、筋トレなど' {...field} />
                 </FormControl>
+                {recentExercises.length > 0 && (
+                  <div className='-mx-4 overflow-x-auto'>
+                    <div className='flex gap-2 px-4 pt-1'>
+                      {recentExercises.map((ex) => (
+                        <Button
+                          key={ex.name}
+                          type='button'
+                          variant='outline'
+                          size='sm'
+                          className='h-7 shrink-0 rounded-full text-xs'
+                          onClick={() => form.setValue('name', ex.name, { shouldValidate: true })}
+                        >
+                          {ex.name}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <FormMessage />
               </FormItem>
             )}
