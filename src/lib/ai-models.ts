@@ -13,57 +13,84 @@ export interface AiModel {
   label: string
   tier: Tier
   categories: AiCategory[]
-  /** 1リクエストあたりの概算 neurons（表示用） */
+  /** 1リクエストあたりの概算 neurons（500 input + 256 output トークン想定） */
   neuronsPerReq: number
   rating: AiModelRating
 }
 
+const ALL_CATEGORIES: AiCategory[] = ['advice', 'nutrition', 'exercise']
+
 export const AI_MODELS: AiModel[] = [
-  // --- Advice ---
+  // --- Free ---
   {
-    id: '@cf/meta/llama-3.1-8b-instruct-fp8',
-    label: 'Llama 3.1 8B',
+    id: '@cf/meta/llama-3-8b-instruct',
+    label: 'Llama 3 8B',
     tier: 'free',
-    categories: ['advice'],
-    neuronsPerReq: 14,
+    categories: ALL_CATEGORIES,
+    neuronsPerReq: 32,
     rating: { quality: 3, speed: 5 }
   },
   {
-    id: '@cf/qwen/qwen3-30b-a3b-fp8',
-    label: 'Qwen3 30B (MoE)',
+    id: '@cf/meta/llama-3.1-8b-instruct',
+    label: 'Llama 3.1 8B',
     tier: 'free',
-    categories: ['advice'],
-    neuronsPerReq: 11,
-    rating: { quality: 4, speed: 4 }
+    categories: ALL_CATEGORIES,
+    neuronsPerReq: 32,
+    rating: { quality: 3, speed: 5 }
   },
   {
-    id: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
-    label: 'Llama 3.3 70B',
-    tier: 'pro',
-    categories: ['advice'],
-    neuronsPerReq: 59,
-    rating: { quality: 5, speed: 3 }
+    id: '@cf/meta/llama-3.1-8b-instruct-fast',
+    label: 'Llama 3.1 8B Fast',
+    tier: 'free',
+    categories: ALL_CATEGORIES,
+    neuronsPerReq: 32,
+    rating: { quality: 3, speed: 5 }
   },
-  // --- Nutrition / Exercise ---
+  {
+    id: '@cf/meta/llama-3.2-11b-vision-instruct',
+    label: 'Llama 3.2 11B Vision',
+    tier: 'free',
+    categories: ALL_CATEGORIES,
+    neuronsPerReq: 18,
+    rating: { quality: 4, speed: 4 }
+  },
   {
     id: '@hf/nousresearch/hermes-2-pro-mistral-7b',
     label: 'Hermes 2 Pro 7B',
     tier: 'free',
-    categories: ['nutrition', 'exercise'],
-    neuronsPerReq: 14,
+    categories: ALL_CATEGORIES,
+    neuronsPerReq: 30,
     rating: { quality: 3, speed: 4 }
   },
+
+  // --- Pro ---
   {
-    id: '@cf/meta/llama-3.1-8b-instruct-fp8',
-    label: 'Llama 3.1 8B',
-    tier: 'free',
-    categories: ['nutrition', 'exercise'],
-    neuronsPerReq: 14,
-    rating: { quality: 3, speed: 5 }
+    id: '@cf/meta/llama-3.1-70b-instruct',
+    label: 'Llama 3.1 70B',
+    tier: 'pro',
+    categories: ALL_CATEGORIES,
+    neuronsPerReq: 66,
+    rating: { quality: 5, speed: 2 }
+  },
+  {
+    id: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+    label: 'Llama 3.3 70B Fast',
+    tier: 'pro',
+    categories: ALL_CATEGORIES,
+    neuronsPerReq: 66,
+    rating: { quality: 5, speed: 3 }
+  },
+  {
+    id: '@cf/deepseek-ai/deepseek-r1-distill-qwen-32b',
+    label: 'DeepSeek R1 Distill 32B',
+    tier: 'pro',
+    categories: ALL_CATEGORIES,
+    neuronsPerReq: 136,
+    rating: { quality: 5, speed: 2 }
   }
 ]
 
-export const DEFAULT_ADVICE_MODEL = '@cf/meta/llama-3.1-8b-instruct-fp8'
+export const DEFAULT_ADVICE_MODEL = '@cf/meta/llama-3.1-8b-instruct'
 export const DEFAULT_UTILITY_MODEL = '@hf/nousresearch/hermes-2-pro-mistral-7b'
 
 /** カテゴリに対応するモデル一覧を取得 */

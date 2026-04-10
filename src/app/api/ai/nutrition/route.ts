@@ -1,6 +1,7 @@
 import { env } from 'cloudflare:workers'
 import { DAILY_LIMITS, DEFAULT_UTILITY_MODEL, isModelAllowed } from '@/lib/ai-models'
 import { checkAndIncrementAiUsage } from '@/lib/ai-rate-limit'
+import { parseAiTextResponse } from '@/lib/ai-response'
 import { getAuthUser } from '@/lib/auth-middleware'
 import { getPrisma } from '@/lib/db'
 
@@ -51,7 +52,11 @@ export async function POST(request: Request) {
     max_tokens: 256
   })
 
-  const text = typeof result === 'object' && result !== null && 'response' in result ? (result.response as string) : ''
+  const aiResponse = parseAiTextResponse(result)
+  if (!aiResponse) {
+    return Response.json({ error: 'AI モデルのレスポンス形式が不正です' }, { status: 502 })
+  }
+  const text = aiResponse.response
 
   try {
     const match = text.match(/\{[\s\S]*?\}/)

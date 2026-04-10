@@ -1,6 +1,7 @@
 import { env } from 'cloudflare:workers'
 import { DAILY_LIMITS, DEFAULT_ADVICE_MODEL, isModelAllowed } from '@/lib/ai-models'
 import { checkAndIncrementAiUsage } from '@/lib/ai-rate-limit'
+import { parseAiTextResponse } from '@/lib/ai-response'
 import { getAuthUser } from '@/lib/auth-middleware'
 import { getPrisma } from '@/lib/db'
 import type { ActivityLevel, Gender, GoalType } from '@/lib/schema'
@@ -79,10 +80,12 @@ ${profileSection}【${date}の記録】
       max_tokens: 256
     })
 
-    const text =
-      typeof result === 'object' && result !== null && 'response' in result ? (result.response as string) : ''
+    const aiResponse = parseAiTextResponse(result)
+    if (!aiResponse) {
+      return Response.json({ error: 'AI モデルのレスポンス形式が不正です' }, { status: 502 })
+    }
 
-    return Response.json({ message: text })
+    return Response.json({ message: aiResponse.response })
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e)
     console.error('POST /api/ai error:', msg)
