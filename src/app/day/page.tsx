@@ -144,7 +144,7 @@ function DayPageContent() {
                 size='sm'
                 className='mt-2 h-7 text-xs'
                 onClick={() => adviceMutation.mutate()}
-                disabled={adviceMutation.isPending}
+                disabled={adviceMutation.isPending || (meals.length === 0 && exercises.length === 0)}
               >
                 {adviceMutation.isPending ? (
                   <Loader2 className='mr-1 size-3 animate-spin' />
@@ -160,7 +160,7 @@ function DayPageContent() {
             variant='outline'
             className='w-full gap-2'
             onClick={() => adviceMutation.mutate()}
-            disabled={adviceMutation.isPending}
+            disabled={adviceMutation.isPending || (meals.length === 0 && exercises.length === 0)}
           >
             {adviceMutation.isPending ? <Loader2 className='size-4 animate-spin' /> : <Sparkles className='size-4' />}
             {adviceMutation.isPending ? '評価中...' : 'AI に今日の記録を評価してもらう'}

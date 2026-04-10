@@ -49,7 +49,11 @@ function AiPageContent() {
       <PageHeader title='AI アドバイス' back />
       <DateNav />
       <div className='mt-4 space-y-4'>
-        <Button className='w-full' onClick={() => adviceMutation.mutate()} disabled={adviceMutation.isPending}>
+        <Button
+          className='w-full'
+          onClick={() => adviceMutation.mutate()}
+          disabled={adviceMutation.isPending || (meals.length === 0 && exercises.length === 0)}
+        >
           {adviceMutation.isPending ? (
             <Loader2 className='mr-2 size-4 animate-spin' />
           ) : (
