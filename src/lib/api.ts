@@ -16,4 +16,4 @@ axiosInstance.interceptors.response.use(
   }
 )
 
-export const api = new Zodios('/api', apiDefinition, { axiosInstance, validate: false })
+export const api = new Zodios('/api', apiDefinition, { axiosInstance })
