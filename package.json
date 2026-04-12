@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vinext dev --port 11000 --hostname 0.0.0.0",
+    "dev": "vinext dev --port 11575 --hostname 0.0.0.0",
     "build": "vinext build",
     "predeploy": "vinext build",
     "deploy": "vinext deploy",

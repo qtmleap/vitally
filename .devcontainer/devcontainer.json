@@ -7,8 +7,8 @@
   "remoteUser": "vscode",
   "forwardPorts": [
     5173,
-    9099,
-    4000
+    11599,
+    11540
   ],
   "containerEnv": {
       "CLAUDE_CONFIG_DIR": "/home/vscode/.claude"
