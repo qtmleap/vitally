@@ -3,7 +3,9 @@ extends:
   - "@commitlint/config-conventional"
 rules:
   header-max-length:
-    - 0
+    - 2
+    - always
+    - 128
   type-enum:
     - 2
     - always
