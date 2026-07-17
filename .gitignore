@@ -235,3 +235,4 @@ $RECYCLE.BIN/
 # Act
 .secrets
 !.secrets.example
+worker-configuration.d.ts
